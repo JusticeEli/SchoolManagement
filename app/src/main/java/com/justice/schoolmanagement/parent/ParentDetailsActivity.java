@@ -22,11 +22,14 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.class_.ChoosenClassActivity;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
@@ -63,7 +66,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         setContentView(R.layout.activity_parent_details);
         email = getIntent().getStringExtra("email");
 
-        parentData = getParentData();
+        parentData = ApplicationClass.documentSnapshot.toObject(ParentData.class);
         initWidgets();
         initNavigationDrawer();
 
@@ -107,16 +110,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         actionBarDrawerToggle.syncState();
     }
 
-    private ParentData getParentData() {
-        for (ParentData parentData:AllData.parentDataList){
-            if (parentData.getEmail().equals(email)){
-                return parentData;
-            }
-        }
 
-
-        return null;
-    }
 
     private void setOnClickListeners() {
         deleteTxtView.setOnClickListener(new View.OnClickListener() {
@@ -130,7 +124,6 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ParentDetailsActivity.this, EditParentActivity.class);
-                intent.putExtra("email", email);
                 startActivity(intent);
             }
         });
@@ -154,24 +147,22 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
 
     private void deleteParent() {
         showProgress(true);
-        Backendless.Persistence.of(ParentData.class).remove(parentData, new AsyncCallback<Long>() {
+
+        ApplicationClass.documentSnapshot.getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(Long response) {
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(ParentDetailsActivity.this, parentData.getFirstName() + " Removed Successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+
+                }else{
+                    String error=task.getException().getMessage();
+                    Toast.makeText(ParentDetailsActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-                AllData.parentDataList.remove(parentData);
-                Toast.makeText(ParentDetailsActivity.this, parentData.getFirstName() + " Removed Successfully", Toast.LENGTH_SHORT).show();
-                finish();
-
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(ParentDetailsActivity.this, "Error: "+fault.getMessage(), Toast.LENGTH_SHORT).show();
-
             }
         });
+
     }
 
     private void setDefaultValues() {
@@ -207,56 +198,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     }
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-            case R.id.logoutMenu:
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    @Override
-                    public void handleResponse(Void response) {
-                        Toast.makeText(ParentDetailsActivity.this, "Logout Success", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Toast.makeText(ParentDetailsActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-                Intent intent8 = new Intent(this, MainActivity.class);
-                startActivity(intent8);
-                break;
-
-
-
-        }
+       ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);

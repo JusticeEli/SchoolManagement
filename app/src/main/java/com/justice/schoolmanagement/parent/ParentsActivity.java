@@ -24,11 +24,17 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.firebase.ui.firestore.SnapshotParser;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.class_.ChoosenClassActivity;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
@@ -58,6 +64,7 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
     private LinearLayout load;
     private TextView loadTxtView;
 
+    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
 
     @Override
@@ -70,6 +77,7 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
 
         setOnClickListeners();
     }
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
@@ -91,97 +99,13 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
             }
         });
 
-        searchEdtTxt.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                List<ParentData> list = new ArrayList<>();
-                if (searchEdtTxt.getText().toString().isEmpty()) {
-                    parentsActivityRecyclerAdapter.setList(AllData.parentDataList);
-                } else {
-                    for (ParentData parentData : AllData.parentDataList) {
-                        if (parentData.getFullName().toLowerCase().contains(searchEdtTxt.getText().toString().toLowerCase())) {
-                            if (!list.contains(parentData)) {
-                                list.add(parentData);
-
-                            }
-
-
-                        }
-                    }
-                    parentsActivityRecyclerAdapter.setList(list);
-                }
-
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
 
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-            case R.id.logoutMenu:
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    @Override
-                    public void handleResponse(Void response) {
-                        Toast.makeText(ParentsActivity.this, "Logout Success", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Toast.makeText(ParentsActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-                Intent intent8 = new Intent(this, MainActivity.class);
-                startActivity(intent8);
-                break;
-
-
-
-        }
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
-
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -192,8 +116,6 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
-
         switch (item.getItemId()) {
             case android.R.id.home:
                 super.onBackPressed();
@@ -232,20 +154,29 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
         load = findViewById(R.id.loadingLinearLayout);
         loadTxtView = findViewById(R.id.loadTxtView);
 
+        Query query = firebaseFirestore.collection("Parents");
+        FirestoreRecyclerOptions<ParentData> firestoreRecyclerOptions = new FirestoreRecyclerOptions.Builder<ParentData>().setQuery(query, new SnapshotParser<ParentData>() {
+            @NonNull
+            @Override
+            public ParentData parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                ParentData parentData = snapshot.toObject(ParentData.class);
+                parentData.setId(snapshot.getId());
+                return parentData;
+            }
+        }).setLifecycleOwner(ParentsActivity.this).build();
 
 
         recyclerView = findViewById(R.id.recyclerView);
-        parentsActivityRecyclerAdapter = new ParentsActivityRecyclerAdapter(this);
+        parentsActivityRecyclerAdapter = new ParentsActivityRecyclerAdapter(this, firestoreRecyclerOptions);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(parentsActivityRecyclerAdapter);
 
-        parentsActivityRecyclerAdapter.setList(AllData.parentDataList);
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        parentsActivityRecyclerAdapter.setList(AllData.parentDataList);
+
     }
 }

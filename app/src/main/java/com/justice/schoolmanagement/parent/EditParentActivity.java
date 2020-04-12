@@ -25,11 +25,15 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
@@ -74,7 +78,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_parent);
         email = getIntent().getStringExtra("email");
-        parentData = getParentData();
+        parentData = ApplicationClass.documentSnapshot.toObject(ParentData.class);
         initWidgets();
         initAdapters();
         initNavigationDrawer();
@@ -100,16 +104,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
     }
 
-    private ParentData getParentData() {
-        for (ParentData parentData : AllData.parentDataList) {
-            if (parentData.getEmail().equals(email)) {
-                return parentData;
-            }
-        }
 
-
-        return null;
-    }
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
@@ -186,55 +181,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-            case R.id.logoutMenu:
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    @Override
-                    public void handleResponse(Void response) {
-                        Toast.makeText(EditParentActivity.this, "Logout Success", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Toast.makeText(EditParentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-                Intent intent8 = new Intent(this, MainActivity.class);
-                startActivity(intent8);
-                break;
-
-
-        }
+       ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -346,21 +293,22 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         parentData.setJobType(jobTypeEdtTxt.getText().toString().trim());
         parentData.setEmail(emailEdtTxt.getText().toString().trim());
         showProgress(true);
-        Backendless.Persistence.save(parentData, new AsyncCallback<ParentData>() {
+        ApplicationClass.documentSnapshot.getReference().set(parentData).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(ParentData response) {
-                showProgress(false);
-                Toast.makeText(EditParentActivity.this, parentData.getFirstName() + " Edited Successfully", Toast.LENGTH_SHORT).show();
-                finish();
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(EditParentActivity.this, parentData.getFirstName() + " Edited Successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+                else{
+                    String error=task.getException().getMessage();
+                    Toast.makeText(EditParentActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
 
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
+                }
                 showProgress(false);
-                Toast.makeText(EditParentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private String getSelectedRadioBtn() {

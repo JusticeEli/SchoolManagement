@@ -1,5 +1,7 @@
 package com.justice.schoolmanagement.parent;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.io.Serializable;
 
 public class ParentData implements Serializable {
@@ -13,11 +15,23 @@ public class ParentData implements Serializable {
     private String gender;
     private String jobType;
     private String email;
+    private String id;
 
     private String objectId;
-public ParentData(){
 
-}
+    public ParentData() {
+
+    }
+
+    @Exclude
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getObjectId() {
         return objectId;
     }

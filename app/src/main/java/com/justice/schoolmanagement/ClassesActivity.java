@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.google.android.material.navigation.NavigationView;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.class_.ChoosenClassActivity;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
@@ -83,40 +84,7 @@ public class ClassesActivity extends AppCompatActivity implements View.OnClickLi
     }
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-
-
-
-        }
+        ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);

@@ -21,11 +21,15 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
@@ -48,15 +52,13 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
 
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_details);
-        email = getIntent().getStringExtra("email");
-        studentData = getStudentData();
+
+        studentData = ApplicationClass.documentSnapshot.toObject(StudentData.class);
+        studentData.setId(ApplicationClass.documentSnapshot.getId());
         initWidgets();
         initNavigationDrawer();
 
@@ -77,15 +79,6 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
         actionBarDrawerToggle.syncState();
     }
 
-    private StudentData getStudentData() {
-        for (StudentData studentData : AllData.studentDataList) {
-            if (studentData.getEmail().equals(email)) {
-                return studentData;
-            }
-
-        }
-        return null;
-    }
 
     @Override
     protected void onResume() {
@@ -112,12 +105,12 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
     }
 
     private void deleteStudentDataFromDatabase() {
-        AlertDialog.Builder builder=new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are You Sure you Want To delete!!").setNegativeButton("No", new DialogInterface.OnClickListener() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are You Sure you Want To delete!!").setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
             }
-        } ).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deleteStudent();
@@ -128,58 +121,46 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
 
     private void deleteStudent() {
         showProgress(true);
-        Backendless.Persistence.of(StudentData.class).remove(studentData, new AsyncCallback<Long>() {
+        ApplicationClass.documentSnapshot.getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(Long response) {
-                removeStudentMarksFromDatabase();
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    removeStudentMarksFromDatabase();
+                    Toast.makeText(StudentDetailsActivity.this, "Student data Removed", Toast.LENGTH_SHORT).show();
+                    finish();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-
-                AllData.studentDataList.remove(studentData);
-                Toast.makeText(StudentDetailsActivity.this, "Student data Removed", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(StudentDetailsActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
             }
         });
+
+
     }
 
     private void removeStudentMarksFromDatabase() {
-        studentMarks = getStudentMarks();
+
         showProgress(true);
-        Backendless.Persistence.of(StudentMarks.class).remove(studentMarks, new AsyncCallback<Long>() {
+        FirebaseFirestore.getInstance().collection("StudentsMarks").document(studentData.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(Long response) {
-                showProgress(false);
-                AllData.studentMarksList.remove(studentMarks);
-                Toast.makeText(StudentDetailsActivity.this, "Student Marks removed", Toast.LENGTH_SHORT).show();
-            }
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(StudentDetailsActivity.this, "Student Marks removed", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(StudentDetailsActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
 
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+
+                }
+                showProgress(false);
             }
         });
 
-
     }
 
-    private StudentMarks getStudentMarks() {
-        for (StudentMarks studentMarks : AllData.studentMarksList) {
-            if (studentMarks.getEmail().equals(studentData.getEmail())) {
-                return studentMarks;
-            }
-        }
-
-
-        return null;
-    }
 
     private void setDefaultValues() {
         studentNameTxtView.setText(studentData.getFullName());
@@ -216,43 +197,10 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
         }
 
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-
-
-
-
-        }
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);

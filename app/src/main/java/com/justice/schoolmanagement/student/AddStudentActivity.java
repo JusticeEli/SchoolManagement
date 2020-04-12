@@ -24,10 +24,16 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.class_.ChoosenClassActivity;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
@@ -60,6 +66,9 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
+    private CollectionReference collectionReferenceMarks = FirebaseFirestore.getInstance().collection("StudentsMarks");
+    private CollectionReference collectionReferenceData = FirebaseFirestore.getInstance().collection("Students");
+    private DocumentReference documentReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,30 +164,33 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
 
     private void putDataIntoDatabase() {
         showProgress(true);
-        Backendless.Persistence.of(StudentData.class).save(studentData, new AsyncCallback<StudentData>() {
-            @Override
-            public void handleResponse(StudentData response) {
-                showProgress(false);
-                addStudentMarks();
-                AllData.studentDataList.add(response);
-                resetEdtTxt();
-                Toast.makeText(AddStudentActivity.this, "Student Added Successfully", Toast.LENGTH_SHORT).show();
-                addParent();
-            }
 
+        collectionReferenceData.add(studentData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
-            public void handleFault(BackendlessFault fault) {
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                if (task.isSuccessful()) {
+                    documentReference = task.getResult();
+                    addStudentMarks();
+                    resetEdtTxt();
+                    Toast.makeText(AddStudentActivity.this, "Student Added Successfully", Toast.LENGTH_SHORT).show();
+                    addParent();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+
+                }
                 showProgress(false);
-                Toast.makeText(AddStudentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private void addParent() {
-        Intent intent=new Intent(this, AddParentActivity.class);
-        intent.putExtra("flag",true);
-        intent.putExtra("parentName",studentData.getParentName());
-        intent.putExtra("parentEmail",studentData.getEmail());
+        Intent intent = new Intent(this, AddParentActivity.class);
+        intent.putExtra("flag", true);
+        intent.putExtra("parentName", studentData.getParentName());
+        intent.putExtra("parentEmail", studentData.getEmail());
 
         startActivity(intent);
 
@@ -190,70 +202,26 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
         studentMarks.setEmail(studentData.getEmail());
         studentMarks.setClassGrade(studentData.getClassGrade());
         showProgress(true);
-        Backendless.Persistence.of(StudentMarks.class).save(studentMarks, new AsyncCallback<StudentMarks>() {
+        collectionReferenceMarks.document(documentReference.getId()).set(studentMarks).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(StudentMarks response) {
-                showProgress(false);
-                AllData.studentMarksList.add(response);
-                Toast.makeText(AddStudentActivity.this, "Student Marks Added", Toast.LENGTH_SHORT).show();
-            }
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(AddStudentActivity.this, "Student Marks Added", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(AddStudentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
+                }
             }
         });
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
 
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.logoutMenu:
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    @Override
-                    public void handleResponse(Void response) {
-                        Toast.makeText(AddStudentActivity.this, "Logout Success", Toast.LENGTH_SHORT).show();
-                    }
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
 
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Toast.makeText(AddStudentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-                Intent intent8 = new Intent(this, MainActivity.class);
-                startActivity(intent8);
-                break;
-
-
-        }
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);

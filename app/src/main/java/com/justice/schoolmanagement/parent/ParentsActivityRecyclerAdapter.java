@@ -17,44 +17,41 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParentsActivityRecyclerAdapter extends RecyclerView.Adapter<ParentsActivityRecyclerAdapter.ViewHolder> {
+public class ParentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<ParentData, ParentsActivityRecyclerAdapter.ViewHolder> {
 
-    private List<ParentData> list = new ArrayList<>();
     private Context context;
 
     private ParentData parentData;
 
     private ParentsActivity parentsActivity;
 
-    public void setList(List<ParentData> list) {
-        this.list = list;
-        notifyDataSetChanged();
-    }
-
-    public ParentsActivityRecyclerAdapter(Context context) {
+    /**
+     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
+     * FirestoreRecyclerOptions} for configuration options.
+     *
+     * @param options
+     */
+    public ParentsActivityRecyclerAdapter(Context context, @NonNull FirestoreRecyclerOptions<ParentData> options) {
+        super(options);
         this.context = context;
         parentsActivity = (ParentsActivity) context;
     }
 
-    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parents, parent, false);
-        ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-
-        holder.parentNameTxtView.setText(list.get(position).getFullName());
-        holder.parentContactTxtView.setText(list.get(position).getContact());
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull ParentData model) {
+        holder.parentNameTxtView.setText(model.getFullName());
+        holder.parentContactTxtView.setText(model.getContact());
         setOnClickListeners(holder, position);
 
     }
@@ -73,7 +70,7 @@ public class ParentsActivityRecyclerAdapter extends RecyclerView.Adapter<Parents
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, EditParentActivity.class);
-                intent.putExtra("email", list.get(position).getEmail());
+                ApplicationClass.documentSnapshot = getSnapshots().getSnapshot(position);
                 context.startActivity(intent);
             }
         });
@@ -81,7 +78,7 @@ public class ParentsActivityRecyclerAdapter extends RecyclerView.Adapter<Parents
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, ParentDetailsActivity.class);
-                intent.putExtra("email", list.get(position).getEmail());
+                ApplicationClass.documentSnapshot = getSnapshots().getSnapshot(position);
                 context.startActivity(intent);
             }
         });
@@ -104,34 +101,31 @@ public class ParentsActivityRecyclerAdapter extends RecyclerView.Adapter<Parents
     }
 
     private void deleteParent(int position) {
-        parentData = list.get(position);
         parentsActivity.showProgress(true);
-        Backendless.Persistence.of(ParentData.class).remove(parentData, new AsyncCallback<Long>() {
+        getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(Long response) {
-                parentsActivity.showProgress(false);
-                AllData.parentDataList.remove(parentData);
-                if (list != AllData.parentDataList) {
-                    list.remove(parentData);
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Deletion Success", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
-                notifyDataSetChanged();
-                Toast.makeText(context, parentData.getFullName() + " removed", Toast.LENGTH_SHORT).show();
-
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
                 parentsActivity.showProgress(false);
-                Toast.makeText(context, " Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
             }
         });
+
+
     }
 
+    @NonNull
     @Override
-    public int getItemCount() {
-        return list.size();
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_parents, parent, false);
+        ViewHolder viewHolder = new ViewHolder(view);
+        return viewHolder;
+
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -147,4 +141,5 @@ public class ParentsActivityRecyclerAdapter extends RecyclerView.Adapter<Parents
             imageView = v.findViewById(R.id.imageView);
         }
     }
+
 }

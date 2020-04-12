@@ -12,51 +12,61 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.parent.ParentDetailsActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TeachersActivityRecyclerAdapter extends RecyclerView.Adapter<TeachersActivityRecyclerAdapter.ViewHolder> {
-    private List<TeacherData> list = new ArrayList<>();
+public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<TeacherData, TeachersActivityRecyclerAdapter.ViewHolder> {
+
     private Context context;
 
     private TeachersActivity teachersActivity;
 
     private TeacherData teacherData;
+    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
-    public void setList(List<TeacherData> list) {
-        this.list = list;
-        notifyDataSetChanged();
-    }
-
-    public TeachersActivityRecyclerAdapter(Context context) {
+    /**
+     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
+     * FirestoreRecyclerOptions} for configuration options.
+     *
+     * @param options
+     */
+    public TeachersActivityRecyclerAdapter(Context context, @NonNull FirestoreRecyclerOptions<TeacherData> options) {
+        super(options);
         this.context = context;
         teachersActivity = (TeachersActivity) context;
+
+    }
+
+    @Override
+    protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull TeacherData model) {
+        holder.teacherNameTxtView.setText(model.getFullName());
+        holder.teacherSubjectTxtView.setText(model.getSubject());
+
+        setOnClickListeners(holder, position);
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_teachers, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
         return viewHolder;
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.teacherNameTxtView.setText(list.get(position).getFullName());
-        holder.teacherSubjectTxtView.setText(list.get(position).getSubject());
-
-        setOnClickListeners(holder, position);
 
     }
 
@@ -72,7 +82,7 @@ public class TeachersActivityRecyclerAdapter extends RecyclerView.Adapter<Teache
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, EditTeacherActivity.class);
-                intent.putExtra("email", list.get(position).getEmail());
+                ApplicationClass.documentSnapshot = getSnapshots().getSnapshot(position);
                 context.startActivity(intent);
             }
         });
@@ -80,7 +90,7 @@ public class TeachersActivityRecyclerAdapter extends RecyclerView.Adapter<Teache
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, TeacherDetailsActivity.class);
-                intent.putExtra("email", list.get(position).getEmail());
+                ApplicationClass.documentSnapshot = getSnapshots().getSnapshot(position);
                 context.startActivity(intent);
             }
         });
@@ -103,35 +113,25 @@ public class TeachersActivityRecyclerAdapter extends RecyclerView.Adapter<Teache
     }
 
     private void deleteTeacher(int position) {
-        teacherData = list.get(position);
+        teacherData = getSnapshots().getSnapshot(position).toObject(TeacherData.class);
         teachersActivity.showProgress(true);
-        Backendless.Persistence.of(TeacherData.class).remove(teacherData, new AsyncCallback<Long>() {
+
+        getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(Long response) {
-                teachersActivity.showProgress(false);
-                AllData.teacherDataList.remove(teacherData);
-                if (list != AllData.teacherDataList) {
-                    list.remove(teacherData);
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
-                AllData.writeAllDataToFiles();
-                notifyDataSetChanged();
-                Toast.makeText(context, "Removed Teacher data From Database", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
                 teachersActivity.showProgress(false);
-                Toast.makeText(context, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
+
             }
         });
 
     }
 
-    @Override
-    public int getItemCount() {
-        return list.size();
-    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private ImageView imageView;

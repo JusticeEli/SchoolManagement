@@ -25,11 +25,17 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
@@ -65,6 +71,9 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
     private Button addBtn;
 
     private ParentData parentData;
+
+    private CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Parents");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,55 +156,7 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-            case R.id.logoutMenu:
-                Backendless.UserService.logout(new AsyncCallback<Void>() {
-                    @Override
-                    public void handleResponse(Void response) {
-                        Toast.makeText(AddParentActivity.this, "Logout Success", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        Toast.makeText(AddParentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                });
-                Intent intent8 = new Intent(this, MainActivity.class);
-                startActivity(intent8);
-                break;
-
-
-        }
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -229,7 +190,7 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
                     Toast.makeText(AddParentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if (!contactEdtTxtFormatIsCorrect()){
+                if (!contactEdtTxtFormatIsCorrect()) {
                     return;
                 }
                 getDataFromEdtTxtAndSaveInDatabase();
@@ -277,22 +238,23 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
 
     private void putDataIntoDataBase() {
         showProgress(true);
-        Backendless.Persistence.of(ParentData.class).save(parentData, new AsyncCallback<ParentData>() {
-            @Override
-            public void handleResponse(ParentData response) {
-                showProgress(false);
-                AllData.parentDataList.add(response);
-                resetEdtTxt();
-                Toast.makeText(AddParentActivity.this, "Parent data saved", Toast.LENGTH_SHORT).show();
 
-            }
-
+        collectionReference.add(parentData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
-            public void handleFault(BackendlessFault fault) {
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                if (task.isSuccessful()){
+                    resetEdtTxt();
+                    Toast.makeText(AddParentActivity.this, "Parent data saved", Toast.LENGTH_SHORT).show();
+
+                }else{
+                    String error=task.getException().getMessage();
+                    Toast.makeText(AddParentActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-                Toast.makeText(AddParentActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
+
             }
         });
+
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -335,6 +297,6 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
         loadTxtView = findViewById(R.id.loadTxtView);
         scrollView = findViewById(R.id.scrollView);
 
-contactEdtTxt.setText("07");
+        contactEdtTxt.setText("07");
     }
 }

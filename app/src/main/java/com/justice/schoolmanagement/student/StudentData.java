@@ -1,5 +1,7 @@
 package com.justice.schoolmanagement.student;
 
+import com.google.firebase.firestore.Exclude;
+
 import java.io.Serializable;
 
 public class StudentData implements Serializable {
@@ -18,9 +20,20 @@ public class StudentData implements Serializable {
     private String classTeacherName;
     private String city;
     private String image;
+    private String id;
+
+    @Exclude
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     private String objectId;
-   public String getObjectId() {
+
+    public String getObjectId() {
         return objectId;
     }
 

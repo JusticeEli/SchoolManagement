@@ -22,7 +22,8 @@ public class StudentMarks implements Serializable, Comparable<StudentMarks> {
     }
 
 
-
+    private String fullName;
+    private String email;
     private int classGrade;
     private int math;
     private int science;
@@ -30,8 +31,6 @@ public class StudentMarks implements Serializable, Comparable<StudentMarks> {
     private int kiswahili;
     private int sst_cre;
     private int totalMarks;
-    private String fullName;
-    private String email;
     private String objectId;
 
     public StudentMarks() {

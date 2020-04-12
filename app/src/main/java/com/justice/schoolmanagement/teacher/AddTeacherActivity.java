@@ -24,7 +24,14 @@ import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -65,6 +72,8 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     private TeacherData teacherData;
 
     private BackendlessUser user;
+
+    private CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Teachers");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,65 +222,50 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     }
 
     private void registerTeacherAndPutDataInDatabase() {
-        user = new BackendlessUser();
-        user.setEmail(emailEdtTxt.getText().toString().trim());
-        user.setPassword("t");
-        user.setProperty("type", getSelectedTypeRadioBtn());
+
+        String email = emailEdtTxt.getText().toString().trim();
+        String password = "teacher1";
         showProgress(true);
-        Backendless.UserService.register(user, new AsyncCallback<BackendlessUser>() {
+        ////password one letter may cause a problem
+        showProgress(true);
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
-            public void handleResponse(BackendlessUser response) {
-                updateType();
-                showProgress(false);
-                putTeacherDataInDatabase();
-                Toast.makeText(AddTeacherActivity.this, "Teacher Registered Successfully", Toast.LENGTH_SHORT).show();
-            }
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()){
+                    putTeacherDataInDatabase();
+                    Toast.makeText(AddTeacherActivity.this, "Teacher Registered Successfully", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
+                }else{
+                   String error=task.getException().getMessage();
+                    Toast.makeText(AddTeacherActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-                Toast.makeText(AddTeacherActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
 
             }
         });
 
     }
 
-    private void updateType() {
-        Backendless.Persistence.save(user, new AsyncCallback<BackendlessUser>() {
-            @Override
-            public void handleResponse(BackendlessUser response) {
-                Toast.makeText(AddTeacherActivity.this, "Updated Type ", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Toast.makeText(AddTeacherActivity.this, "Error:  " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-    }
 
     private void putTeacherDataInDatabase() {
         showProgress(true);
-        Backendless.Persistence.of(TeacherData.class).save(teacherData, new AsyncCallback<TeacherData>() {
+        collectionReference.add(teacherData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
-            public void handleResponse(TeacherData response) {
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(AddTeacherActivity.this, "Teacher Data Saved", Toast.LENGTH_SHORT).show();
+                    resetEdtTxt();
+                    finish();
+
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-                Toast.makeText(AddTeacherActivity.this, "Teacher Data Saved", Toast.LENGTH_SHORT).show();
-                AllData.teacherDataList.add(teacherData);
-                resetEdtTxt();
-                finish();
-
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(AddTeacherActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
             }
         });
+
     }
 
     private String getSelectedTypeRadioBtn() {

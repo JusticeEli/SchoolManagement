@@ -21,12 +21,19 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.firebase.ui.firestore.SnapshotParser;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
+import com.justice.schoolmanagement.parent.ParentData;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.teacher.AddTeacherActivity;
@@ -54,7 +61,7 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
-
+    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
 
     @Override
@@ -67,6 +74,7 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
 
         setOnClickListeners();
     }
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
@@ -82,7 +90,7 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
     @Override
     protected void onResume() {
         super.onResume();
-        studentsActivityRecyclerAdapter.setList(AllData.studentDataList);
+
     }
 
     private void setOnClickListeners() {
@@ -95,75 +103,13 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
 
             }
         });
-        searchEdtTxt.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                List<StudentData> list = new ArrayList<>();
-                if (searchEdtTxt.getText().toString().isEmpty()) {
-                    studentsActivityRecyclerAdapter.setList(AllData.studentDataList);
-                } else {
-                    for (StudentData studentData : AllData.studentDataList) {
-                        if (studentData.getFullName().toLowerCase().contains(searchEdtTxt.getText().toString().toLowerCase())) {
-                            if (!list.contains(studentData)) {
-                                list.add(studentData);
-
-                            }
-
-
-                        }
-                    }
-                    studentsActivityRecyclerAdapter.setList(list);
-                }
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
 
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-
-
-
-        }
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -188,6 +134,7 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
 
         return super.onOptionsItemSelected(item);
     }
+
     /////////////////////PROGRESS_BAR////////////////////////////
     public void showProgress(boolean show) {
         if (show) {
@@ -216,12 +163,23 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
         /////////////////PROGRESS_BAR//////////////////////
         load = findViewById(R.id.loadingLinearLayout);
         loadTxtView = findViewById(R.id.loadTxtView);
+        recyclerView=findViewById(R.id.recyclerView);
+
+        Query query = firebaseFirestore.collection("Students");
+        FirestoreRecyclerOptions<StudentData> firestoreRecyclerOptions = new FirestoreRecyclerOptions.Builder<StudentData>().setQuery(query, new SnapshotParser<StudentData>() {
+            @NonNull
+            @Override
+            public StudentData parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                StudentData studentData = snapshot.toObject(StudentData.class);
+                studentData.setId(snapshot.getId());
+                return studentData;
+            }
+        }).setLifecycleOwner(StudentsActivity.this).build();
 
 
-
-        studentsActivityRecyclerAdapter = new StudentsActivityRecyclerAdapter(this);
+        studentsActivityRecyclerAdapter = new StudentsActivityRecyclerAdapter(this,firestoreRecyclerOptions);
         recyclerView.setAdapter(studentsActivityRecyclerAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        studentsActivityRecyclerAdapter.setList(AllData.studentDataList);
+
     }
 }

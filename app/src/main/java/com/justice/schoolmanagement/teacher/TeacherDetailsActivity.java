@@ -22,10 +22,13 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
@@ -55,8 +58,7 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teacher_details);
-        email = getIntent().getStringExtra("email");
-        teacherData = getTeacherData();
+        teacherData = ApplicationClass.documentSnapshot.toObject(TeacherData.class);
 
         initWidgets();
         initNavigationDrawer();
@@ -102,15 +104,6 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
         actionBarDrawerToggle.syncState();
     }
 
-    private TeacherData getTeacherData() {
-        for (TeacherData teacherData : AllData.teacherDataList) {
-            if (teacherData.getEmail().equals(email)) {
-                return teacherData;
-            }
-        }
-
-        return null;
-    }
 
     private void setOnClickListeners() {
         deleteTxtView.setOnClickListener(new View.OnClickListener() {
@@ -153,23 +146,22 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
     private void deleteTeacher() {
 
         showProgress(true);
-        Backendless.Persistence.of(TeacherData.class).remove(teacherData, new AsyncCallback<Long>() {
+
+        ApplicationClass.documentSnapshot.getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(Long response) {
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()){
+                    Toast.makeText(TeacherDetailsActivity.this, "Removed Teacher data From Database", Toast.LENGTH_SHORT).show();
+                    finish();
+
+                }else{
+                    String error=task.getException().getMessage();
+                    Toast.makeText(TeacherDetailsActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-                AllData.teacherDataList.remove(teacherData);
-
-
-                Toast.makeText(TeacherDetailsActivity.this, "Removed Teacher data From Database", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(TeacherDetailsActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private void setDefaultValues() {
@@ -207,35 +199,7 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-
-
-        }
+      ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);

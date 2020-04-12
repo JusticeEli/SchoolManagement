@@ -1,16 +1,30 @@
 package com.justice.schoolmanagement.alldata;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.content.Intent;
 import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.justice.schoolmanagement.ClassesActivity;
+import com.justice.schoolmanagement.R;
+import com.justice.schoolmanagement.SubjectsActivity;
+import com.justice.schoolmanagement.dashboard.DashBoardActivity;
+import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.parent.ParentData;
+import com.justice.schoolmanagement.parent.ParentsActivity;
+import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentData;
 import com.justice.schoolmanagement.student.StudentMarks;
+import com.justice.schoolmanagement.student.StudentsActivity;
 import com.justice.schoolmanagement.teacher.TeacherData;
+import com.justice.schoolmanagement.teacher.TeachersActivity;
 
 import java.util.List;
 
@@ -20,13 +34,56 @@ public class ApplicationClass extends Application {
     private static final String API_KEY = "88CE15DA-73EF-4399-82FD-AD69D4C3412C";
     private static final String SERVER_URL = "https://api.backendless.com";
 
+    public static DocumentSnapshot documentSnapshot;
+
+    public static void onNavigationItemSelected(Context context, int itemId) {
+        switch (itemId) {
+
+            case R.id.dashboardMenu:
+                Intent intent = new Intent(context, DashBoardActivity.class);
+                context.startActivity(intent);
+                break;
+            case R.id.teacherMenu:
+                Intent intent2 = new Intent(context, TeachersActivity.class);
+                context.startActivity(intent2);
+                break;
+            case R.id.studentsMenu:
+                Intent intent3 = new Intent(context, StudentsActivity.class);
+                context.startActivity(intent3);
+                break;
+            case R.id.parentsMenu:
+                Intent intent4 = new Intent(context, ParentsActivity.class);
+                context.startActivity(intent4);
+                break;
+            case R.id.subjectsMenu:
+                Intent intent5 = new Intent(context, SubjectsActivity.class);
+                context.startActivity(intent5);
+                break;
+            case R.id.resultsMenu:
+                Intent intent6 = new Intent(context, ResultsActivity.class);
+                context.startActivity(intent6);
+                break;
+            case R.id.classesMenu:
+                Intent intent7 = new Intent(context, ClassesActivity.class);
+                context.startActivity(intent7);
+                break;
+            case R.id.logoutMenu:
+                FirebaseAuth.getInstance().signOut();
+                Intent intent8 = new Intent(context, MainActivity.class);
+                context.startActivity(intent8);
+                Activity activity=(Activity)context;
+                activity.finish();
+                break;
+        }
+    }
+
 
     @Override
     public void onCreate() {
         super.onCreate();
         Backendless.setUrl(SERVER_URL);
         Backendless.initApp(getApplicationContext(), APPLICATION_ID, API_KEY);
-      //  loadDataFromDatabase();
+        //  loadDataFromDatabase();
 
     }
 

@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.main;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -17,6 +18,10 @@ import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.local.UserIdStorageFactory;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
@@ -31,49 +36,29 @@ public class MainActivity extends AppCompatActivity {
     private TextView loadTxtView;
     private LinearLayout linearLayout;
 
+    private FirebaseAuth firebaseAuth;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initwidgets();
-        isValidLogin();
+        firebaseAuth = FirebaseAuth.getInstance();
         setOnClickListeners();
     }
 
-    private void isValidLogin() {
-        showProgress(true);
-        Backendless.UserService.isValidLogin(new AsyncCallback<Boolean>() {
-            @Override
-            public void handleResponse(Boolean response) {
-                showProgress(false);
-                if (response) {
-                    String objectId = UserIdStorageFactory.instance().getStorage().get();
-                    Backendless.Data.of(BackendlessUser.class).findById(objectId, new AsyncCallback<BackendlessUser>() {
-                        @Override
-                        public void handleResponse(BackendlessUser response) {
-                            showProgress(false);
-                            AllData.user = response;
-                            startActivity(new Intent(MainActivity.this, DashBoardActivity.class));
-                            finish();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (firebaseAuth.getCurrentUser() != null) {
+            startActivity(new Intent(MainActivity.this, DashBoardActivity.class));
+            finish();
 
-                        }
-
-                        @Override
-                        public void handleFault(BackendlessFault fault) {
-                            showProgress(false);
-                            Toast.makeText(MainActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Toast.makeText(MainActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        }
     }
+
+
     private void setOnClickListeners() {
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
@@ -84,24 +69,24 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 showProgress(true);
-                Backendless.UserService.login(emailEdtTxt.getText().toString().trim(), passwordEdtTxt.getText().toString().trim(), new AsyncCallback<BackendlessUser>() {
+                String email = emailEdtTxt.getText().toString().trim();
+                String password = passwordEdtTxt.getText().toString().trim();
+                firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
-                    public void handleResponse(BackendlessUser response) {
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            startActivity(new Intent(MainActivity.this, DashBoardActivity.class));
+                            finish();
+
+                        } else {
+                            String error = task.getException().getMessage();
+                            Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                        }
                         showProgress(false);
-                        Toast.makeText(MainActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
-                        AllData.user = response;
-                        startActivity(new Intent(MainActivity.this, DashBoardActivity.class));
-                        finish();
-
                     }
+                });
 
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
-                        showProgress(false);
-                        Toast.makeText(MainActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
 
-                    }
-                }, true);
             }
 
 
@@ -116,17 +101,17 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 showProgress(true);
-                Backendless.UserService.restorePassword(emailEdtTxt.getText().toString().trim(), new AsyncCallback<Void>() {
+                firebaseAuth.sendPasswordResetEmail(emailEdtTxt.getText().toString().trim()).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
-                    public void handleResponse(Void response) {
-                        showProgress(false);
-                        Toast.makeText(MainActivity.this, "Reset Link Sent Successfully", Toast.LENGTH_SHORT).show();
-                    }
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(MainActivity.this, "Password Reset Send", Toast.LENGTH_SHORT).show();
+                        } else {
+                            String error = task.getException().getMessage();
+                            Toast.makeText(MainActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
-                    @Override
-                    public void handleFault(BackendlessFault fault) {
+                        }
                         showProgress(false);
-                        Toast.makeText(MainActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -139,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
+
     /////////////////////PROGRESS_BAR////////////////////////////
     private void showProgress(boolean show) {
         if (show) {

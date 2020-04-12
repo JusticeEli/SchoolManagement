@@ -20,11 +20,17 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.firebase.ui.firestore.SnapshotParser;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
@@ -45,10 +51,11 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
 
-
     ///////////PROGRESS lINEAR_LAYOUT/////////
     private LinearLayout load;
     private TextView loadTxtView;
+
+    private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +67,7 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
 
         setOnClickListeners();
     }
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
@@ -81,38 +89,7 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
 
             }
         });
-        searchEdtTxt.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                List<TeacherData> list = new ArrayList<>();
-                if (searchEdtTxt.getText().toString().isEmpty()) {
-                    teachersActivityRecyclerAdapter.setList(AllData.teacherDataList);
-                } else {
-                    for (TeacherData teacherData : AllData.teacherDataList) {
-                        if (teacherData.getFullName().toLowerCase().contains(searchEdtTxt.getText().toString().toLowerCase())) {
-                            if (!list.contains(teacherData)) {
-                                list.add(teacherData);
-
-                            }
-
-
-                        }
-                    }
-                    teachersActivityRecyclerAdapter.setList(list);
-                }
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
     }
 
     @Override
@@ -133,41 +110,11 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
 
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-
-
-        }
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -192,7 +139,6 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
     }
 
 
-
     private void initwidgets() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         searchEdtTxt = findViewById(R.id.searchEdtTxt);
@@ -202,17 +148,24 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
         ////////////////////PROGRESS_BAR//////////////////////
         load = findViewById(R.id.loadingLinearLayout);
         loadTxtView = findViewById(R.id.loadTxtView);
-
-
-        teachersActivityRecyclerAdapter = new TeachersActivityRecyclerAdapter(this);
+        Query query = firebaseFirestore.collection("Teachers");
+        FirestoreRecyclerOptions<TeacherData> firestoreRecyclerOptions = new FirestoreRecyclerOptions.Builder<TeacherData>().setQuery(query, new SnapshotParser<TeacherData>() {
+            @NonNull
+            @Override
+            public TeacherData parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                TeacherData teacherData = snapshot.toObject(TeacherData.class);
+                teacherData.setId(snapshot.getId());
+                return teacherData;
+            }
+        }).setLifecycleOwner(TeachersActivity.this).build();
+        teachersActivityRecyclerAdapter = new TeachersActivityRecyclerAdapter(this, firestoreRecyclerOptions);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(teachersActivityRecyclerAdapter);
-        teachersActivityRecyclerAdapter.setList(AllData.teacherDataList);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        teachersActivityRecyclerAdapter.setList(AllData.teacherDataList);
+
     }
 }
