@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.justice.schoolmanagement">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".alldata.ApplicationClass"
+        android:allowBackup="true"
+        android:icon="@mipmap/school_icon"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/school_icon"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".class_.ChoosenClassActivity"></activity>
+        <activity android:name=".results.ResultsEditActivity" />
+        <activity android:name=".student.StudentDetailsActivity" />
+        <activity android:name=".student.EditStudentActivity" />
+        <activity android:name=".parent.EditParentActivity" />
+        <activity android:name=".teacher.EditTeacherActivity" />
+        <activity android:name=".results.ResultsActivity" />
+        <activity android:name=".SubjectsActivity" />
+        <activity android:name=".ClassesActivity" />
+        <activity android:name=".student.AddStudentActivity" />
+        <activity android:name=".parent.AddParentActivity" />
+        <activity android:name=".teacher.AddTeacherActivity" />
+        <activity android:name=".parent.ParentDetailsActivity" />
+        <activity android:name=".teacher.TeacherDetailsActivity" />
+        <activity android:name=".student.StudentsActivity" />
+        <activity android:name=".parent.ParentsActivity" />
+        <activity android:name=".teacher.TeachersActivity" />
+        <activity android:name=".dashboard.DashBoardActivity">
+
+        </activity>
+        <activity android:name=".main.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+    </application>
+
+</manifest>
