@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
-//////////////////////////////////////////////////
+////////////
     /////////////////////PROGRESS_BAR////////////////////////////
     private void showProgress(boolean show) {
         if (show) {
