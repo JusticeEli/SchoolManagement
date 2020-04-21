@@ -8,7 +8,7 @@
     tools:context=".SubjectsActivity">
 
     <LinearLayout
-        android:background="@mipmap/road"
+        android:background="@color/colorPrimaryLight"
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:padding="20dp"
@@ -21,7 +21,7 @@
             android:layout_height="wrap_content" />
 
         <ListView
-            android:background="@mipmap/tower"
+            android:background="@color/colorPrimaryDark"
             android:layout_marginTop="20dp"
             android:id="@+id/listView"
             android:layout_width="match_parent"
@@ -35,7 +35,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/menu_sidebar"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
 
         />
 </androidx.drawerlayout.widget.DrawerLayout>

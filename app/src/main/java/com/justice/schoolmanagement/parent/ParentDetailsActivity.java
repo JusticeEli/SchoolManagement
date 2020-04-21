@@ -22,9 +22,12 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -37,6 +40,8 @@ import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class ParentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ParentData parentData;
     private String email;
@@ -46,7 +51,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     private TextView loadTxtView;
     private CardView cardView;
 
-    private ImageView callImageView,emailImageView;
+    private ImageView callImageView, emailImageView;
 
 
     //////////////////DRAWER LAYOUT////////////////////////
@@ -54,8 +59,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
-
-
+    private CircleImageView imageView;
 
 
     private TextView parentNameTxtView, contactTxtView, firstNameTxtView, lastNameTxtView, cityTxtView, jobStatusTxtView, ageTxtView, genderTxtView, jobTypeTxtView, deleteTxtView, editTxtView;
@@ -67,6 +71,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         email = getIntent().getStringExtra("email");
 
         parentData = ApplicationClass.documentSnapshot.toObject(ParentData.class);
+        parentData.setId(ApplicationClass.documentSnapshot.getId());
         initWidgets();
         initNavigationDrawer();
 
@@ -80,8 +85,8 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         callImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Intent.ACTION_DIAL);
-                intent.setData(Uri.parse("tel:"+parentData.getContact()));
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + parentData.getContact()));
                 startActivity(intent);
             }
         });
@@ -89,16 +94,17 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         emailImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Intent.ACTION_SEND);
+                Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setType("text/html");
-                String email[]={parentData.getEmail()};
-                intent.putExtra(Intent.EXTRA_EMAIL,email);
-                startActivity(Intent.createChooser(intent,"Choose app to use for sending Email"));
+                String email[] = {parentData.getEmail()};
+                intent.putExtra(Intent.EXTRA_EMAIL, email);
+                startActivity(Intent.createChooser(intent, "Choose app to use for sending Email"));
             }
         });
 
 
     }
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
@@ -109,7 +115,6 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
     }
-
 
 
     private void setOnClickListeners() {
@@ -146,18 +151,36 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     }
 
     private void deleteParent() {
+        /**
+         *  ACTIVITY EXITING BEFORE DELETION OF PHOTO IS COMPLETE MAY CAUSE CRASH OF THE PROGRAM//////////
+         *
+         */
+
         showProgress(true);
+        FirebaseStorage.getInstance().getReferenceFromUrl(parentData.getPhoto()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(ParentDetailsActivity.this, "Photo Deleted", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(ParentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                showProgress(false);
+            }
+        });
 
         ApplicationClass.documentSnapshot.getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     Toast.makeText(ParentDetailsActivity.this, parentData.getFirstName() + " Removed Successfully", Toast.LENGTH_SHORT).show();
                     finish();
 
-                }else{
-                    String error=task.getException().getMessage();
-                    Toast.makeText(ParentDetailsActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(ParentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -175,6 +198,11 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         ageTxtView.setText(parentData.getAge());
         genderTxtView.setText(parentData.getGender());
         jobTypeTxtView.setText(parentData.getJobType());
+
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData.getPhoto()).thumbnail(Glide.with(this).load(parentData.getThumbnail())).into(imageView);
+
 
     }
 
@@ -196,9 +224,10 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-       ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -243,9 +272,10 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
         loadTxtView = findViewById(R.id.loadTxtView);
         cardView = findViewById(R.id.cardView);
 
-        callImageView=findViewById(R.id.callImageView);
-        emailImageView=findViewById(R.id.emailImageView);
+        callImageView = findViewById(R.id.callImageView);
+        emailImageView = findViewById(R.id.emailImageView);
 
+        imageView = findViewById(R.id.imageView);
 
 
     }
@@ -253,6 +283,9 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     @Override
     protected void onResume() {
         super.onResume();
+        parentData = ApplicationClass.documentSnapshot.toObject(ParentData.class);
+        parentData.setId(ApplicationClass.documentSnapshot.getId());
+
         setDefaultValues();
     }
 }

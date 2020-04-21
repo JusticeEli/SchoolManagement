@@ -36,7 +36,7 @@
 
 
         <ScrollView
-            android:background="@mipmap/bike"
+          android:background="@color/colorPrimaryDark"
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -47,7 +47,7 @@
                 >
 
                 <LinearLayout
-                    android:background="@mipmap/bike"
+                    android:background="@color/colorPrimaryDark"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -57,7 +57,8 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <ImageView
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/imageView"
                             android:layout_width="100dp"
                             android:layout_height="100dp"
                             android:src="@mipmap/ic_launcher" />
@@ -75,7 +76,7 @@
 
                     <LinearLayout
                         android:padding="5dp"
-                        android:background="@mipmap/tower"
+                        android:background="@color/colorPrimaryLight"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginTop="20dp"
@@ -333,7 +334,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/menu_sidebar"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
 
         />
 </androidx.drawerlayout.widget.DrawerLayout>

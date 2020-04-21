@@ -1,13 +1,16 @@
 package com.justice.schoolmanagement.dashboard;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -20,11 +23,20 @@ import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.blog.BlogActivity;
 import com.justice.schoolmanagement.class_.ChoosenClassActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.parent.ParentData;
@@ -34,6 +46,7 @@ import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.student.StudentData;
 import com.justice.schoolmanagement.student.StudentMarks;
 import com.justice.schoolmanagement.student.StudentsActivity;
+import com.justice.schoolmanagement.teacher.AddTeacherActivity;
 import com.justice.schoolmanagement.teacher.TeacherData;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
 
@@ -51,6 +64,8 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
     private TextView loadTxtView;
     private RelativeLayout relativeLayout;
 
+    private CardView teacherCardView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +73,17 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
         setContentView(R.layout.activity_dash_board);
         initWidgets();
 
-     //   loadDataFromDatabase();
         initNavigationDrawer();
         setOnClickListeners();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_sort, menu);
 
+        return super.onCreateOptionsMenu(menu);
+
+    }
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
@@ -96,6 +116,9 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
             case android.R.id.home:
                 super.onBackPressed();
                 break;
+            case R.id.blogsMenu:
+                startActivity(new Intent(this, BlogActivity.class));
+                break;
             default:
                 break;
 
@@ -106,7 +129,7 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-      ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -145,6 +168,8 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
         loadTxtView = findViewById(R.id.loadTxtView);
         relativeLayout = findViewById(R.id.relativeLayout);
 
+        teacherCardView = findViewById(R.id.teacherCardView);
+
     }
 
     @Override
@@ -177,77 +202,36 @@ public class DashBoardActivity extends AppCompatActivity implements View.OnClick
                 break;
 
 
-
         }
     }
 
-    //////////////////LOAD DATA FROM DATABASE////////////////////
-    private void loadDataFromDatabase() {
-        DataQueryBuilder dataQueryBuilder = DataQueryBuilder.create();
-        dataQueryBuilder.setGroupBy("fullName");
-        showProgress(true);
-        Backendless.Persistence.of(TeacherData.class).find(dataQueryBuilder, new AsyncCallback<List<TeacherData>>() {
-            @Override
-            public void handleResponse(List<TeacherData> response) {
-                showProgress(false);
-                AllData.teacherDataList = response;
-                Toast.makeText(DashBoardActivity.this, "loaded Teacher data list", Toast.LENGTH_SHORT).show();
-            }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Teachers");
+        collectionReference.document(FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
             @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(DashBoardActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Toast.makeText(DashBoardActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            }
-        });
-        showProgress(true);
-        Backendless.Persistence.of(ParentData.class).find(dataQueryBuilder, new AsyncCallback<List<ParentData>>() {
-            @Override
-            public void handleResponse(List<ParentData> response) {
-                showProgress(false);
-                AllData.parentDataList = response;
-                Toast.makeText(DashBoardActivity.this, "loaded Parent data list", Toast.LENGTH_SHORT).show();
-            }
+                if (!documentSnapshot.exists()) {
+                    startActivity(new Intent(DashBoardActivity.this, AddTeacherActivity.class));
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(DashBoardActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
+                } else {
+                    if (documentSnapshot.getString("type").equals("teacher")) {
+                        teacherCardView.setVisibility(View.GONE);
+                    }
+                }
 
             }
         });
-        showProgress(true);
-        Backendless.Persistence.of(StudentData.class).find(dataQueryBuilder, new AsyncCallback<List<StudentData>>() {
-            @Override
-            public void handleResponse(List<StudentData> response) {
-                showProgress(false);
-                AllData.studentDataList = response;
-                Toast.makeText(DashBoardActivity.this, "loaded StudentData data list", Toast.LENGTH_SHORT).show();
-            }
 
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(DashBoardActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
 
-            }
-        });
-        showProgress(true);
-        Backendless.Persistence.of(StudentMarks.class).find(dataQueryBuilder, new AsyncCallback<List<StudentMarks>>() {
-            @Override
-            public void handleResponse(List<StudentMarks> response) {
-                showProgress(false);
-                AllData.studentMarksList = response;
-                Toast.makeText(DashBoardActivity.this, "loaded StudentMarks data list", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(DashBoardActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
     }
+
+
 }

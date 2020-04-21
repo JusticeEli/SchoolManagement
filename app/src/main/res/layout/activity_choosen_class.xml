@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:padding="10dp"
-        android:background="@mipmap/fantacy"
+        android:background="@color/colorPrimaryLight"
         android:layout_height="match_parent">
 
 
@@ -94,13 +94,13 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/listOfStudentRecyclerView"
             android:layout_width="match_parent"
-            android:background="@mipmap/bike"
+            android:background="@color/colorPrimaryDark"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/resultsRecyclerView"
-            android:background="@mipmap/tower"
+            android:background="@color/colorPrimaryDark"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="10dp"
@@ -114,7 +114,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/menu_sidebar"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
 
         />
 </androidx.drawerlayout.widget.DrawerLayout>

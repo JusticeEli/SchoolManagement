@@ -9,7 +9,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:background="@mipmap/fantacy"
+        android:background="@color/colorPrimaryLight"
         android:layout_height="match_parent"
         android:padding="20dp"
         >
@@ -65,7 +65,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
 
-            android:background="@mipmap/bike"
+            android:background="@color/colorPrimaryDark"
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="300dp"
@@ -93,7 +93,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/menu_sidebar"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
 
         />
 </androidx.drawerlayout.widget.DrawerLayout>

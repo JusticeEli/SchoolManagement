@@ -5,7 +5,7 @@
     android:id="@+id/drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryLight"
+    android:background="@drawable/animation_list"
     tools:context=".dashboard.DashBoardActivity">
     <!--PROGRESS.._________________________________  -->
     <LinearLayout
@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="50dp"
-        android:background="@mipmap/fantacy"
+        android:background="@color/colorPrimaryLight"
         android:gravity="center_horizontal">
 
         <LinearLayout
@@ -48,12 +48,14 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <androidx.cardview.widget.CardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:id="@+id/teacherCardView"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="20dp">
 
@@ -174,7 +176,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
         app:menu="@menu/menu_sidebar"
 
         />

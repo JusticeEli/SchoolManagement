@@ -1,6 +1,7 @@
 package com.justice.schoolmanagement.teacher;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -22,9 +23,12 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
@@ -34,13 +38,17 @@ import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 
 public class TeacherDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    private static final int TEACHER_REQUEST_CODE = 3;
     private TextView teacherNameTxtView, teacherSubjectTxtView, firstNameTxtView, lastNameTxtView, cityTxtView, degreeTxtView, ageTxtView, genderTxtView, salaryTxtView, emailTxtView, contactTxtView, deleteTxtView, editTxtView;
     private String email;
     private TeacherData teacherData;
 
     private ImageView callImageView, emailImageView;
+    private CircleImageView imageView;
 
     //////////////////DRAWER LAYOUT////////////////////////
 
@@ -59,6 +67,7 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teacher_details);
         teacherData = ApplicationClass.documentSnapshot.toObject(TeacherData.class);
+        teacherData.setId(ApplicationClass.documentSnapshot.getId());
 
         initWidgets();
         initNavigationDrawer();
@@ -116,7 +125,6 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(TeacherDetailsActivity.this, EditTeacherActivity.class);
-                intent.putExtra("email", email);
                 startActivity(intent);
             }
         });
@@ -125,6 +133,9 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
     @Override
     protected void onResume() {
         super.onResume();
+        teacherData = ApplicationClass.documentSnapshot.toObject(TeacherData.class);
+        teacherData.setId(ApplicationClass.documentSnapshot.getId());
+
         setDefaultValues();
     }
 
@@ -146,17 +157,30 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
     private void deleteTeacher() {
 
         showProgress(true);
+        FirebaseStorage.getInstance().getReference("teachers_images").child(teacherData.getId()+".jpg").delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(TeacherDetailsActivity.this, "Photo Deleted", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(TeacherDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                showProgress(false);
+            }
+        });
 
         ApplicationClass.documentSnapshot.getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(TeacherDetailsActivity.this, "Removed Teacher data From Database", Toast.LENGTH_SHORT).show();
+                if (task.isSuccessful()) {
+                    Toast.makeText(TeacherDetailsActivity.this, " Teacher deleted", Toast.LENGTH_SHORT).show();
                     finish();
 
-                }else{
-                    String error=task.getException().getMessage();
-                    Toast.makeText(TeacherDetailsActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(TeacherDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -176,6 +200,11 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
         salaryTxtView.setText(teacherData.getSalary());
         emailTxtView.setText(teacherData.getEmail());
         contactTxtView.setText(teacherData.getContact());
+
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        requestOptions.centerCrop();
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(teacherData.getPhoto()).thumbnail(Glide.with(this).load(teacherData.getThumbnail())).into(imageView);
     }
 
     @Override
@@ -199,7 +228,7 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-      ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -241,6 +270,7 @@ public class TeacherDetailsActivity extends AppCompatActivity implements Navigat
 
         callImageView = findViewById(R.id.callImageView);
         emailImageView = findViewById(R.id.emailImageView);
+        imageView = findViewById(R.id.imageView);
 
         ///////////////////PROGRESS_BAR//////////////////////
         load = findViewById(R.id.loadingLinearLayout);

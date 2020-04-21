@@ -9,6 +9,7 @@
 
 
     <RelativeLayout
+        android:background="@color/colorPrimaryLight"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="20dp">
@@ -16,7 +17,6 @@
         <TextView
             android:id="@+id/header"
             android:layout_width="wrap_content"
-
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="30dp"
@@ -50,11 +50,13 @@
 
         <ScrollView
             android:id="@+id/scrollView"
+            android:background="@color/colorPrimaryDark"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/header">
 
             <LinearLayout
+                android:background="@drawable/button"
                 android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -182,7 +184,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/menu_sidebar"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
 
         />
 </androidx.drawerlayout.widget.DrawerLayout>

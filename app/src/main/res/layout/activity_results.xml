@@ -11,7 +11,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@mipmap/road"
+        android:background="@color/colorPrimaryLight"
         android:padding="20dp">
 
         <LinearLayout
@@ -43,7 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
-                android:background="@color/colorPrimaryLight">
+                android:background="@color/colorPrimaryDark">
 
             </androidx.recyclerview.widget.RecyclerView>
         </LinearLayout>
@@ -54,6 +54,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
         app:menu="@menu/menu_sidebar" />
 </androidx.drawerlayout.widget.DrawerLayout>

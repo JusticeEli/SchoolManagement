@@ -21,10 +21,14 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -34,6 +38,8 @@ import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class StudentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private TextView studentNameTxtView, studentClassTxtView, firstNameTxtView, lastNameTxtView, classGradeTxtView, nationalityTxtView, religionTxtView, emailTxtView, parentNameTxtView, dateOfBirthTxtView, dateOfArrivalTxtView, ageTxtView, genderTxtView, classTeacherNameTxtView, cityTxtView, deleteTxtView, editTxtView;
@@ -50,6 +56,7 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
 
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+    private CircleImageView imageView;
 
 
     @Override
@@ -83,6 +90,8 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
     @Override
     protected void onResume() {
         super.onResume();
+        studentData = ApplicationClass.documentSnapshot.toObject(StudentData.class);
+        studentData.setId(ApplicationClass.documentSnapshot.getId());
         setDefaultValues();
 
     }
@@ -121,13 +130,43 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
 
     private void deleteStudent() {
         showProgress(true);
+
+        FirebaseStorage.getInstance().getReferenceFromUrl(studentData.getPhoto()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(StudentDetailsActivity.this, "Photo Deleted", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                showProgress(false);
+            }
+        });
         ApplicationClass.documentSnapshot.getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    removeStudentMarksFromDatabase();
-                    Toast.makeText(StudentDetailsActivity.this, "Student data Removed", Toast.LENGTH_SHORT).show();
-                    finish();
+                    showProgress(true);
+                    ApplicationClass.documentSnapshot.getReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                ApplicationClass.documentSnapshot = task.getResult();
+                                removeStudentMarksFromDatabase();
+                                Toast.makeText(StudentDetailsActivity.this, "Student data Removed", Toast.LENGTH_SHORT).show();
+                                finish();
+
+                            } else {
+                                String error = task.getException().getMessage();
+                                Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+
+                            }
+                            showProgress(false);
+
+                        }
+                    });
 
                 } else {
                     String error = task.getException().getMessage();
@@ -179,7 +218,13 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
         classTeacherNameTxtView.setText(studentData.getClassTeacherName());
         cityTxtView.setText(studentData.getCity());
 
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(studentData.getPhoto()).thumbnail(Glide.with(this).load(studentData.getThumbnail())).into(imageView);
+
+
     }
+
 
     /////////////////////PROGRESS_BAR////////////////////////////
     private void showProgress(boolean show) {
@@ -243,5 +288,7 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
 
         deleteTxtView = findViewById(R.id.deleteTxtView);
         editTxtView = findViewById(R.id.editTxtView);
+
+        imageView = findViewById(R.id.imageView);
     }
 }

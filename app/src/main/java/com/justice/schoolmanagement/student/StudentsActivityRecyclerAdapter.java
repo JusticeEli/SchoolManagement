@@ -17,10 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
@@ -28,20 +33,15 @@ import com.justice.schoolmanagement.alldata.ApplicationClass;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<StudentData, StudentsActivityRecyclerAdapter.ViewHolder> {
 
     private Context context;
-    private StudentData studentData;
-    private StudentMarks studentMarks;
 
     private StudentsActivity studentsActivity;
 
-    /**
-     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
-     * FirestoreRecyclerOptions} for configuration options.
-     *
-     * @param options
-     */
+
     public StudentsActivityRecyclerAdapter(Context context, @NonNull FirestoreRecyclerOptions<StudentData> options) {
         super(options);
         this.context = context;
@@ -53,6 +53,11 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
     protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull StudentData model) {
         holder.studentNameTxtView.setText(model.getFullName());
         holder.studentClassTxtView.setText("" + model.getClassGrade());
+
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.centerCrop();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(context).applyDefaultRequestOptions(requestOptions).load(model.getPhoto()).thumbnail(Glide.with(context).load(model.getThumbnail())).into(holder.imageView);
 
         setOnClickListeners(holder, position);
     }
@@ -69,7 +74,7 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, EditStudentActivity.class);
-                ApplicationClass.documentSnapshot=getSnapshots().getSnapshot(position);
+                ApplicationClass.documentSnapshot = getSnapshots().getSnapshot(position);
                 context.startActivity(intent);
             }
         });
@@ -77,7 +82,7 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, StudentDetailsActivity.class);
-                ApplicationClass.documentSnapshot=getSnapshots().getSnapshot(position);
+                ApplicationClass.documentSnapshot = getSnapshots().getSnapshot(position);
                 context.startActivity(intent);
             }
         });
@@ -102,16 +107,42 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
     private void deleteStudent(int position) {
 
         studentsActivity.showProgress(true);
-        getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+        FirebaseStorage.getInstance().getReferenceFromUrl(getSnapshots().getSnapshot(position).toObject(StudentData.class).getPhoto()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(context, "Deletion Success", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Photo Deleted", Toast.LENGTH_SHORT).show();
+
                 } else {
                     String error = task.getException().getMessage();
                     Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 studentsActivity.showProgress(false);
+            }
+        });
+        getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "StudentData Deleted ", Toast.LENGTH_SHORT).show();
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                studentsActivity.showProgress(false);
+            }
+        });
+        FirebaseFirestore.getInstance().collection("StudentsMarks").document(getSnapshots().getSnapshot(position).getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "StudentsMarks Deleted ", Toast.LENGTH_SHORT).show();
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                studentsActivity.showProgress(false);
+
             }
         });
     }
@@ -127,7 +158,7 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView studentNameTxtView, studentClassTxtView, deleteTxtView, editTxtView;
-        private ImageView imageView;
+        private CircleImageView imageView;
 
         public ViewHolder(@NonNull View v) {
             super(v);

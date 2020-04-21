@@ -7,7 +7,11 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,12 +29,18 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -40,7 +50,17 @@ import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
+import com.justice.schoolmanagement.teacher.AddTeacherActivity;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class AddParentActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private EditText firstNameEdtTxt;
@@ -74,6 +94,8 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
 
     private CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Parents");
 
+    private CircleImageView imageView;
+    private Uri uri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +107,33 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
         initNavigationDrawer();
 
         setOnClickListeners();
+    }
+
+    private void choosePhoto() {
+        // start picker to get image for cropping and then use the image in cropping activity
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(this);
+
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                uri = result.getUri();
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+                Toast.makeText(this, "Error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        }
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(uri).into(imageView);
+
     }
 
     private void setSkipBtn() {
@@ -183,6 +232,18 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
     }
 
     private void setOnClickListeners() {
+        addPhotoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choosePhoto();
+            }
+        });
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choosePhoto();
+            }
+        });
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -205,11 +266,32 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
                 finish();
             }
         });
+        contactEdtTxt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (contactEdtTxt.length() == 10) {
+                    ageEdtTxt.requestFocus();
+                }
+                if (contactEdtTxt.length() > 10) {
+                    contactEdtTxt.setError("Contact Must have 10 characters");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     private boolean fieldsAreEmpty() {
 
-        if (firstNameEdtTxt.getText().toString().trim().isEmpty() || lastNameEdtTxt.getText().toString().trim().isEmpty() || emailEdtTxt.getText().toString().trim().isEmpty() || cityEdtTxt.getText().toString().trim().isEmpty() || contactEdtTxt.getText().toString().trim().isEmpty() || ageEdtTxt.getText().toString().trim().isEmpty() || jobTypeEdtTxt.getText().toString().trim().isEmpty()) {
+        if (uri == null || firstNameEdtTxt.getText().toString().trim().isEmpty() || lastNameEdtTxt.getText().toString().trim().isEmpty() || emailEdtTxt.getText().toString().trim().isEmpty() || cityEdtTxt.getText().toString().trim().isEmpty() || contactEdtTxt.getText().toString().trim().isEmpty() || ageEdtTxt.getText().toString().trim().isEmpty() || jobTypeEdtTxt.getText().toString().trim().isEmpty()) {
             return true;
         }
 
@@ -217,10 +299,91 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
     }
 
     private void getDataFromEdtTxtAndSaveInDatabase() {
-        // TODO: 11-Feb-20  extract a photo from the addPhoto button
-        parentData = new ParentData(firstNameEdtTxt.getText().toString() + " " + lastNameEdtTxt.getText().toString(), contactEdtTxt.getText().toString(), firstNameEdtTxt.getText().toString(), lastNameEdtTxt.getText().toString(), cityEdtTxt.getText().toString(), jobStatusSpinner.getSelectedItem().toString().trim(), ageEdtTxt.getText().toString(), getSelectedRadioBtn(), jobTypeEdtTxt.getText().toString(), emailEdtTxt.getText().toString());
-        putDataIntoDataBase();
 
+        parentData = new ParentData(firstNameEdtTxt.getText().toString() + " " + lastNameEdtTxt.getText().toString(), contactEdtTxt.getText().toString(), firstNameEdtTxt.getText().toString(), lastNameEdtTxt.getText().toString(), cityEdtTxt.getText().toString(), jobStatusSpinner.getSelectedItem().toString().trim(), ageEdtTxt.getText().toString(), getSelectedRadioBtn(), jobTypeEdtTxt.getText().toString(), emailEdtTxt.getText().toString());
+        putPhotoIntoDatabase();
+    }
+
+    private void putPhotoIntoDatabase() {
+        showProgress(true);
+        String photoName = UUID.randomUUID().toString();
+        final StorageReference ref = FirebaseStorage.getInstance().getReference("parents_images").child(photoName);
+
+        UploadTask uploadTask = ref.putFile(uri);
+
+
+        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+                // Continue with the task to get the download URL
+                return ref.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    parentData.setPhoto(downloadUri.toString());
+                    uploadThumbnail();
+                    Toast.makeText(AddParentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                showProgress(false);
+            }
+        });
+
+        /////////////////////////////////////////////
+    }
+
+    private void uploadThumbnail() {
+        Uri thumbnail = null;
+        File compressedImgFile = null;
+
+        try {
+            compressedImgFile = new Compressor(this).setCompressFormat(Bitmap.CompressFormat.JPEG).setMaxHeight(10).setMaxWidth(10).setQuality(40).compressToFile(new File(uri.getPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thumbnail = Uri.fromFile(compressedImgFile);
+
+        showProgress(true);
+        String photoName = UUID.randomUUID().toString();
+        final StorageReference ref = FirebaseStorage.getInstance().getReference("parents_thumbnail_images").child(photoName);
+
+        UploadTask uploadTask = ref.putFile(thumbnail);
+
+
+        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+                // Continue with the task to get the download URL
+                return ref.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    parentData.setThumbnail(downloadUri.toString());
+                    putDataIntoDataBase();
+                    Toast.makeText(AddParentActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                showProgress(false);
+            }
+        });
 
     }
 
@@ -242,13 +405,13 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
         collectionReference.add(parentData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
             public void onComplete(@NonNull Task<DocumentReference> task) {
-                if (task.isSuccessful()){
+                if (task.isSuccessful()) {
                     resetEdtTxt();
                     Toast.makeText(AddParentActivity.this, "Parent data saved", Toast.LENGTH_SHORT).show();
 
-                }else{
-                    String error=task.getException().getMessage();
-                    Toast.makeText(AddParentActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
 
@@ -296,6 +459,7 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
         load = findViewById(R.id.loadingLinearLayout);
         loadTxtView = findViewById(R.id.loadTxtView);
         scrollView = findViewById(R.id.scrollView);
+        imageView = findViewById(R.id.imageView);
 
         contactEdtTxt.setText("07");
     }

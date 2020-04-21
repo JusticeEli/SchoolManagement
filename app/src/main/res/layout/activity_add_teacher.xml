@@ -43,7 +43,7 @@
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@mipmap/bike">
+            android:background="@color/colorPrimaryDark">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -53,7 +53,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@mipmap/tower"
+                    android:background="@color/colorPrimaryLight"
                     android:orientation="vertical">
 
                     <LinearLayout
@@ -61,10 +61,13 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <ImageView
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/imageView"
                             android:layout_width="100dp"
                             android:layout_height="100dp"
-                            android:src="@mipmap/ic_launcher" />
+                            android:clickable="true"
+                            android:scaleType="centerCrop"
+                            android:src="@mipmap/place_holder" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -78,11 +81,11 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:padding="10dp"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginTop="20dp"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:padding="10dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -117,37 +120,6 @@
                                 android:layout_height="wrap_content" />
                         </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Gender" />
-
-                            <RadioGroup
-                                android:id="@+id/typeRadioGroup"
-                                android:layout_width="250dp"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                                <RadioButton
-                                    android:id="@+id/teacherRadioBtn"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:checked="true"
-                                    android:text="Teacher" />
-
-                                <RadioButton
-                                    android:id="@+id/adminRadioBtn"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Admin" />
-
-                            </RadioGroup>
-                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -162,26 +134,11 @@
                             <EditText
                                 android:id="@+id/contactEdtTxt"
                                 android:layout_width="200dp"
-                                android:hint="07..."
                                 android:layout_height="wrap_content"
+                                android:hint="07..."
                                 android:inputType="number" />
                         </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Email" />
-
-                            <EditText
-                                android:id="@+id/emailEdtTxt"
-                                android:layout_width="200dp"
-                                android:layout_height="wrap_content" />
-                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -326,7 +283,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="20dp"
                                 android:background="@drawable/button_first"
-                                android:text="Add"
+                                android:text="Submit"
                                 android:textAllCaps="false" />
 
 
@@ -351,7 +308,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
         app:menu="@menu/menu_sidebar"
 
         />

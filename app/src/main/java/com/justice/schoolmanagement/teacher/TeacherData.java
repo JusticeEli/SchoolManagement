@@ -17,8 +17,38 @@ public class TeacherData implements Serializable {
     private String photo;
     private String subject;
     private String contact;
-    private String type;
+    private String type="teacher";
     private String id;
+    private String thumbnail;
+
+
+    public TeacherData() {
+
+    }
+
+    public TeacherData(String fullName, String firstName, String lastName, String email, String salary, String city, String degree, String age, String gender, String type, String photo, String subject, String contact) {
+        this.type = type;
+        this.fullName = fullName;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.salary = salary;
+        this.city = city;
+        this.degree = degree;
+        this.age = age;
+        this.gender = gender;
+        this.photo = photo;
+        this.subject = subject;
+        this.contact = contact;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
 
     @Exclude
     public String getId() {
@@ -37,19 +67,6 @@ public class TeacherData implements Serializable {
         this.type = type;
     }
 
-    private String objectId;
-
-    public TeacherData() {
-
-    }
-
-    public String getObjectId() {
-        return objectId;
-    }
-
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
-    }
 
     public String getContact() {
         return contact;
@@ -59,21 +76,6 @@ public class TeacherData implements Serializable {
         this.contact = contact;
     }
 
-    public TeacherData(String fullName, String firstName, String lastName, String email, String salary, String city, String degree, String age, String gender, String type, String photo, String subject, String contact) {
-        this.type = type;
-        this.fullName = fullName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.salary = salary;
-        this.city = city;
-        this.degree = degree;
-        this.age = age;
-        this.gender = gender;
-        this.photo = photo;
-        this.subject = subject;
-        this.contact = contact;
-    }
 
     public String getFullName() {
         return fullName;

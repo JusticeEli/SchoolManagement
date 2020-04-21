@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
@@ -39,7 +41,6 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
     private EditText mathEdtTxt, scienceEdtTxt, englishEdtTxt, kiswahiliEdtTxt, sst_creEdtTxt;
     private Button submitBtn;
     private StudentMarks studentMarks;
-    private String email;
     //////////////////DRAWER LAYOUT////////////////////////
 
     private NavigationView navigationView;
@@ -58,8 +59,7 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results_edit);
-        email = getIntent().getStringExtra("email");
-        studentMarks = getStudentMarks();
+        studentMarks = ApplicationClass.documentSnapshot.toObject(StudentMarks.class);
         initWidgets();
         initNavigationDrawer();
 
@@ -79,17 +79,6 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
         actionBarDrawerToggle.syncState();
     }
 
-    private StudentMarks getStudentMarks() {
-        for (StudentMarks studentMarks : AllData.studentMarksList) {
-            if (studentMarks.getEmail().equals(email)) {
-                return studentMarks;
-            }
-        }
-
-
-        return null;
-
-    }
 
     private void setOnClickListeners() {
         submitBtn.setOnClickListener(new View.OnClickListener() {
@@ -99,7 +88,7 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
                     Toast.makeText(ResultsEditActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                if(marksAreAbove_100()){
+                if (marksAreAbove_100()) {
                     Toast.makeText(ResultsEditActivity.this, "Some Marks Are Not Valid", Toast.LENGTH_SHORT).show();
 
                     return;
@@ -112,7 +101,7 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
 
     private boolean marksAreAbove_100() {
 
-        if (Integer.parseInt(mathEdtTxt.getText().toString())>100||Integer.parseInt(scienceEdtTxt.getText().toString())>100||Integer.parseInt(englishEdtTxt.getText().toString())>100||Integer.parseInt(kiswahiliEdtTxt.getText().toString())>100||Integer.parseInt(sst_creEdtTxt.getText().toString())>100){
+        if (Integer.parseInt(mathEdtTxt.getText().toString()) > 100 || Integer.parseInt(scienceEdtTxt.getText().toString()) > 100 || Integer.parseInt(englishEdtTxt.getText().toString()) > 100 || Integer.parseInt(kiswahiliEdtTxt.getText().toString()) > 100 || Integer.parseInt(sst_creEdtTxt.getText().toString()) > 100) {
             return true;
         }
 
@@ -127,28 +116,28 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
         studentMarks.setEnglish(Integer.parseInt(englishEdtTxt.getText().toString()));
         studentMarks.setKiswahili(Integer.parseInt(kiswahiliEdtTxt.getText().toString()));
         studentMarks.setSst_cre(Integer.parseInt(sst_creEdtTxt.getText().toString()));
+        studentMarks.setTotalMarks(studentMarks.getMath() + studentMarks.getScience() + studentMarks.getEnglish() + studentMarks.getKiswahili() + studentMarks.getSst_cre());
         updateInDatabase();
 
     }
 
     private void updateInDatabase() {
         showProgress(true);
-        Backendless.Persistence.save(studentMarks, new AsyncCallback<StudentMarks>() {
+
+        ApplicationClass.documentSnapshot.getReference().set(studentMarks).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void handleResponse(StudentMarks response) {
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(ResultsEditActivity.this, "Marks Updated", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(ResultsEditActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
                 showProgress(false);
-
-                Toast.makeText(ResultsEditActivity.this, "Marks Updated", Toast.LENGTH_SHORT).show();
-                onBackPressed();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                showProgress(false);
-                Toast.makeText(ResultsEditActivity.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
             }
         });
+
     }
 
     private boolean fieldsAreEmpty() {
@@ -169,7 +158,7 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
 
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
         drawerLayout.closeDrawer(GravityCompat.START);

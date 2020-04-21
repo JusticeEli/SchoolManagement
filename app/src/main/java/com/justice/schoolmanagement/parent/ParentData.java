@@ -17,10 +17,27 @@ public class ParentData implements Serializable {
     private String email;
     private String id;
 
-    private String objectId;
+    private String photo;
+    private  String thumbnail;
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
 
     public ParentData() {
 
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
     @Exclude
@@ -32,13 +49,6 @@ public class ParentData implements Serializable {
         this.id = id;
     }
 
-    public String getObjectId() {
-        return objectId;
-    }
-
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
-    }
 
     public String getFullName() {
         return fullName;

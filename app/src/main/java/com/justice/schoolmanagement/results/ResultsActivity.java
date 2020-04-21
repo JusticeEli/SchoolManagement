@@ -8,6 +8,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -20,7 +21,12 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.firebase.ui.firestore.SnapshotParser;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -41,19 +47,25 @@ import java.util.List;
 public class ResultsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView recyclerView;
     private EditText searchEdtTxt;
-    private ResultsActivityRecyclerAdapter resultsActivityRecyclerAdapter;  private NavigationView navigationView;
+    private ResultsActivityRecyclerAdapter resultsActivityRecyclerAdapter;
+    private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
+    private int counter=1;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results);
-        initWidgets();  initNavigationDrawer();
+        initWidgets();
+        setUpRecyclerView();
+        initNavigationDrawer();
 
 
         setOnClickListeners();
     }
+
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
@@ -67,7 +79,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_sort,menu);
+        getMenuInflater().inflate(R.menu.menu_sort, menu);
 
         return true;
     }
@@ -84,7 +96,6 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 List<StudentMarks> list = new ArrayList<>();
                 if (searchEdtTxt.getText().toString().isEmpty()) {
-                    resultsActivityRecyclerAdapter.setList(AllData.studentMarksList);
                 } else {
 
                     for (StudentMarks studentMarks : AllData.studentMarksList) {
@@ -94,7 +105,6 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
                             }
                         }
                     }
-                    resultsActivityRecyclerAdapter.setList(list);
                 }
 
             }
@@ -110,17 +120,31 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         searchEdtTxt = findViewById(R.id.searchEdtTxt);
+        }
+    private void setUpRecyclerView() {
+        Query query = FirebaseFirestore.getInstance().collection("StudentsMarks").orderBy("totalMarks", Query.Direction.DESCENDING);
+
+        FirestoreRecyclerOptions<StudentMarks> recyclerOptions=new FirestoreRecyclerOptions.Builder<StudentMarks>().setLifecycleOwner(this).setQuery(query, new SnapshotParser<StudentMarks>() {
+            @NonNull
+            @Override
+            public StudentMarks parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                StudentMarks studentMarks=snapshot.toObject(StudentMarks.class);
+                studentMarks.setPosition(counter++);
+                studentMarks.setId(snapshot.getId());
+                return studentMarks;
+            }
+        }).build();
+
         recyclerView = findViewById(R.id.recyclerView);
-
-
-        resultsActivityRecyclerAdapter = new ResultsActivityRecyclerAdapter(this);
-        recyclerView.setAdapter(resultsActivityRecyclerAdapter);
+        resultsActivityRecyclerAdapter = new ResultsActivityRecyclerAdapter(this,recyclerOptions);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        resultsActivityRecyclerAdapter.setList(AllData.studentMarksList);
+        recyclerView.setAdapter(resultsActivityRecyclerAdapter);
+
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
 
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
@@ -155,18 +179,16 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
     protected void onResume() {
         super.onResume();
         sortStudentMarks();
-        resultsActivityRecyclerAdapter.setList(AllData.studentMarksList);
     }
 
     private void sortStudentMarks() {
-        int x=1;
+        int x = 1;
         Collections.sort(AllData.studentMarksList);
-        for (StudentMarks studentMarks:AllData.studentMarksList){
+        for (StudentMarks studentMarks : AllData.studentMarksList) {
             studentMarks.setPosition(x++);
         }
 
 
-        resultsActivityRecyclerAdapter.setList(AllData.studentMarksList);
 
     }
 }

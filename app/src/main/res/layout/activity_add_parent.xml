@@ -46,7 +46,7 @@
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@mipmap/bike">
+            android:background="@color/colorPrimaryDark">
 
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -63,10 +63,12 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <ImageView
+                        <de.hdodenhof.circleimageview.CircleImageView
                             android:layout_width="100dp"
+                            android:id="@+id/imageView"
+                            android:scaleType="centerCrop"
                             android:layout_height="100dp"
-                            android:src="@mipmap/ic_launcher" />
+                            android:src="@mipmap/place_holder" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -106,7 +108,7 @@
                         android:layout_height="match_parent"
                         android:layout_marginTop="20dp"
                         android:padding="10dp"
-                        android:background="@mipmap/tower"
+                        android:background="@color/colorPrimaryLight"
                         android:orientation="vertical">
 
                         <LinearLayout
@@ -174,6 +176,7 @@
 
                             <AutoCompleteTextView
                                 android:inputType="textPersonName"
+                                android:completionThreshold="1"
                                 android:id="@+id/cityEdtTxt"
                                 android:layout_width="200dp"
                                 android:layout_height="wrap_content" />
@@ -284,6 +287,7 @@
                                 android:id="@+id/jobTypeEdtTxt"
                                 android:layout_width="200dp"
                                 android:layout_height="wrap_content"
+                                android:completionThreshold="1"
                               />
                         </LinearLayout>
 
@@ -323,7 +327,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@mipmap/background7"
+        android:background="@drawable/animation_list"
         app:menu="@menu/menu_sidebar"
         />
 

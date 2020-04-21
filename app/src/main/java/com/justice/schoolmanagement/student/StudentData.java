@@ -19,8 +19,35 @@ public class StudentData implements Serializable {
     private String gender;
     private String classTeacherName;
     private String city;
-    private String image;
     private String id;
+    private String photo;
+
+    private String photoName;
+    private String thumbnail;
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
+    public String getPhotoName() {
+        return photoName;
+    }
+
+    public void setPhotoName(String photoName) {
+        this.photoName = photoName;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
 
     @Exclude
     public String getId() {
@@ -150,13 +177,6 @@ public class StudentData implements Serializable {
         this.city = city;
     }
 
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
 
     public int getClassGrade() {
         return classGrade;

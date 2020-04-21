@@ -7,7 +7,11 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,10 +29,18 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -38,7 +50,19 @@ import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
+import com.justice.schoolmanagement.teacher.EditTeacherActivity;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
+
+import static com.justice.schoolmanagement.alldata.ApplicationClass.documentSnapshot;
 
 public class EditParentActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private EditText firstNameEdtTxt;
@@ -72,13 +96,17 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
     private TextView loadTxtView;
     private ScrollView scrollView;
 
+    private CircleImageView imageView;
+    private Uri uri;
+    private boolean photoChanged = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_parent);
         email = getIntent().getStringExtra("email");
-        parentData = ApplicationClass.documentSnapshot.toObject(ParentData.class);
+        parentData = documentSnapshot.toObject(ParentData.class);
         initWidgets();
         initAdapters();
         initNavigationDrawer();
@@ -86,6 +114,33 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
         setDefaulValues();
         setOnClickListeners();
+    }
+
+    private void choosePhoto() {
+        // start picker to get image for cropping and then use the image in cropping activity
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(this);
+
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                uri = result.getUri();
+                photoChanged = true;
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
+        }
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(uri).into(imageView);
+
     }
 
     private void initAdapters() {
@@ -103,7 +158,6 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         jobTypeEdtTxt.setAdapter(jobTypeAdapter);
 
     }
-
 
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
@@ -127,6 +181,11 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         ageEdtTxt.setText(parentData.getAge());
         setDefaultValueForRadioBtn();
         contactEdtTxt.setText(parentData.getContact());
+
+        uri = Uri.parse(parentData.getPhoto());
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData.getPhoto()).thumbnail(Glide.with(this).load(parentData.getThumbnail())).into(imageView);
 
     }
 
@@ -181,7 +240,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-       ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -232,6 +291,8 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         loadTxtView = findViewById(R.id.loadTxtView);
         scrollView = findViewById(R.id.scrollView);
 
+        imageView = findViewById(R.id.imageView);
+
         contactEdtTxt.setText("07");
     }
 
@@ -251,6 +312,18 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
     }
 
     private void setOnClickListeners() {
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choosePhoto();
+            }
+        });
+        addPhotoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choosePhoto();
+            }
+        });
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -267,7 +340,27 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
             }
         });
 
+        contactEdtTxt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (contactEdtTxt.length() == 10) {
+                    ageEdtTxt.requestFocus();
+                }
+                if (contactEdtTxt.length() > 10) {
+                    contactEdtTxt.setError("Contact Must have 10 characters");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     private boolean fieldsAreEmpty() {
@@ -292,23 +385,127 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         parentData.setGender(getSelectedRadioBtn());
         parentData.setJobType(jobTypeEdtTxt.getText().toString().trim());
         parentData.setEmail(emailEdtTxt.getText().toString().trim());
-        showProgress(true);
-        ApplicationClass.documentSnapshot.getReference().set(parentData).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(EditParentActivity.this, parentData.getFirstName() + " Edited Successfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                else{
-                    String error=task.getException().getMessage();
-                    Toast.makeText(EditParentActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
 
+
+        if (photoChanged) {
+            showProgress(true);
+            final StorageReference ref = FirebaseStorage.getInstance().getReferenceFromUrl(parentData.getPhoto());
+
+            UploadTask uploadTask = ref.putFile(uri);
+
+
+            uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    // Continue with the task to get the download URL
+                    return ref.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        parentData.setPhoto(downloadUri.toString());
+                        uploadThumbnail();
+                        Toast.makeText(EditParentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        String error = task.getException().getMessage();
+                        Toast.makeText(EditParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    }
+                    showProgress(false);
+                }
+            });
+
+            /////////////////////////////////////////////
+
+
+        } else {
+            putDataInDatabase();
+        }
+
+
+    }
+    private void uploadThumbnail() {
+        Uri thumbnail ;
+        File compressedImgFile = null;
+
+        try {
+            compressedImgFile = new Compressor(this).setCompressFormat(Bitmap.CompressFormat.JPEG).setMaxHeight(10).setMaxWidth(10).setQuality(40).compressToFile(new File(uri.getPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thumbnail = Uri.fromFile(compressedImgFile);
+
+        showProgress(true);
+        String photoName = UUID.randomUUID().toString();
+        final StorageReference ref = FirebaseStorage.getInstance().getReference("parents_thumbnail_images").child(photoName);
+
+        UploadTask uploadTask = ref.putFile(thumbnail);
+
+
+        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+                // Continue with the task to get the download URL
+                return ref.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    parentData.setThumbnail(downloadUri.toString());
+                    putDataInDatabase();
+                    Toast.makeText(EditParentActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(EditParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
         });
 
+    }
+
+
+    private void putDataInDatabase() {
+        showProgress(true);
+        documentSnapshot.getReference().set(parentData).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    documentSnapshot.getReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()){
+                                ApplicationClass.documentSnapshot = task.getResult();
+                                Toast.makeText(EditParentActivity.this, parentData.getFirstName() + " Edited Successfully", Toast.LENGTH_SHORT).show();
+                                finish();
+
+                            }else{
+                                String error = task.getException().getMessage();
+                                Toast.makeText(EditParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+
+                            }
+                        }
+                    });
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(EditParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+
+                }
+                showProgress(false);
+            }
+        });
     }
 
     private String getSelectedRadioBtn() {
@@ -327,5 +524,8 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         return null;
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
 }

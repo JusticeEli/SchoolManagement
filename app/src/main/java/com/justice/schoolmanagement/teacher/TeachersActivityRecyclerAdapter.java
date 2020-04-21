@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,18 +19,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.parent.ParentDetailsActivity;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<TeacherData, TeachersActivityRecyclerAdapter.ViewHolder> {
 
@@ -57,6 +67,13 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
     protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull TeacherData model) {
         holder.teacherNameTxtView.setText(model.getFullName());
         holder.teacherSubjectTxtView.setText(model.getSubject());
+
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.centerCrop();
+        requestOptions.placeholder(R.mipmap.place_holder);
+        Glide.with(context).applyDefaultRequestOptions(requestOptions).load(model.getPhoto()).thumbnail(Glide.with(context).load(model.getThumbnail())).into(holder.imageView);
+
+        setOnClickListeners(holder, position);
 
         setOnClickListeners(holder, position);
     }
@@ -113,13 +130,30 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
     }
 
     private void deleteTeacher(int position) {
+        DocumentSnapshot documentSnapshot = getSnapshots().getSnapshot(position);
         teacherData = getSnapshots().getSnapshot(position).toObject(TeacherData.class);
         teachersActivity.showProgress(true);
+
+        FirebaseStorage.getInstance().getReference("teachers_images").child(documentSnapshot.getId()+".jpg").delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Photo Deleted", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                teachersActivity.showProgress(false);
+            }
+        });
+
 
         getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
+                    Toast.makeText(context, "Teacher Deleted", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
@@ -134,7 +168,7 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private ImageView imageView;
+        private CircleImageView imageView;
         private TextView teacherNameTxtView, teacherSubjectTxtView, deleteTxtView, editTxtView;
 
 

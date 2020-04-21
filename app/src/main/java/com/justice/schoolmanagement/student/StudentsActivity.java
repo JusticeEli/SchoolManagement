@@ -71,7 +71,6 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
 
         initwidgets();
         initNavigationDrawer();
-
         setOnClickListeners();
     }
 
@@ -178,8 +177,8 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
 
 
         studentsActivityRecyclerAdapter = new StudentsActivityRecyclerAdapter(this,firestoreRecyclerOptions);
-        recyclerView.setAdapter(studentsActivityRecyclerAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(studentsActivityRecyclerAdapter);
 
     }
 }

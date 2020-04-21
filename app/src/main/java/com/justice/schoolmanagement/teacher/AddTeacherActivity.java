@@ -7,12 +7,17 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -24,6 +29,9 @@ import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -32,30 +40,41 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.AllData;
+import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.io.File;
+import java.io.IOException;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import id.zelory.compressor.Compressor;
 
 public class AddTeacherActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private EditText firstNameEdtTxt;
     private EditText lastNameEdtTxt;
     private EditText contactEdtTxt;
-    private EditText emailEdtTxt;
     private EditText salaryEdtTxt;
     private EditText cityEdtTxt;
     private EditText degreeEdtTxt;
     private EditText ageEdtTxt;
     private Spinner subjectSpinner;
     private RadioGroup genderRadioGroup;
-    private RadioGroup typeRadioGroup;
 
     private Button addPhotoBtn;
     private Button addBtn;
+    private CircleImageView imageView;
 
     //////////////////DRAWER LAYOUT////////////////////////
 
@@ -70,10 +89,12 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
 
     private TeacherData teacherData;
+    private String teacherId;
 
     private BackendlessUser user;
 
     private CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Teachers");
+    private Uri uri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,39 +122,7 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.dashboardMenu:
-                Intent intent = new Intent(this, DashBoardActivity.class);
-                startActivity(intent);
-                break;
-            case R.id.teacherMenu:
-                Intent intent2 = new Intent(this, TeachersActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsMenu:
-                Intent intent3 = new Intent(this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.parentsMenu:
-                Intent intent4 = new Intent(this, ParentsActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsMenu:
-                Intent intent5 = new Intent(this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsMenu:
-                Intent intent6 = new Intent(this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-            case R.id.classesMenu:
-                Intent intent7 = new Intent(this, ClassesActivity.class);
-                startActivity(intent7);
-                break;
-
-
-        }
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -157,7 +146,13 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
         addPhotoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(AddTeacherActivity.this, "Not Yet implemented", Toast.LENGTH_SHORT).show();
+                choosePhoto();
+            }
+        });
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                choosePhoto();
             }
         });
 
@@ -171,12 +166,64 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
 
         });
+
+        contactEdtTxt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (contactEdtTxt.length() == 10) {
+                    salaryEdtTxt.requestFocus();
+                }
+                if (contactEdtTxt.length() > 10) {
+                    contactEdtTxt.setError("Contact Must have 10 characters");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+    }
+
+    private void choosePhoto() {
+        // start picker to get image for cropping and then use the image in cropping activity
+        CropImage.activity()
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setAspectRatio(1, 1)
+                .start(this);
+
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                uri = result.getUri();
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
+        }
+
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.centerCrop();
+        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(uri).into(imageView);
+
     }
 
     private void resetEdtTxt() {
         firstNameEdtTxt.setText("");
         lastNameEdtTxt.setText("");
-        emailEdtTxt.setText("");
         salaryEdtTxt.setText("");
         cityEdtTxt.setText("");
         degreeEdtTxt.setText("");
@@ -186,7 +233,7 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
     private boolean fieldsAreEmpty() {
 
-        if (firstNameEdtTxt.getText().toString().trim().isEmpty() || lastNameEdtTxt.getText().toString().trim().isEmpty() || contactEdtTxt.getText().toString().trim().isEmpty() || emailEdtTxt.getText().toString().trim().isEmpty() || salaryEdtTxt.getText().toString().trim().isEmpty() || cityEdtTxt.getText().toString().trim().isEmpty() || degreeEdtTxt.getText().toString().trim().isEmpty() || ageEdtTxt.getText().toString().trim().isEmpty()) {
+        if (uri == null || firstNameEdtTxt.getText().toString().trim().isEmpty() || lastNameEdtTxt.getText().toString().trim().isEmpty() || contactEdtTxt.getText().toString().trim().isEmpty() || salaryEdtTxt.getText().toString().trim().isEmpty() || cityEdtTxt.getText().toString().trim().isEmpty() || degreeEdtTxt.getText().toString().trim().isEmpty() || ageEdtTxt.getText().toString().trim().isEmpty()) {
             return true;
         }
 
@@ -201,7 +248,8 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
         if (!contactEdtTxtFormatIsCorrect()) {
             return;
         }
-        teacherData = new TeacherData(firstNameEdtTxt.getText().toString().trim() + " " + lastNameEdtTxt.getText().toString().trim(), firstNameEdtTxt.getText().toString().trim(), lastNameEdtTxt.getText().toString().trim(), emailEdtTxt.getText().toString().trim(), salaryEdtTxt.getText().toString().trim(), cityEdtTxt.getText().toString().trim(), degreeEdtTxt.getText().toString().trim(), ageEdtTxt.getText().toString().trim(), getSelectedGenderRadioBtn(), getSelectedTypeRadioBtn(), "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim());
+
+        teacherData = new TeacherData(firstNameEdtTxt.getText().toString().trim() + " " + lastNameEdtTxt.getText().toString().trim(), firstNameEdtTxt.getText().toString().trim(), lastNameEdtTxt.getText().toString().trim(), FirebaseAuth.getInstance().getCurrentUser().getEmail(), salaryEdtTxt.getText().toString().trim(), cityEdtTxt.getText().toString().trim(), degreeEdtTxt.getText().toString().trim(), ageEdtTxt.getText().toString().trim(), getSelectedGenderRadioBtn(), "teacher", "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim());
         registerTeacherAndPutDataInDatabase();
 
     }
@@ -223,35 +271,101 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
     private void registerTeacherAndPutDataInDatabase() {
 
-        String email = emailEdtTxt.getText().toString().trim();
-        String password = "teacher1";
-        showProgress(true);
-        ////password one letter may cause a problem
-        showProgress(true);
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    putTeacherDataInDatabase();
-                    Toast.makeText(AddTeacherActivity.this, "Teacher Registered Successfully", Toast.LENGTH_SHORT).show();
+        teacherId = FirebaseAuth.getInstance().getUid();
+        putTeacherPhotoInDatabase();
 
-                }else{
-                   String error=task.getException().getMessage();
-                    Toast.makeText(AddTeacherActivity.this, "Error: "+error, Toast.LENGTH_SHORT).show();
+
+    }
+
+    private void putTeacherPhotoInDatabase() {
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        showProgress(true);
+        final StorageReference ref = FirebaseStorage.getInstance().getReference("teachers_images").child(teacherId + ".jpg");
+
+        UploadTask uploadTask = ref.putFile(uri);
+
+
+        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+                // Continue with the task to get the download URL
+                return ref.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    teacherData.setPhoto(downloadUri.toString());
+                    uploadThumbnail();
+                    Toast.makeText(AddTeacherActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
-
             }
         });
 
+        /////////////////////////////////////////////
+
+    }
+
+    private void uploadThumbnail() {
+        Uri thumbnail = null;
+        File compressedImgFile = null;
+
+        try {
+            compressedImgFile = new Compressor(this).setCompressFormat(Bitmap.CompressFormat.JPEG).setMaxHeight(10).setMaxWidth(10).setQuality(40).compressToFile(new File(uri.getPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        thumbnail = Uri.fromFile(compressedImgFile);
+        showProgress(true);
+        final StorageReference ref1 = FirebaseStorage.getInstance().getReference("teachers_thumbnail_images").child(teacherId);
+
+        UploadTask uploadTask1 = ref1.putFile(thumbnail);
+
+
+        uploadTask1.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+            @Override
+            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                if (!task.isSuccessful()) {
+                    throw task.getException();
+                }
+                // Continue with the task to get the download URL
+                return ref1.getDownloadUrl();
+            }
+        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+            @Override
+            public void onComplete(@NonNull Task<Uri> task) {
+                if (task.isSuccessful()) {
+                    Uri downloadUri = task.getResult();
+                    teacherData.setThumbnail(downloadUri.toString());
+                    putTeacherDataInDatabase();
+                    Toast.makeText(AddTeacherActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    String error = task.getException().getMessage();
+                    Toast.makeText(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+                showProgress(false);
+            }
+        });
     }
 
 
     private void putTeacherDataInDatabase() {
         showProgress(true);
-        collectionReference.add(teacherData).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+        collectionReference.document(FirebaseAuth.getInstance().getUid()).set(teacherData).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
+            public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     Toast.makeText(AddTeacherActivity.this, "Teacher Data Saved", Toast.LENGTH_SHORT).show();
                     resetEdtTxt();
@@ -268,18 +382,6 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
     }
 
-    private String getSelectedTypeRadioBtn() {
-        switch (typeRadioGroup.getCheckedRadioButtonId()) {
-            case R.id.teacherRadioBtn:
-                return "teacher";
-
-            case R.id.adminRadioBtn:
-                return "admin";
-
-
-        }
-        return null;
-    }
 
     private String getSelectedGenderRadioBtn() {
         switch (genderRadioGroup.getCheckedRadioButtonId()) {
@@ -317,17 +419,17 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     private void initWidgets() {
         firstNameEdtTxt = findViewById(R.id.firstNameEdtTxt);
         lastNameEdtTxt = findViewById(R.id.lastNameEdtTxt);
-        emailEdtTxt = findViewById(R.id.emailEdtTxt);
         salaryEdtTxt = findViewById(R.id.salaryEdtTxt);
         cityEdtTxt = findViewById(R.id.cityEdtTxt);
         degreeEdtTxt = findViewById(R.id.degreeEdtTxt);
         ageEdtTxt = findViewById(R.id.ageEdtTxt);
         genderRadioGroup = findViewById(R.id.genderRadioGroup);
-        typeRadioGroup = findViewById(R.id.typeRadioGroup);
         subjectSpinner = findViewById(R.id.subjectSpinner);
         contactEdtTxt = findViewById(R.id.contactEdtTxt);
         addPhotoBtn = findViewById(R.id.addPhotoBtn);
         addBtn = findViewById(R.id.addBtn);
+
+        imageView = findViewById(R.id.imageView);
 
 
 ////////////////////PROGRESS_BAR//////////////////////

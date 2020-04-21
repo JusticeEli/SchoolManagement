@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.justice.schoolmanagement">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -13,7 +14,13 @@
         android:roundIcon="@mipmap/school_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".class_.ChoosenClassActivity"></activity>
+        <activity android:name=".blog.AddBlogActivity"></activity>
+        <activity android:name=".blog.BlogActivity" />
+        <activity android:name=".main.RegisterActivity" />
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+        <activity android:name=".class_.ChoosenClassActivity" />
         <activity android:name=".results.ResultsEditActivity" />
         <activity android:name=".student.StudentDetailsActivity" />
         <activity android:name=".student.EditStudentActivity" />
@@ -30,16 +37,13 @@
         <activity android:name=".student.StudentsActivity" />
         <activity android:name=".parent.ParentsActivity" />
         <activity android:name=".teacher.TeachersActivity" />
-        <activity android:name=".dashboard.DashBoardActivity">
-
-        </activity>
+        <activity android:name=".dashboard.DashBoardActivity" />
         <activity android:name=".main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
     </application>
 

@@ -36,6 +36,8 @@ public class ApplicationClass extends Application {
 
     public static DocumentSnapshot documentSnapshot;
 
+    public static TeacherData teacherData;
+
     public static void onNavigationItemSelected(Context context, int itemId) {
         switch (itemId) {
 

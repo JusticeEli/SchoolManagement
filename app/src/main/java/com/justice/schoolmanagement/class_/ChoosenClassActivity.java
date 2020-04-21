@@ -1,6 +1,7 @@
 package com.justice.schoolmanagement.class_;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -12,6 +13,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,7 +26,15 @@ import android.widget.Toast;
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.firebase.ui.firestore.SnapshotParser;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -34,9 +44,11 @@ import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
+import com.justice.schoolmanagement.results.ResultsActivityRecyclerAdapter;
 import com.justice.schoolmanagement.student.StudentData;
 import com.justice.schoolmanagement.student.StudentMarks;
 import com.justice.schoolmanagement.student.StudentsActivity;
+import com.justice.schoolmanagement.student.StudentsActivityRecyclerAdapter;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
 
 import java.util.ArrayList;
@@ -67,6 +79,7 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
     private Button listOfStudentBtn, resultsBtn;
     private EditText searchEdtTxt;
     private RecyclerView listOfStudentRecyclerView, resultsRecyclerView;
+    private int counter=1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +87,9 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
         setContentView(R.layout.activity_choosen_class);
         class_ = getIntent().getIntExtra("class", 0);
         initWidgets();
+        setUpRecyclerView();
         initNavigationDrawer();
-
-
         setDefaultValues();
-        setAdapters();
         setOnClickListeners();
 
     }
@@ -102,19 +113,7 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
     }
 
 
-    private void setAdapters() {
-        choosenClassActivityResultsRecyclerAdapter = new ChoosenClassActivityResultsRecyclerAdapter(this);
-        resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        resultsRecyclerView.setAdapter(choosenClassActivityResultsRecyclerAdapter);
-        choosenClassActivityResultsRecyclerAdapter.setList(choosenClassStudentMarkList);
 
-
-        choosenClassActivityStudentsRecyclerAdapter = new ChoosenClassActivityStudentsRecyclerAdapter(this);
-        listOfStudentRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        listOfStudentRecyclerView.setAdapter(choosenClassActivityStudentsRecyclerAdapter);
-        choosenClassActivityStudentsRecyclerAdapter.setList(choosenClassStudentDataList);
-
-    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -129,7 +128,7 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.sortMenu:
-                sortStudentMarks();
+                Toast.makeText(this, "Not Yet Implemented", Toast.LENGTH_SHORT).show();
                 break;
         }
 
@@ -141,14 +140,7 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
         return super.onOptionsItemSelected(item);
     }
 
-    private void sortStudentMarks() {
-        int x = 1;
-        Collections.sort(choosenClassStudentMarkList);
-        for (StudentMarks studentMarks : choosenClassStudentMarkList) {
-            studentMarks.setPosition(x++);
-        }
-        choosenClassActivityResultsRecyclerAdapter.setList(choosenClassStudentMarkList);
-    }
+
 
     private void setDefaultValues() {
         switch (class_) {
@@ -318,51 +310,7 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
     }
 
     private void setOnClickListenerForSearchEdtTxt() {
-        searchEdtTxt.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                List<StudentMarks> list = new ArrayList<>();
-                if (searchEdtTxt.getText().toString().isEmpty()) {
-                    choosenClassActivityResultsRecyclerAdapter.setList(choosenClassStudentMarkList);
-                } else {
-
-                    for (StudentMarks studentMarks : choosenClassStudentMarkList) {
-                        if (studentMarks.getName().toLowerCase().contains(searchEdtTxt.getText().toString().toLowerCase())) {
-                            if (!list.contains(studentMarks)) {
-                                list.add(studentMarks);
-                            }
-                        }
-                    }
-                    choosenClassActivityResultsRecyclerAdapter.setList(list);
-                }
-
-                List<StudentData> list2 = new ArrayList<>();
-                if (searchEdtTxt.getText().toString().isEmpty()) {
-                    choosenClassActivityStudentsRecyclerAdapter.setList(choosenClassStudentDataList);
-                } else {
-
-                    for (StudentData studentData : choosenClassStudentDataList) {
-                        if (studentData.getFullName().toLowerCase().contains(searchEdtTxt.getText().toString().toLowerCase())) {
-                            if (!list2.contains(studentData)) {
-                                list2.add(studentData);
-                            }
-                        }
-                    }
-                    choosenClassActivityStudentsRecyclerAdapter.setList(list2);
-                }
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -391,8 +339,6 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
         listOfStudentBtn = findViewById(R.id.listOfStudentBtn);
         resultsBtn = findViewById(R.id.resultsBtn);
         searchEdtTxt = findViewById(R.id.searchEdtTxt);
-        listOfStudentRecyclerView = findViewById(R.id.listOfStudentRecyclerView);
-        resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
 
 
 ////////////////////PROGRESS_BAR//////////////////////
@@ -400,12 +346,63 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
         loadTxtView = findViewById(R.id.loadTxtView);
 
 
+
+
+
+    }
+
+    private void setUpRecyclerView() {
+        //////////////////STUDENTS/////////////////////////////
+        listOfStudentRecyclerView = findViewById(R.id.listOfStudentRecyclerView);
+        Query query = FirebaseFirestore.getInstance().collection("Students").whereEqualTo("classGrade",class_);
+        FirestoreRecyclerOptions<StudentData> firestoreRecyclerOptions = new FirestoreRecyclerOptions.Builder<StudentData>().setQuery(query, new SnapshotParser<StudentData>() {
+            @NonNull
+            @Override
+            public StudentData parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                StudentData studentData = snapshot.toObject(StudentData.class);
+                studentData.setId(snapshot.getId());
+                return studentData;
+            }
+        }).setLifecycleOwner(ChoosenClassActivity.this).build();
+
+
+        choosenClassActivityStudentsRecyclerAdapter = new ChoosenClassActivityStudentsRecyclerAdapter(this,firestoreRecyclerOptions);
+        listOfStudentRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        listOfStudentRecyclerView.setAdapter(choosenClassActivityStudentsRecyclerAdapter);
+
+
+
+
+
+
+
+
+
+
+        ////////////////////////////////RESULTS/////////////////////////
+        resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
+        Query query2 = FirebaseFirestore.getInstance().collection("StudentsMarks").whereEqualTo("classGrade",class_).orderBy("totalMarks", Query.Direction.DESCENDING);
+        FirestoreRecyclerOptions<StudentMarks> recyclerOptions=new FirestoreRecyclerOptions.Builder<StudentMarks>().setLifecycleOwner(this).setQuery(query2, new SnapshotParser<StudentMarks>() {
+            @NonNull
+            @Override
+            public StudentMarks parseSnapshot(@NonNull DocumentSnapshot snapshot) {
+                StudentMarks studentMarks=snapshot.toObject(StudentMarks.class);
+                studentMarks.setPosition(counter++);
+                studentMarks.setId(snapshot.getId());
+                return studentMarks;
+            }
+        }).build();
+
+        choosenClassActivityResultsRecyclerAdapter = new ChoosenClassActivityResultsRecyclerAdapter(this,recyclerOptions);
+        resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        resultsRecyclerView.setAdapter(choosenClassActivityResultsRecyclerAdapter);
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        sortStudentMarks();
         choosenClassActivityResultsRecyclerAdapter.notifyDataSetChanged();
         choosenClassActivityStudentsRecyclerAdapter.notifyDataSetChanged();
     }

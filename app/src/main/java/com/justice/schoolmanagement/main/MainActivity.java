@@ -4,12 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +30,7 @@ import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 
 public class MainActivity extends AppCompatActivity {
     private EditText emailEdtTxt, passwordEdtTxt;
-    private TextView resetPasswordTxtView;
+    private TextView resetPasswordTxtView, registerTxtView;
     private Button loginBtn;
 
     ///////////PROGRESS lINEAR_LAYOUT/////////
@@ -44,8 +46,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initwidgets();
+        setUpAnimation();
+
         firebaseAuth = FirebaseAuth.getInstance();
         setOnClickListeners();
+    }
+
+    private void setUpAnimation() {
+        RelativeLayout relativeLayout = findViewById(R.id.relativeLayout);
+        ScrollView scrollView = findViewById(R.id.scrollView);
+        AnimationDrawable animationDrawable1 = (AnimationDrawable) relativeLayout.getBackground();
+        AnimationDrawable animationDrawable2 = (AnimationDrawable) scrollView.getBackground();
+
+        animationDrawable1.setEnterFadeDuration(2000);
+        animationDrawable2.setEnterFadeDuration(1500);
+        animationDrawable1.setExitFadeDuration(1500);
+        animationDrawable2.setExitFadeDuration(2000);
+        animationDrawable1.start();
+        animationDrawable2.start();
     }
 
     @Override
@@ -116,6 +134,12 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
+        registerTxtView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RegisterActivity.class));
+            }
+        });
     }
 
     private boolean fieldsAreEmpty() {
@@ -152,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
         load = findViewById(R.id.loadingLinearLayout);
         loadTxtView = findViewById(R.id.loadTxtView);
         linearLayout = findViewById(R.id.linearLayout);
+        registerTxtView = findViewById(R.id.registerTxtView);
 
 
     }

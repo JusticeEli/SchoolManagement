@@ -31,7 +31,15 @@ public class StudentMarks implements Serializable, Comparable<StudentMarks> {
     private int kiswahili;
     private int sst_cre;
     private int totalMarks;
-    private String objectId;
+    private String id;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public StudentMarks() {
 
@@ -45,13 +53,6 @@ public class StudentMarks implements Serializable, Comparable<StudentMarks> {
         this.email = email;
     }
 
-    public String getObjectId() {
-        return objectId;
-    }
-
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
-    }
 
     public int getTotalMarks() {
         return totalMarks;
