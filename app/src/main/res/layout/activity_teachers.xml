@@ -29,13 +29,6 @@
                 android:textSize="20dp"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/searchEdtTxt"
-                android:layout_width="300dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center_horizontal"
-                android:hint="Search" />
 
         </LinearLayout>
         <!--PROGRESS.._________________________________  -->

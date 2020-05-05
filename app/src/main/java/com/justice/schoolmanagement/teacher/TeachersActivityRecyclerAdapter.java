@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,7 +43,7 @@ import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<TeacherData, TeachersActivityRecyclerAdapter.ViewHolder> {
+public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<TeacherData, TeachersActivityRecyclerAdapter.ViewHolder>  {
 
     private Context context;
 
@@ -50,12 +52,6 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
     private TeacherData teacherData;
     private FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
 
-    /**
-     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
-     * FirestoreRecyclerOptions} for configuration options.
-     *
-     * @param options
-     */
     public TeachersActivityRecyclerAdapter(Context context, @NonNull FirestoreRecyclerOptions<TeacherData> options) {
         super(options);
         this.context = context;
@@ -165,6 +161,7 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
         });
 
     }
+
 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
