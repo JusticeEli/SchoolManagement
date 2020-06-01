@@ -150,6 +150,10 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(uri == null ){
+                    Toast.makeText(AddStudentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+                    return ;
+                }
                 if (fieldsAreEmpty()) {
                     Toast.makeText(AddStudentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;
@@ -174,7 +178,11 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
     }
 
     private boolean fieldsAreEmpty() {
-        if (uri == null || firstNameEdtTxt.getText().toString().trim().isEmpty() || lastNameEdtTxt.getText().toString().trim().isEmpty() || emailEdtTxt.getText().toString().trim().isEmpty() || parentNameEdtTxt.getText().toString().trim().isEmpty() || dateOfBirthEdtTxt.getText().toString().trim().isEmpty() || dateOfArrivalEdtTxt.getText().toString().trim().isEmpty() || ageEdtTxt.getText().toString().trim().isEmpty() || cityEdtTxt.getText().toString().trim().isEmpty()) {
+
+
+        if ( firstNameEdtTxt.getText().toString().trim().isEmpty() || lastNameEdtTxt.getText().toString().trim().isEmpty() || emailEdtTxt.getText().toString().trim().isEmpty() || parentNameEdtTxt.getText().toString().trim().isEmpty() || dateOfBirthEdtTxt.getText().toString().trim().isEmpty() || dateOfArrivalEdtTxt.getText().toString().trim().isEmpty() || ageEdtTxt.getText().toString().trim().isEmpty() || cityEdtTxt.getText().toString().trim().isEmpty()) {
+
+
             return true;
         }
         return false;
@@ -208,7 +216,7 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
         studentData.setDateOfArrival(dateOfArrivalEdtTxt.getText().toString());
         studentData.setAge(ageEdtTxt.getText().toString());
         studentData.setGender(getSelectedRadioBtn());
-//        studentData.setClassTeacherName(classTeacherNameSpinner.getSelectedItem().toString());
+        studentData.setClassTeacherName(classTeacherNameSpinner.getSelectedItem().toString());
         studentData.setCity(cityEdtTxt.getText().toString());
         putImageToStorage();
 
@@ -469,7 +477,7 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
         nationalitySpinner.setAdapter(arrayAdapter2);
 
         String[] religion = {"Christian", "Muslim"};
-        ArrayAdapter<String> arrayAdapter3 = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, religion);
+        ArrayAdapter<String> arrayAdapter3 = new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item, religion);
         religionSpinner.setAdapter(arrayAdapter3);
 
         setValuesForClassTeacherNameSpinner();
@@ -478,14 +486,8 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
     }
 
     private void setValuesForClassTeacherNameSpinner() {
-        List<String> list = new ArrayList<>();
-        for (TeacherData teacherData : AllData.teacherDataList) {
-            list.add(teacherData.getFullName());
 
-        }
-        ArrayAdapter<String> arrayAdapter4 = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, list);
+        ArrayAdapter<String> arrayAdapter4 = new ArrayAdapter<>(this,R.layout.spinner_item, ApplicationClass.teacherNames);
         classTeacherNameSpinner.setAdapter(arrayAdapter4);
-
-
-    }
+     }
 }

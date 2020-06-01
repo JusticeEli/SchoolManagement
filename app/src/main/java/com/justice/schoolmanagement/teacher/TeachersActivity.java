@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.firebase.ui.firestore.SnapshotParser;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -43,9 +44,8 @@ import java.util.List;
 
 public class TeachersActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private TeachersActivityRecyclerAdapter teachersActivityRecyclerAdapter;
-    private EditText searchEdtTxt;
     private RecyclerView recyclerView;
-    private Button addTeacherBtn;
+ //   private FloatingActionButton addTeacherBtn;
 
     //////////////////DRAWER LAYOUT////////////////////////
 
@@ -67,7 +67,7 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
         initwidgets();
         initNavigationDrawer();
 
-        setOnClickListeners();
+     //   setOnClickListeners();
     }
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
@@ -104,18 +104,6 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
         return true;
     }
 
-    private void setOnClickListeners() {
-
-        addTeacherBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(TeachersActivity.this, AddTeacherActivity.class);
-                startActivity(intent);
-
-            }
-        });
-
-    }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -166,9 +154,7 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
 
     private void initwidgets() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        searchEdtTxt = findViewById(R.id.searchEdtTxt);
         recyclerView = findViewById(R.id.recyclerView);
-        addTeacherBtn = findViewById(R.id.addTeacherBtn);
 
         ////////////////////PROGRESS_BAR//////////////////////
         load = findViewById(R.id.loadingLinearLayout);

@@ -164,10 +164,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
                 super.onBackPressed();
                 break;
 
-            case R.id.sortMenu:
-                sortStudentMarks();
-                break;
-            default:
+             default:
                 break;
 
         }

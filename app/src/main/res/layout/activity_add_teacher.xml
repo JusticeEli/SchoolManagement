@@ -87,128 +87,122 @@
                         android:orientation="vertical"
                         android:padding="10dp">
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="First Name"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="First Name" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/firstNameEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Last Name"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Last Name" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/lastNameEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Contact"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Contact" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/contactEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="07..."
-                                android:inputType="number" />
-                        </LinearLayout>
+                                android:inputType="number"
+                                android:text="07" />
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Salary"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Salary" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/salaryEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="City"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="City" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/cityEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Degree"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Degree" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/degreeEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Age"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Age" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/ageEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -279,11 +273,9 @@
 
                             <Button
                                 android:id="@+id/addBtn"
-                                android:layout_width="100dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="20dp"
-                                android:background="@drawable/button_first"
-                                android:text="Submit"
                                 android:textAllCaps="false" />
 
 

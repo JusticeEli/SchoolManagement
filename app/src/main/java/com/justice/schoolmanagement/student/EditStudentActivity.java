@@ -199,16 +199,9 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
     }
 
     private void setDefaultValueForClassTeacherNameSpinner() {
-        //// TODO: 18-Mar-20 set default value of class teacher
-        for (int i = 0; i < AllData.teacherDataList.size(); i++) {
 
-            if (studentData.getClassTeacherName().equals(AllData.teacherDataList.get(i).getFullName())) {
+        classTeacherNameSpinner.setSelection(ApplicationClass.teacherNames.indexOf(studentData.getClassTeacherName()));
 
-                classTeacherNameSpinner.setSelection(i);
-                return;
-            }
-
-        }
     }
 
     private void setDefaultValueForReligionSpinner() {
@@ -273,6 +266,10 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(uri == null ){
+                    Toast.makeText(EditStudentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+                    return ;
+                }
 
                 if (fieldsAreEmpty()) {
                     Toast.makeText(EditStudentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
@@ -329,7 +326,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
         studentData.setClassGrade(Integer.parseInt(classGradeSpinner.getSelectedItem().toString().trim()));
         studentData.setNationality(nationalitySpinner.getSelectedItem().toString().trim());
         studentData.setReligion(religionSpinner.getSelectedItem().toString().trim());
-//        studentData.setClassTeacherName(classTeacherNameSpinner.getSelectedItem().toString().trim());
+        studentData.setClassTeacherName(classTeacherNameSpinner.getSelectedItem().toString().trim());
         studentData.setGender(getSelectedRadioBtn());
 
         studentData.setEmail(emailEdtTxt.getText().toString().trim());
@@ -442,7 +439,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             if (task.isSuccessful()) {
-                                ApplicationClass.documentSnapshot =task.getResult();
+                                ApplicationClass.documentSnapshot = task.getResult();
                                 updateStudentMarks();
                                 Toast.makeText(EditStudentActivity.this, "Student Data Updated", Toast.LENGTH_SHORT).show();
                                 finish();
@@ -484,7 +481,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
         FirebaseFirestore.getInstance().collection("StudentsMarks").document(studentData.getId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                studentMarks=documentSnapshot.toObject(StudentMarks.class);
+                studentMarks = documentSnapshot.toObject(StudentMarks.class);
                 studentMarks.setFullName(studentData.getFullName());
                 studentMarks.setClassGrade(studentData.getClassGrade());
                 studentMarks.setEmail(studentData.getEmail());
@@ -619,12 +616,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
     }
 
     private void setValuesForClassTeacherNameSpinner() {
-        List<String> list = new ArrayList<>();
-        for (TeacherData teacherData : AllData.teacherDataList) {
-            list.add(teacherData.getFullName());
-
-        }
-        ArrayAdapter<String> arrayAdapter4 = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, list);
+        ArrayAdapter<String> arrayAdapter4 = new ArrayAdapter<>(this, R.layout.spinner_item, ApplicationClass.teacherNames);
         classTeacherNameSpinner.setAdapter(arrayAdapter4);
 
 

@@ -127,10 +127,7 @@ public class ChoosenClassActivity extends AppCompatActivity implements Navigatio
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.sortMenu:
-                Toast.makeText(this, "Not Yet Implemented", Toast.LENGTH_SHORT).show();
-                break;
-        }
+             }
 
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;

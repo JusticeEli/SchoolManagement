@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -26,6 +27,7 @@ import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.firebase.ui.firestore.SnapshotParser;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -52,7 +54,7 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
     private ParentsActivityRecyclerAdapter parentsActivityRecyclerAdapter;
     private EditText searchEdtTxt;
     private RecyclerView recyclerView;
-    private Button addParentBtn;
+    private FloatingActionButton addParentBtn;
 
 
     //////////////////DRAWER LAYOUT////////////////////////
@@ -76,6 +78,12 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
         initNavigationDrawer();
 
         setOnClickListeners();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu,menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////

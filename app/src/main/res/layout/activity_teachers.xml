@@ -2,16 +2,16 @@
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     android:id="@+id/drawer"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".teacher.TeachersActivity">
 
 
     <RelativeLayout
-        android:background="@color/colorPrimaryLight"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorPrimaryLight"
         android:padding="20dp">
 
         <LinearLayout
@@ -68,14 +68,16 @@
 
         </androidx.recyclerview.widget.RecyclerView>
 
-        <Button
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/addTeacherBtn"
-            android:layout_width="match_parent"
+
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/recyclerView"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="5dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/button"
-            android:text="Add Teacher"
+            android:src="@drawable/ic_add"
             android:textAllCaps="false" />
 
     </RelativeLayout>
@@ -85,8 +87,8 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/menu_sidebar"
         android:background="@drawable/animation_list"
+        app:menu="@menu/menu_sidebar"
 
 
         />

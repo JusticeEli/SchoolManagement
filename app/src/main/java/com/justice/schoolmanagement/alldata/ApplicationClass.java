@@ -6,12 +6,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.backendless.Backendless;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
 import com.backendless.persistence.DataQueryBuilder;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
@@ -26,6 +33,7 @@ import com.justice.schoolmanagement.student.StudentsActivity;
 import com.justice.schoolmanagement.teacher.TeacherData;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApplicationClass extends Application {
@@ -37,6 +45,8 @@ public class ApplicationClass extends Application {
     public static DocumentSnapshot documentSnapshot;
 
     public static TeacherData teacherData;
+    public static List<String> teacherNames=new ArrayList<>();
+
 
     public static void onNavigationItemSelected(Context context, int itemId) {
         switch (itemId) {
@@ -83,10 +93,31 @@ public class ApplicationClass extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        loadTeacherNames();
+
         Backendless.setUrl(SERVER_URL);
         Backendless.initApp(getApplicationContext(), APPLICATION_ID, API_KEY);
         //  loadDataFromDatabase();
 
+    }
+
+    private void loadTeacherNames() {
+
+        FirebaseFirestore.getInstance().collection("Teachers").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                Toast.makeText(ApplicationClass.this, "Loading Teachers name: ", Toast.LENGTH_SHORT).show();
+
+                if (task.isSuccessful()){
+                    for (QueryDocumentSnapshot documentSnapshot:task.getResult()){
+                        teacherNames.add(documentSnapshot.toObject(TeacherData.class).getFullName());
+                    }
+
+                }else {
+                    Toast.makeText(ApplicationClass.this, "Error: "+task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void loadDataFromDatabase() {

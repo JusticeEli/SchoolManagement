@@ -51,6 +51,7 @@ import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
+import com.justice.schoolmanagement.student.AddStudentActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -241,6 +242,10 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     }
 
     private void getDataFromEdtTxtAndAddItToDatabase() {
+        if(uri == null ){
+            Toast.makeText(AddTeacherActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+            return ;
+        }
         if (fieldsAreEmpty()) {
             Toast.makeText(AddTeacherActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
             return;

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Adapter;
@@ -48,7 +49,6 @@ import static com.justice.schoolmanagement.R.layout.activity_students;
 
 public class StudentsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private StudentsActivityRecyclerAdapter studentsActivityRecyclerAdapter;
-    private EditText searchEdtTxt;
     private RecyclerView recyclerView;
     private Button addStudentBtn;
 
@@ -72,6 +72,12 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
         initwidgets();
         initNavigationDrawer();
         setOnClickListeners();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
@@ -155,14 +161,13 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
     private void initwidgets() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        searchEdtTxt = findViewById(R.id.searchEdtTxt);
         recyclerView = findViewById(R.id.recyclerView);
         addStudentBtn = findViewById(R.id.addStudentBtn);
 
         /////////////////PROGRESS_BAR//////////////////////
         load = findViewById(R.id.loadingLinearLayout);
         loadTxtView = findViewById(R.id.loadTxtView);
-        recyclerView=findViewById(R.id.recyclerView);
+        recyclerView = findViewById(R.id.recyclerView);
 
         Query query = firebaseFirestore.collection("Students");
         FirestoreRecyclerOptions<StudentData> firestoreRecyclerOptions = new FirestoreRecyclerOptions.Builder<StudentData>().setQuery(query, new SnapshotParser<StudentData>() {
@@ -176,7 +181,7 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
         }).setLifecycleOwner(StudentsActivity.this).build();
 
 
-        studentsActivityRecyclerAdapter = new StudentsActivityRecyclerAdapter(this,firestoreRecyclerOptions);
+        studentsActivityRecyclerAdapter = new StudentsActivityRecyclerAdapter(this, firestoreRecyclerOptions);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(studentsActivityRecyclerAdapter);
 

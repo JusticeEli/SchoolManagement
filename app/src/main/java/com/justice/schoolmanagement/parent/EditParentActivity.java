@@ -49,6 +49,7 @@ import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
+import com.justice.schoolmanagement.student.AddStudentActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
 import com.justice.schoolmanagement.teacher.EditTeacherActivity;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
@@ -327,6 +328,10 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (uri == null) {
+                    Toast.makeText(EditParentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 if (fieldsAreEmpty()) {
                     Toast.makeText(EditParentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;
@@ -429,8 +434,9 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
 
     }
+
     private void uploadThumbnail() {
-        Uri thumbnail ;
+        Uri thumbnail;
         File compressedImgFile = null;
 
         try {
@@ -485,12 +491,12 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
                     documentSnapshot.getReference().get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()){
+                            if (task.isSuccessful()) {
                                 ApplicationClass.documentSnapshot = task.getResult();
                                 Toast.makeText(EditParentActivity.this, parentData.getFirstName() + " Edited Successfully", Toast.LENGTH_SHORT).show();
                                 finish();
 
-                            }else{
+                            } else {
                                 String error = task.getException().getMessage();
                                 Toast.makeText(EditParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 

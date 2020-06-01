@@ -49,6 +49,7 @@ import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
+import com.justice.schoolmanagement.student.AddStudentActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
 import com.justice.schoolmanagement.teacher.AddTeacherActivity;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
@@ -247,6 +248,10 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(uri == null ){
+                    Toast.makeText(AddParentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+                    return ;
+                }
                 if (fieldsAreEmpty()) {
                     Toast.makeText(AddParentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;

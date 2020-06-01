@@ -64,10 +64,10 @@
                         android:orientation="horizontal">
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:layout_width="100dp"
                             android:id="@+id/imageView"
-                            android:scaleType="centerCrop"
+                            android:layout_width="100dp"
                             android:layout_height="100dp"
+                            android:scaleType="centerCrop"
                             android:src="@mipmap/place_holder" />
 
                         <TextView
@@ -78,25 +78,27 @@
                             android:text="Add Parent"
                             android:textSize="20dp"
                             android:textStyle="bold" />
+
                         <LinearLayout
-                            android:layout_width="wrap_content"
                             android:id="@+id/skipLinearLayout"
-                            android:visibility="gone"
-                            android:layout_height="wrap_content">
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:visibility="gone">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginLeft="50dp"
                                 android:text="Skip"
-                                android:textColor="@color/colorAccent"
-                                android:layout_marginLeft="50dp"/>
+                                android:textColor="@color/colorAccent" />
+
                             <Button
 
                                 android:id="@+id/skipBtn"
-                                android:layout_gravity="right"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:background="@drawable/skip"/>
+                                android:layout_gravity="right"
+                                android:background="@drawable/skip" />
 
 
                         </LinearLayout>
@@ -107,143 +109,157 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginTop="20dp"
-                        android:padding="10dp"
                         android:background="@color/colorPrimaryLight"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:padding="10dp">
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="First Name"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="First Name" />
-
-                            <EditText
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/firstNameEdtTxt"
-                                android:inputType="textPersonName"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Last Name" />
-
-                            <EditText
-                                android:inputType="textPersonName"
-                                android:id="@+id/lastNameEdtTxt"
-                                android:layout_width="200dp"
-                                android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Email" />
-
-                            <EditText
-                                android:id="@+id/emailEdtTxt"
-                                android:inputType="textEmailAddress"
-                                android:layout_width="200dp"
-                                android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="City" />
-
-                            <AutoCompleteTextView
-                                android:inputType="textPersonName"
-                                android:completionThreshold="1"
-                                android:id="@+id/cityEdtTxt"
-                                android:layout_width="200dp"
-                                android:layout_height="wrap_content" />
-                        </LinearLayout>
-
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Contact" />
-
-                            <EditText
-                                android:id="@+id/contactEdtTxt"
-                                android:layout_width="200dp"
-                                android:hint="07..."
-                                android:layout_height="wrap_content"
-                                android:inputType="number" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Job Status" />
+                            android:hint="Job Status"
+                            app:helperText="Job Status"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
                             <Spinner
+                                android:padding="20dp"
                                 android:id="@+id/jobStatusSpinner"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
-                        </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        </com.google.android.material.textfield.TextInputLayout>
+
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Last Name"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/lastNameEdtTxt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Email"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/emailEdtTxt"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Age" />
+                                android:inputType="textEmailAddress" />
 
-                            <EditText
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="City"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/cityEdtTxt"
+                                android:padding="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:completionThreshold="1"
+                                android:inputType="text" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Contact"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/contactEdtTxt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="phone" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Age"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/ageEdtTxt"
-                                android:layout_width="200dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="number" />
-                        </LinearLayout>
 
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:hint="Job Field"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
-                            <TextView
-                                android:layout_width="100dp"
+                            <AutoCompleteTextView
+                                android:padding="10dp"
+                                android:id="@+id/jobTypeEdtTxt"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Gender" />
+                                android:completionThreshold="1" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Gender"
+                            app:helperText="Gender"
+                            app:boxBackgroundMode="outline"
+                            app:boxCornerRadiusTopEnd="20dp"
+                            app:boxCornerRadiusTopStart="20dp">
 
                             <RadioGroup
                                 android:id="@+id/genderRadioGroup"
@@ -270,26 +286,154 @@
                                     android:layout_height="wrap_content"
                                     android:text="Other" />
                             </RadioGroup>
-                        </LinearLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                        <!--
+                          <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
 
-                            <TextView
-                                android:layout_width="100dp"
-                                android:layout_height="wrap_content"
-                                android:text="Job Field" />
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="First Name" />
+
+                             <EditText
+                                 android:id="@+id/firstNameEdtTxt"
+                                 android:inputType="textPersonName"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content" />
+                         </LinearLayout>
 
 
-                            <AutoCompleteTextView
-                                android:id="@+id/jobTypeEdtTxt"
-                                android:layout_width="200dp"
-                                android:layout_height="wrap_content"
-                                android:completionThreshold="1"
-                              />
-                        </LinearLayout>
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="Last Name" />
+
+                             <EditText
+                                 android:inputType="textPersonName"
+                                 android:id="@+id/lastNameEdtTxt"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content" />
+                         </LinearLayout>
+
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="Email" />
+
+                             <EditText
+                                 android:id="@+id/emailEdtTxt"
+                                 android:inputType="textEmailAddress"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content" />
+                         </LinearLayout>
+
+
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="City" />
+
+                             <AutoCompleteTextView
+                                 android:inputType="textPersonName"
+                                 android:completionThreshold="1"
+                                 android:id="@+id/cityEdtTxt"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content" />
+                         </LinearLayout>
+
+
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="Contact" />
+
+                             <EditText
+                                 android:id="@+id/contactEdtTxt"
+                                 android:layout_width="200dp"
+                                 android:hint="07..."
+                                 android:layout_height="wrap_content"
+                                 android:inputType="number" />
+                         </LinearLayout>
+
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="Job Status" />
+
+                             <Spinner
+                                 android:id="@+id/jobStatusSpinner"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content" />
+                         </LinearLayout>
+
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="Age" />
+
+                             <EditText
+                                 android:id="@+id/ageEdtTxt"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content"
+                                 android:inputType="number" />
+                         </LinearLayout>
+
+
+
+                         <LinearLayout
+                             android:layout_width="wrap_content"
+                             android:layout_height="wrap_content"
+                             android:orientation="horizontal">
+
+                             <TextView
+                                 android:layout_width="100dp"
+                                 android:layout_height="wrap_content"
+                                 android:text="Job Field" />
+
+
+                             <AutoCompleteTextView
+                                 android:id="@+id/jobTypeEdtTxt"
+                                 android:layout_width="200dp"
+                                 android:layout_height="wrap_content"
+                                 android:completionThreshold="1"
+                               />
+                         </LinearLayout>
+                        -->
+
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -328,7 +472,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@drawable/animation_list"
-        app:menu="@menu/menu_sidebar"
-        />
+        app:menu="@menu/menu_sidebar" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
