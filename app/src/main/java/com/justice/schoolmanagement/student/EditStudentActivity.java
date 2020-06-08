@@ -106,7 +106,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
         studentData.setId(ApplicationClass.documentSnapshot.getId());
         initWidgets();
 
-        initNavigationDrawer();
+     //   initNavigationDrawer();
 
         setDefaultValuesToEdtTxt();
         setOnClickListeners();
@@ -518,9 +518,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
     }
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
+
 
         switch (item.getItemId()) {
             case android.R.id.home:

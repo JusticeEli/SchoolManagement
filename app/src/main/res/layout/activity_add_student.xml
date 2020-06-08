@@ -315,6 +315,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="City"
+                            app:endIconMode="dropdown_menu"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
                             app:boxCornerRadiusTopStart="20dp">

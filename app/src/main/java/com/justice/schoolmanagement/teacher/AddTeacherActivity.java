@@ -103,7 +103,7 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
         setContentView(R.layout.activity_add_teacher);
         initWidgets();
         setDefaultValues();
-        initNavigationDrawer();
+    //   initNavigationDrawer();
 
         setOnClickListeners();
     }
@@ -114,9 +114,7 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
+
 
         return super.onOptionsItemSelected(item);
     }

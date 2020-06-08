@@ -110,7 +110,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
         parentData = documentSnapshot.toObject(ParentData.class);
         initWidgets();
         initAdapters();
-        initNavigationDrawer();
+       // initNavigationDrawer();
 
 
         setDefaulValues();
@@ -223,9 +223,6 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
 
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -269,6 +266,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
 
     private void initWidgets() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         firstNameEdtTxt = findViewById(R.id.firstNameEdtTxt);
         lastNameEdtTxt = findViewById(R.id.lastNameEdtTxt);
         emailEdtTxt = findViewById(R.id.emailEdtTxt);

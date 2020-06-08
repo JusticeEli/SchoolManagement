@@ -87,7 +87,7 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_student);
         initWidgets();
-        initNavigationDrawer();
+     //   initNavigationDrawer();
 
         setOnClickListeners();
     }
@@ -393,9 +393,7 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
     }
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
+
 
 
         switch (item.getItemId()) {

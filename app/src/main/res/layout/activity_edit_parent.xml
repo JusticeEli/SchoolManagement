@@ -163,6 +163,7 @@
                             android:hint="City"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
+                            app:endIconMode="dropdown_menu"
                             app:boxCornerRadiusTopStart="20dp">
 
                             <AutoCompleteTextView
@@ -216,6 +217,7 @@
                             android:hint="Job Field"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
+                            app:endIconMode="dropdown_menu"
                             app:boxCornerRadiusTopStart="20dp">
 
                             <AutoCompleteTextView

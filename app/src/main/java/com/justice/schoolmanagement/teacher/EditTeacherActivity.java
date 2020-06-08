@@ -112,7 +112,7 @@ public class EditTeacherActivity extends AppCompatActivity implements Navigation
         initWidgets();
         teacherData = ApplicationClass.documentSnapshot.toObject(TeacherData.class);
         teacherData.setId(ApplicationClass.documentSnapshot.getId());
-        initNavigationDrawer();
+      //  initNavigationDrawer();
 
 
         setDefaultValues();
@@ -186,9 +186,6 @@ public class EditTeacherActivity extends AppCompatActivity implements Navigation
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
 
 
         switch (item.getItemId()) {

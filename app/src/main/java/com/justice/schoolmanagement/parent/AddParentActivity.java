@@ -105,7 +105,7 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
         initWidgets();
         setSkipBtn();
         initAdapters();
-        initNavigationDrawer();
+     //   initNavigationDrawer();
 
         setOnClickListeners();
     }
@@ -216,9 +216,6 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
 
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -445,6 +442,7 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
 
     private void initWidgets() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         firstNameEdtTxt = findViewById(R.id.firstNameEdtTxt);
         lastNameEdtTxt = findViewById(R.id.lastNameEdtTxt);
         emailEdtTxt = findViewById(R.id.emailEdtTxt);
