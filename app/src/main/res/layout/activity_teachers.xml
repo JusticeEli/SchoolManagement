@@ -14,23 +14,7 @@
         android:background="@color/colorPrimaryLight"
         android:padding="20dp">
 
-        <LinearLayout
-            android:id="@+id/header"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TEACHERS"
-                android:textSize="20dp"
-                android:textStyle="bold" />
-
-
-        </LinearLayout>
         <!--PROGRESS.._________________________________  -->
         <LinearLayout
             android:id="@+id/loadingLinearLayout"

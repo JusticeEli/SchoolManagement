@@ -30,7 +30,7 @@
         android:title="Results" />
     <item
         android:id="@+id/logoutMenu"
-        android:icon="@mipmap/logout"
+        android:icon="@drawable/ic_logout"
         android:title="Logout" />
 
 </menu>

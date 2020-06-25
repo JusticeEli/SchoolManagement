@@ -1,26 +1,22 @@
 package com.justice.schoolmanagement.student;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Adapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.firebase.ui.firestore.SnapshotParser;
@@ -28,24 +24,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.dashboard.DashBoardActivity;
-import com.justice.schoolmanagement.parent.ParentData;
-import com.justice.schoolmanagement.parent.ParentsActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.teacher.AddTeacherActivity;
-import com.justice.schoolmanagement.teacher.TeacherData;
-import com.justice.schoolmanagement.teacher.TeachersActivity;
-import com.justice.schoolmanagement.teacher.TeachersActivityRecyclerAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.justice.schoolmanagement.R.layout.activity_students;
 
 public class StudentsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private StudentsActivityRecyclerAdapter studentsActivityRecyclerAdapter;
@@ -68,10 +48,12 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_students);
+        setTitle("STUDENTS");
 
         initwidgets();
         initNavigationDrawer();
         setOnClickListeners();
+        setSwipeListenerForItems();
     }
 
     @Override
@@ -157,6 +139,20 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
 
     }
 
+    private void setSwipeListenerForItems() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
+                studentsActivityRecyclerAdapter.deleteStudentFromDatabase(viewHolder.getAdapterPosition());
+
+            }
+        }).attachToRecyclerView(recyclerView);
+    }
 
     private void initwidgets() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

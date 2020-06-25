@@ -8,10 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.backendless.Backendless;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
-import com.backendless.persistence.DataQueryBuilder;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,11 +20,8 @@ import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
 import com.justice.schoolmanagement.main.MainActivity;
-import com.justice.schoolmanagement.parent.ParentData;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.student.StudentData;
-import com.justice.schoolmanagement.student.StudentMarks;
 import com.justice.schoolmanagement.student.StudentsActivity;
 import com.justice.schoolmanagement.teacher.TeacherData;
 import com.justice.schoolmanagement.teacher.TeachersActivity;
@@ -95,10 +88,6 @@ public class ApplicationClass extends Application {
         super.onCreate();
         loadTeacherNames();
 
-        Backendless.setUrl(SERVER_URL);
-        Backendless.initApp(getApplicationContext(), APPLICATION_ID, API_KEY);
-        //  loadDataFromDatabase();
-
     }
 
     private void loadTeacherNames() {
@@ -111,6 +100,7 @@ public class ApplicationClass extends Application {
                 if (task.isSuccessful()){
                     for (QueryDocumentSnapshot documentSnapshot:task.getResult()){
                         teacherNames.add(documentSnapshot.toObject(TeacherData.class).getFullName());
+                        AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData.class));
                     }
 
                 }else {
@@ -120,61 +110,5 @@ public class ApplicationClass extends Application {
         });
     }
 
-    private void loadDataFromDatabase() {
-        DataQueryBuilder dataQueryBuilder = DataQueryBuilder.create();
-        dataQueryBuilder.setGroupBy("fullName");
 
-        Backendless.Persistence.of(TeacherData.class).find(dataQueryBuilder, new AsyncCallback<List<TeacherData>>() {
-            @Override
-            public void handleResponse(List<TeacherData> response) {
-                AllData.teacherDataList = response;
-                Toast.makeText(ApplicationClass.this, "loaded Teacher data list", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Toast.makeText(ApplicationClass.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-        Backendless.Persistence.of(ParentData.class).find(dataQueryBuilder, new AsyncCallback<List<ParentData>>() {
-            @Override
-            public void handleResponse(List<ParentData> response) {
-                AllData.parentDataList = response;
-                Toast.makeText(ApplicationClass.this, "loaded Parent data list", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Toast.makeText(ApplicationClass.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-        Backendless.Persistence.of(StudentData.class).find(dataQueryBuilder, new AsyncCallback<List<StudentData>>() {
-            @Override
-            public void handleResponse(List<StudentData> response) {
-                AllData.studentDataList = response;
-                Toast.makeText(ApplicationClass.this, "loaded StudentData data list", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Toast.makeText(ApplicationClass.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-        Backendless.Persistence.of(StudentMarks.class).find(dataQueryBuilder, new AsyncCallback<List<StudentMarks>>() {
-            @Override
-            public void handleResponse(List<StudentMarks> response) {
-                AllData.studentMarksList = response;
-                Toast.makeText(ApplicationClass.this, "loaded StudentMarks data list", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void handleFault(BackendlessFault fault) {
-                Toast.makeText(ApplicationClass.this, "Error: " + fault.getMessage(), Toast.LENGTH_SHORT).show();
-
-            }
-        });
-    }
 }

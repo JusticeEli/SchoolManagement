@@ -37,8 +37,12 @@
         <activity android:name=".student.StudentsActivity" />
         <activity android:name=".parent.ParentsActivity" />
         <activity android:name=".teacher.TeachersActivity" />
-        <activity android:name=".dashboard.DashBoardActivity" />
-        <activity android:name=".main.MainActivity">
+        <activity
+            android:name=".dashboard.DashBoardActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".main.MainActivity"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

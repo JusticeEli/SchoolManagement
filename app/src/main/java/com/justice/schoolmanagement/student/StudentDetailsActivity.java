@@ -1,5 +1,14 @@
 package com.justice.schoolmanagement.student;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -7,39 +16,20 @@ import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.backendless.Backendless;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.flaviofaria.kenburnsview.KenBurnsView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.dashboard.DashBoardActivity;
-import com.justice.schoolmanagement.parent.ParentsActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.teacher.TeachersActivity;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import es.dmoral.toasty.Toasty;
 
 public class StudentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private TextView studentNameTxtView, studentClassTxtView, firstNameTxtView, lastNameTxtView, classGradeTxtView, nationalityTxtView, religionTxtView, emailTxtView, parentNameTxtView, dateOfBirthTxtView, dateOfArrivalTxtView, ageTxtView, genderTxtView, classTeacherNameTxtView, cityTxtView, deleteTxtView, editTxtView;
@@ -56,7 +46,7 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
 
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
-    private CircleImageView imageView;
+    private KenBurnsView imageView;
 
 
     @Override
@@ -114,18 +104,16 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
     }
 
     private void deleteStudentDataFromDatabase() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are You Sure you Want To delete!!").setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
 
-            }
-        }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+        new MaterialAlertDialogBuilder(StudentDetailsActivity.this).setBackground(getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deleteStudent();
             }
-        });
-        builder.show();
+        }).show();
+
+
     }
 
     private void deleteStudent() {
@@ -135,11 +123,11 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(StudentDetailsActivity.this, "Photo Deleted", Toast.LENGTH_SHORT).show();
+                    Toasty.success(StudentDetailsActivity.this, "Photo Deleted", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -155,12 +143,12 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
                             if (task.isSuccessful()) {
                                 ApplicationClass.documentSnapshot = task.getResult();
                                 removeStudentMarksFromDatabase();
-                                Toast.makeText(StudentDetailsActivity.this, "Student data Removed", Toast.LENGTH_SHORT).show();
+                                Toasty.success(StudentDetailsActivity.this, "Student data Removed", Toast.LENGTH_SHORT).show();
                                 finish();
 
                             } else {
                                 String error = task.getException().getMessage();
-                                Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                                Toasty.error(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
                             }
                             showProgress(false);
@@ -186,12 +174,12 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(StudentDetailsActivity.this, "Student Marks removed", Toast.LENGTH_SHORT).show();
+                    Toasty.success(StudentDetailsActivity.this, "Student Marks removed", Toast.LENGTH_SHORT).show();
 
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(StudentDetailsActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
                 }
                 showProgress(false);

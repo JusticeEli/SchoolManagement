@@ -19,13 +19,13 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.results.ResultsActivityRecyclerAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -78,24 +78,24 @@ public class BlogRecyclerAdapter extends FirestoreRecyclerAdapter<Blog, BlogRecy
                 }
             }
         });
-holder.likeImageView.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-        if(holder.hasLiked){
-            holder.hasLiked = false;
-            holder.likeImageView.setImageDrawable(context.getDrawable(R.drawable.ic_unlike));
-            FirebaseFirestore.getInstance().collection("blogs").document(model.getId()).collection("likes").document(FirebaseAuth.getInstance().getUid()).delete();
+        holder.likeImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (holder.hasLiked) {
+                    holder.hasLiked = false;
+                    holder.likeImageView.setImageDrawable(context.getDrawable(R.drawable.ic_unlike));
+                    FirebaseFirestore.getInstance().collection("blogs").document(model.getId()).collection("likes").document(FirebaseAuth.getInstance().getUid()).delete();
 
-        }else {
-            Map<String, Object> map = new HashMap<>();
-            map.put("data", "data");
-            holder.hasLiked = true;
-            holder.likeImageView.setImageDrawable(context.getDrawable(R.drawable.ic_like));
-            FirebaseFirestore.getInstance().collection("blogs").document(model.getId()).collection("likes").document(FirebaseAuth.getInstance().getUid()).set(map);
+                } else {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("data", "data");
+                    holder.hasLiked = true;
+                    holder.likeImageView.setImageDrawable(context.getDrawable(R.drawable.ic_like));
+                    FirebaseFirestore.getInstance().collection("blogs").document(model.getId()).collection("likes").document(FirebaseAuth.getInstance().getUid()).set(map);
 
-        }
-    }
-});
+                }
+            }
+        });
 
         ///////////////////////////////////////////
 
@@ -116,6 +116,10 @@ holder.likeImageView.setOnClickListener(new View.OnClickListener() {
             }
         });
 
+    }
+
+    public DocumentReference getBlogReferenceByPosition(int position) {
+        return getSnapshots().getSnapshot(position).getReference();
     }
 
     @NonNull

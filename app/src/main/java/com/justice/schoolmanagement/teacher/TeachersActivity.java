@@ -1,51 +1,35 @@
 package com.justice.schoolmanagement.teacher;
 
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
-
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.firebase.ui.firestore.SnapshotParser;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.dashboard.DashBoardActivity;
-import com.justice.schoolmanagement.parent.ParentsActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.student.StudentsActivity;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TeachersActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private TeachersActivityRecyclerAdapter teachersActivityRecyclerAdapter;
     private RecyclerView recyclerView;
- //   private FloatingActionButton addTeacherBtn;
+    //   private FloatingActionButton addTeacherBtn;
 
     //////////////////DRAWER LAYOUT////////////////////////
 
@@ -63,11 +47,25 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_teachers);
-
+        setTitle("TEACHERS");
         initwidgets();
         initNavigationDrawer();
 
-     //   setOnClickListeners();
+        setSwipeListenerForItems();
+    }
+
+    private void setSwipeListenerForItems() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
+           teachersActivityRecyclerAdapter.deleteTeacherDataFromDatabase(viewHolder.getAdapterPosition());
+            }
+        }).attachToRecyclerView(recyclerView);
     }
 
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
@@ -85,8 +83,8 @@ public class TeachersActivity extends AppCompatActivity implements NavigationVie
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu, menu);
 
-        MenuItem searchItem=menu.findItem(R.id.searchItem);
-        SearchView searchView=(SearchView) searchItem.getActionView();
+        MenuItem searchItem = menu.findItem(R.id.searchItem);
+        SearchView searchView = (SearchView) searchItem.getActionView();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

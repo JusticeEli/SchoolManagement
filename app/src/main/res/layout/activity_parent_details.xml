@@ -62,7 +62,7 @@
                 android:orientation="horizontal"
                 android:padding="10dp">
 
-                <de.hdodenhof.circleimageview.CircleImageView
+                <com.flaviofaria.kenburnsview.KenBurnsView
                     android:id="@+id/imageView"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -258,7 +258,7 @@
                             android:layout_marginTop="30dp"
                             android:orientation="horizontal">
 
-                            <ImageView
+                            <de.hdodenhof.circleimageview.CircleImageView
                                 android:id="@+id/callImageView"
                                 android:layout_width="50dp"
                                 android:layout_height="50dp"
@@ -266,7 +266,7 @@
                                 android:src="@mipmap/call"
                                 android:textColor="@color/colorAccent" />
 
-                            <ImageView
+                            <de.hdodenhof.circleimageview.CircleImageView
                                 android:id="@+id/emailImageView"
                                 android:layout_width="50dp"
                                 android:layout_height="50dp"

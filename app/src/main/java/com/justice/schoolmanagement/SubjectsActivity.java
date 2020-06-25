@@ -1,11 +1,5 @@
 package com.justice.schoolmanagement;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -14,6 +8,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.alldata.AllData;
@@ -26,6 +26,9 @@ import com.justice.schoolmanagement.teacher.TeachersActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.R.id;
+import static android.R.layout;
 
 public class SubjectsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -41,6 +44,7 @@ public class SubjectsActivity extends AppCompatActivity implements NavigationVie
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_subjects);
+        setTitle("Subjects");
         initWidgets();
         initNavigationDrawer();
 
@@ -80,27 +84,27 @@ public class SubjectsActivity extends AppCompatActivity implements NavigationVie
         switch (position) {
             case 0:
                 List<String> list = getMath();
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, layout.simple_list_item_1, list);
                 listView.setAdapter(arrayAdapter);
                 break;
             case 1:
                 List<String> list2 = getScience();
-                ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list2);
+                ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(this, layout.simple_list_item_1, list2);
                 listView.setAdapter(arrayAdapter2);
                 break;
             case 2:
                 List<String> list3 = getEnglish();
-                ArrayAdapter<String> arrayAdapter3 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list3);
+                ArrayAdapter<String> arrayAdapter3 = new ArrayAdapter<String>(this, layout.simple_list_item_1, list3);
                 listView.setAdapter(arrayAdapter3);
                 break;
             case 3:
                 List<String> list4 = getKiswahili();
-                ArrayAdapter<String> arrayAdapter4 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list4);
+                ArrayAdapter<String> arrayAdapter4 = new ArrayAdapter<String>(this, layout.simple_list_item_1, list4);
                 listView.setAdapter(arrayAdapter4);
                 break;
             case 4:
                 List<String> list5 = getSst_cre();
-                ArrayAdapter<String> arrayAdapter5 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list5);
+                ArrayAdapter<String> arrayAdapter5 = new ArrayAdapter<String>(this, layout.simple_list_item_1, list5);
                 listView.setAdapter(arrayAdapter5);
                 break;
 
@@ -159,7 +163,7 @@ public class SubjectsActivity extends AppCompatActivity implements NavigationVie
 
     private void setSpinnerValues() {
         String[] subjects = {"Math", "Science", "English", "Kiswahili", "sst_cre"};
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, subjects);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, layout.simple_dropdown_item_1line, subjects);
         spinner.setAdapter(arrayAdapter);
     }
 
@@ -219,7 +223,7 @@ public class SubjectsActivity extends AppCompatActivity implements NavigationVie
         }
 
         switch (item.getItemId()) {
-            case android.R.id.home:
+            case id.home:
                 super.onBackPressed();
                 break;
             default:

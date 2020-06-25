@@ -1,39 +1,32 @@
 package com.justice.schoolmanagement.student;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.backendless.Backendless;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import de.hdodenhof.circleimageview.CircleImageView;
+import es.dmoral.toasty.Toasty;
 
 public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<StudentData, StudentsActivityRecyclerAdapter.ViewHolder> {
 
@@ -89,19 +82,19 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
     }
 
 
-    private void deleteStudentFromDatabase(final int position) {
+    public void deleteStudentFromDatabase(final int position) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context).setTitle("Delete").setMessage("Are You Sure you Want To delete!!").setNegativeButton("No", new DialogInterface.OnClickListener() {
+        new MaterialAlertDialogBuilder(context).setBackground(context.getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                notifyItemChanged(position);
             }
-        }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        }).setPositiveButton("yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                deleteStudent(position);
+               deleteStudent(position);
             }
-        });
-        builder.show();
+        }).show();
     }
 
     private void deleteStudent(int position) {
@@ -111,11 +104,11 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(context, "Photo Deleted", Toast.LENGTH_SHORT).show();
+                    Toasty.success(context, "Photo Deleted", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(context, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 studentsActivity.showProgress(false);
             }
@@ -124,10 +117,10 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(context, "StudentData Deleted ", Toast.LENGTH_SHORT).show();
+                    Toasty.success(context, "StudentData Deleted ", Toast.LENGTH_SHORT).show();
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(context, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 studentsActivity.showProgress(false);
             }
@@ -136,10 +129,10 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(context, "StudentsMarks Deleted ", Toast.LENGTH_SHORT).show();
+                    Toasty.success(context, "StudentsMarks Deleted ", Toast.LENGTH_SHORT).show();
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(context, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 studentsActivity.showProgress(false);
 
@@ -155,7 +148,9 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
         return viewHolder;
 
     }
-
+    public DocumentReference getSwipedItem(int position) {
+        return getSnapshots().getSnapshot(position).getReference();
+    }
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView studentNameTxtView, studentClassTxtView, deleteTxtView, editTxtView;
         private CircleImageView imageView;

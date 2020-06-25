@@ -1,13 +1,5 @@
 package com.justice.schoolmanagement.parent;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,28 +11,23 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.backendless.Backendless;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.flaviofaria.kenburnsview.KenBurnsView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.storage.FirebaseStorage;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.class_.ChoosenClassActivity;
-import com.justice.schoolmanagement.dashboard.DashBoardActivity;
-import com.justice.schoolmanagement.main.MainActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.student.StudentsActivity;
-import com.justice.schoolmanagement.teacher.TeachersActivity;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ParentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ParentData parentData;
@@ -59,7 +46,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
-    private CircleImageView imageView;
+    private KenBurnsView imageView;
 
 
     private TextView parentNameTxtView, contactTxtView, firstNameTxtView, lastNameTxtView, cityTxtView, jobStatusTxtView, ageTxtView, genderTxtView, jobTypeTxtView, deleteTxtView, editTxtView;
@@ -136,18 +123,13 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
 
     private void deleteFromDatabase() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("Delete").setMessage("Are You Sure you Want To delete!!").setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        }).setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        new MaterialAlertDialogBuilder(ParentDetailsActivity.this).setBackground(getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 deleteParent();
             }
-        });
-        builder.show();
+        }).show();
+
     }
 
     private void deleteParent() {

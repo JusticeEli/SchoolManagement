@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "933626401522",
+    "firebase_url": "https://schoolmanagement-ca5b5.firebaseio.com",
+    "project_id": "schoolmanagement-ca5b5",
+    "storage_bucket": "schoolmanagement-ca5b5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933626401522:android:dc84162c791dff4267f66b",
+        "android_client_info": {
+          "package_name": "com.justice.schoolmanagement"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933626401522-v6hedecm5s0ohbcvp31n5labbn8k95sp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.schoolmanagement",
+            "certificate_hash": "a750750b75522391484378f5e5806f12824dc71e"
+          }
+        },
+        {
+          "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbazsvH1VvpB0KlEvBq48tnN8m-glcr54"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -62,7 +62,7 @@
                 android:orientation="horizontal"
                 android:padding="10dp">
 
-                <de.hdodenhof.circleimageview.CircleImageView
+                <com.flaviofaria.kenburnsview.KenBurnsView
                     android:id="@+id/imageView"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
