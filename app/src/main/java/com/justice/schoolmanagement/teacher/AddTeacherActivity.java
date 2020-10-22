@@ -1,23 +1,17 @@
 package com.justice.schoolmanagement.teacher;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -25,34 +19,29 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.backendless.Backendless;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.backendless.BackendlessUser;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.dashboard.DashBoardActivity;
-import com.justice.schoolmanagement.parent.ParentsActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.student.AddStudentActivity;
-import com.justice.schoolmanagement.student.StudentsActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -60,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import es.dmoral.toasty.Toasty;
 import id.zelory.compressor.Compressor;
 
 public class AddTeacherActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -103,9 +93,15 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
         setContentView(R.layout.activity_add_teacher);
         initWidgets();
         setDefaultValues();
-    //   initNavigationDrawer();
+        //   initNavigationDrawer();
 
         setOnClickListeners();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.logout_menu, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void setDefaultValues() {
@@ -114,7 +110,18 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
+        if (item.getItemId() == R.id.logoutMenu) {
+            AuthUI.getInstance()
+                    .signOut(this)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        public void onComplete(@NonNull Task<Void> task) {
+                            // user is now signed out
+                            Intent intent8 = new Intent(AddTeacherActivity.this, DashBoardActivity.class);
+                            startActivity(intent8);
+                            finish();
+                        }
+                    });
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -240,12 +247,12 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     }
 
     private void getDataFromEdtTxtAndAddItToDatabase() {
-        if(uri == null ){
-            Toast.makeText(AddTeacherActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
-            return ;
+        if (uri == null) {
+            Toasty.info(AddTeacherActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+            return;
         }
         if (fieldsAreEmpty()) {
-            Toast.makeText(AddTeacherActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
+            Toasty.error(AddTeacherActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!contactEdtTxtFormatIsCorrect()) {
@@ -260,11 +267,11 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     private boolean contactEdtTxtFormatIsCorrect() {
         String contact = contactEdtTxt.getText().toString().trim();
         if (!contact.startsWith("07")) {
-            Toast.makeText(this, "Contact Must start with 07 !!", Toast.LENGTH_SHORT).show();
+            Toasty.error(this, "Contact Must start with 07 !!", Toast.LENGTH_SHORT).show();
             return false;
         }
         if (contact.length() != 10) {
-            Toast.makeText(this, "Contact Must have 10 characters", Toast.LENGTH_SHORT).show();
+            Toasty.info(this, "Contact Must have 10 characters", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -306,11 +313,11 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
                     Uri downloadUri = task.getResult();
                     teacherData.setPhoto(downloadUri.toString());
                     uploadThumbnail();
-                    Toast.makeText(AddTeacherActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+                    Toasty.success(AddTeacherActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -352,11 +359,11 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
                     Uri downloadUri = task.getResult();
                     teacherData.setThumbnail(downloadUri.toString());
                     putTeacherDataInDatabase();
-                    Toast.makeText(AddTeacherActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
+                    Toasty.info(AddTeacherActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -370,14 +377,14 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(AddTeacherActivity.this, "Teacher Data Saved", Toast.LENGTH_SHORT).show();
+                    Toasty.info(AddTeacherActivity.this, "Teacher Data Saved", Toast.LENGTH_SHORT).show();
                     resetEdtTxt();
                     finish();
 
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddTeacherActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }

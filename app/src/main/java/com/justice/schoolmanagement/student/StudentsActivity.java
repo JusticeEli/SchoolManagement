@@ -74,11 +74,6 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
     }
 
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-    }
 
     private void setOnClickListeners() {
 

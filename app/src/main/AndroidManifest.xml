@@ -39,18 +39,18 @@
         <activity android:name=".teacher.TeachersActivity" />
         <activity
             android:name=".dashboard.DashBoardActivity"
-            android:launchMode="singleTop" />
-        <activity
-            android:name=".main.MainActivity"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
-
-
+        <activity
+            android:name=".main.MainActivity"
+            android:launchMode="singleTop">
+           </activity>
     </application>
 
 </manifest>

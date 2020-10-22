@@ -1,11 +1,5 @@
 package com.justice.schoolmanagement.parent;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -19,16 +13,18 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.backendless.Backendless;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.Continuation;
@@ -41,18 +37,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.dashboard.DashBoardActivity;
-import com.justice.schoolmanagement.main.MainActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.student.AddStudentActivity;
-import com.justice.schoolmanagement.student.StudentsActivity;
-import com.justice.schoolmanagement.teacher.AddTeacherActivity;
-import com.justice.schoolmanagement.teacher.TeachersActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -61,6 +47,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import es.dmoral.toasty.Toasty;
 import id.zelory.compressor.Compressor;
 
 public class AddParentActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -246,11 +233,11 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
             @Override
             public void onClick(View v) {
                 if(uri == null ){
-                    Toast.makeText(AddParentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddParentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
                     return ;
                 }
                 if (fieldsAreEmpty()) {
-                    Toast.makeText(AddParentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddParentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (!contactEdtTxtFormatIsCorrect()) {
@@ -330,11 +317,11 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
                     Uri downloadUri = task.getResult();
                     parentData.setPhoto(downloadUri.toString());
                     uploadThumbnail();
-                    Toast.makeText(AddParentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+                    Toasty.success(AddParentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -377,11 +364,11 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
                     Uri downloadUri = task.getResult();
                     parentData.setThumbnail(downloadUri.toString());
                     putDataIntoDataBase();
-                    Toast.makeText(AddParentActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
+                    Toasty.success(AddParentActivity.this, "Thumbnail Uploaded", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -409,11 +396,11 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
             public void onComplete(@NonNull Task<DocumentReference> task) {
                 if (task.isSuccessful()) {
                     resetEdtTxt();
-                    Toast.makeText(AddParentActivity.this, "Parent data saved", Toast.LENGTH_SHORT).show();
+                    Toasty.success(AddParentActivity.this, "Parent data saved", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddParentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
 

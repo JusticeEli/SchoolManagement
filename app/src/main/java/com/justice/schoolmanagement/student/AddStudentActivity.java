@@ -1,16 +1,9 @@
 package com.justice.schoolmanagement.student;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -23,6 +16,12 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -38,20 +37,17 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.parent.AddParentActivity;
-import com.justice.schoolmanagement.teacher.TeacherData;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import es.dmoral.toasty.Toasty;
 import id.zelory.compressor.Compressor;
 
 public class AddStudentActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -151,11 +147,11 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
             @Override
             public void onClick(View v) {
                 if(uri == null ){
-                    Toast.makeText(AddStudentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddStudentActivity.this, "Please choose a photo", Toast.LENGTH_SHORT).show();
                     return ;
                 }
                 if (fieldsAreEmpty()) {
-                    Toast.makeText(AddStudentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddStudentActivity.this, "Please Fill All Fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 getDataFromEdtTxtAndSaveInDatabase();
@@ -237,12 +233,12 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
                                 documentSnapshot = task.getResult();
                                 addStudentMarks();
                                 resetEdtTxt();
-                                Toast.makeText(AddStudentActivity.this, "Student Added ", Toast.LENGTH_SHORT).show();
+                                Toasty.success(AddStudentActivity.this, "Student Added ", Toast.LENGTH_SHORT).show();
                                 addParent();
 
                             } else {
                                 String error = task.getException().getMessage();
-                                Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                                Toasty.error(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
                             }
                         }
@@ -250,7 +246,7 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
                 }
                 showProgress(false);
@@ -285,11 +281,11 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
                     Uri downloadUri = task.getResult();
                     studentData.setPhoto(downloadUri.toString());
                     uploadThumbnail();
-                    Toast.makeText(AddStudentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+                    Toasty.success(AddStudentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -336,11 +332,11 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
                     studentData.setThumbnail(downloadUri.toString());
 
                     putDataIntoDatabase();
-                    Toast.makeText(AddStudentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+                    Toasty.success(AddStudentActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 showProgress(false);
             }
@@ -368,12 +364,11 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(AddStudentActivity.this, "Student Marks Added", Toast.LENGTH_SHORT).show();
-                    Toast.makeText(AddStudentActivity.this, "Finished", Toast.LENGTH_SHORT).show();
+                    Toasty.info(AddStudentActivity.this, "Student Marks Added", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toast.makeText(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(AddStudentActivity.this, "Error: " + error, Toast.LENGTH_SHORT).show();
 
                 }
                 showProgress(false);

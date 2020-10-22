@@ -92,7 +92,7 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
         }).setPositiveButton("yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-               deleteStudent(position);
+                deleteStudent(position);
             }
         }).show();
     }
@@ -148,9 +148,11 @@ public class StudentsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<St
         return viewHolder;
 
     }
+
     public DocumentReference getSwipedItem(int position) {
         return getSnapshots().getSnapshot(position).getReference();
     }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         private TextView studentNameTxtView, studentClassTxtView, deleteTxtView, editTxtView;
         private CircleImageView imageView;
