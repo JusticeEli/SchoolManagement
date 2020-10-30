@@ -3,9 +3,12 @@ package com.justice.schoolmanagement.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -15,10 +18,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
@@ -30,24 +33,22 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.SubjectsActivity;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.blog.BlogActivity;
-import com.justice.schoolmanagement.parent.ParentsActivity;
-import com.justice.schoolmanagement.results.ResultsActivity;
-import com.justice.schoolmanagement.student.StudentsActivity;
-import com.justice.schoolmanagement.teacher.AddTeacherActivity;
-import com.justice.schoolmanagement.teacher.TeachersActivity;
 
 import java.util.Arrays;
 
 import es.dmoral.toasty.Toasty;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
+import static android.app.Activity.RESULT_OK;
+
+
+public class MainFragment extends Fragment implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener{
     public static final int RC_SIGN_IN = 5;
     private static final String TAG = "DashBoardActivity";
+
+    private View view;
 
     private Button teachersBtn, parentsBtn, studentsBtn, classessBtn, subjectsBtn, resultsBtn;
     //////////////////DRAWER LAYOUT////////////////////////
@@ -64,15 +65,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dash_board);
-        initWidgets();
 
+    public MainFragment() {
+        // Required empty public constructor
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_main, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        this.view = view;
+        initWidgets();
         checkIfUserIsLoggedIn();
         initNavigationDrawer();
         setOnClickListeners();
+
     }
 
     private void checkIfUserIsLoggedIn() {
@@ -92,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
         if (requestCode == RC_SIGN_IN) {
@@ -104,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "onActivityResult: success sign in");
                 Log.d(TAG, "onActivityResult: recreating the activity");
 
-                recreate();
+                recreateFragment();
             } else {
                 // Sign in failed
                 Log.d(TAG, "onActivityResult: sign in failed");
@@ -124,24 +143,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-private  void showToast(String message){
-    Toasty.error(this,message).show();
-}
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_sort, menu);
 
-        return super.onCreateOptionsMenu(menu);
+    private void recreateFragment() {
+        getFragmentManager()
+            .beginTransaction()
+            .detach(this)
+            .attach(this)
+            .addToBackStack(null)
+            .commit();
 
     }
 
+    private void showToast(String message) {
+        Toasty.error(getActivity(), message).show();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_sort, menu);
+
+
+    }
+
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
-        DrawerLayout drawerLayout = findViewById(R.id.drawer);
+        DrawerLayout drawerLayout = view.findViewById(R.id.drawer);
 
-        navigationView = findViewById(R.id.navigationView);
+        navigationView = view.findViewById(R.id.navigationView);
         navigationView.setNavigationItemSelectedListener(this);
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(getActivity(), drawerLayout, R.string.open, R.string.close);
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
     }
@@ -164,10 +196,10 @@ private  void showToast(String message){
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                super.onBackPressed();
+                destroyFragment();
                 break;
             case R.id.blogsMenu:
-                startActivity(new Intent(this, BlogActivity.class));
+                startActivity(new Intent(getActivity(), BlogActivity.class));
                 break;
             default:
                 break;
@@ -177,10 +209,14 @@ private  void showToast(String message){
         return super.onOptionsItemSelected(item);
     }
 
+    private void destroyFragment() {
+        getFragmentManager().beginTransaction().remove(this).commitAllowingStateLoss();
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
-        DrawerLayout drawerLayout = findViewById(R.id.drawer);
+        ApplicationClass.onNavigationItemSelected(getActivity(), menuItem.getItemId());
+        DrawerLayout drawerLayout = view.findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
@@ -205,82 +241,92 @@ private  void showToast(String message){
 
 
     private void initWidgets() {
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        teachersBtn = findViewById(R.id.teachersBtn);
-        parentsBtn = findViewById(R.id.parentsBtn);
-        studentsBtn = findViewById(R.id.studentsBtn);
-        classessBtn = findViewById(R.id.classesBtn);
-        subjectsBtn = findViewById(R.id.subjectsBtn);
-        resultsBtn = findViewById(R.id.resultsBtn);
+        teachersBtn = view.
+                findViewById(R.id.teachersBtn);
+        parentsBtn = view.
+                findViewById(R.id.parentsBtn);
+        studentsBtn = view.
+                findViewById(R.id.studentsBtn);
+        classessBtn = view.
+                findViewById(R.id.classesBtn);
+        subjectsBtn = view.
+                findViewById(R.id.subjectsBtn);
+        resultsBtn = view.findViewById(R.id.resultsBtn);
+        ;
 
         ////////////////PROGRESS_BAR//////////////////////
-        load = findViewById(R.id.loadingLinearLayout);
-        loadTxtView = findViewById(R.id.loadTxtView);
-        relativeLayout = findViewById(R.id.relativeLayout);
+        load = view.findViewById(R.id.loadingLinearLayout);
+        loadTxtView =view. findViewById(R.id.loadTxtView);
+        relativeLayout = view.findViewById(R.id.relativeLayout);
 
-        teacherCardView = findViewById(R.id.teacherCardView);
+        teacherCardView =view. findViewById(R.id.teacherCardView);
 
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.teachersBtn:
-                Intent intent = new Intent(MainActivity.this, TeachersActivity.class);
-                startActivity(intent);
-                break;
 
-            case R.id.parentsBtn:
-                Intent intent2 = new Intent(MainActivity.this, ParentsActivity.class);
-                startActivity(intent2);
-                break;
-            case R.id.studentsBtn:
-                Intent intent3 = new Intent(MainActivity.this, StudentsActivity.class);
-                startActivity(intent3);
-                break;
-            case R.id.classesBtn:
-                Intent intent4 = new Intent(MainActivity.this, ClassesActivity.class);
-                startActivity(intent4);
-                break;
-            case R.id.subjectsBtn:
-                Intent intent5 = new Intent(MainActivity.this, SubjectsActivity.class);
-                startActivity(intent5);
-                break;
-            case R.id.resultsBtn:
-                Intent intent6 = new Intent(MainActivity.this, ResultsActivity.class);
-                startActivity(intent6);
-                break;
-
-
-        }
     }
+    //    @Override
+//    public void onClick(View v) {
+//        switch (v.getId()) {
+//            case R.id.teachersBtn:
+//                Intent intent = new Intent(MainActivity.this, TeachersActivity.class);
+//                startActivity(intent);
+//                break;
+//
+//            case R.id.parentsBtn:
+//                Intent intent2 = new Intent(MainActivity.this, ParentsActivity.class);
+//                startActivity(intent2);
+//                break;
+//            case R.id.studentsBtn:
+//                Intent intent3 = new Intent(MainActivity.this, StudentsActivity.class);
+//                startActivity(intent3);
+//                break;
+//            case R.id.classesBtn:
+//                Intent intent4 = new Intent(MainActivity.this, ClassesActivity.class);
+//                startActivity(intent4);
+//                break;
+//            case R.id.subjectsBtn:
+//                Intent intent5 = new Intent(MainActivity.this, SubjectsActivity.class);
+//                startActivity(intent5);
+//                break;
+//            case R.id.resultsBtn:
+//                Intent intent6 = new Intent(MainActivity.this, ResultsActivity.class);
+//                startActivity(intent6);
+//                break;
+//
+//
+//        }
+//    }
 
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
         Log.d(TAG, "onStart: called");
         //if user is not logged in we want to exit this method
-        if (firebaseAuth.getCurrentUser()==null){
+        if (firebaseAuth.getCurrentUser() == null) {
             Log.d(TAG, "onStart: user not signed in");
             return;
         }
 
         CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Teachers");
-        collectionReference.document(FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+        collectionReference.document(FirebaseAuth.getInstance().getCurrentUser().getUid()).addSnapshotListener( new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (e != null) {
-                    Log.d(TAG, "onEvent: Error: "+e.getMessage());
-                    Toast.makeText(MainActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onEvent: Error: " + e.getMessage());
+                    Toast.makeText(getActivity(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (!documentSnapshot.exists()) {
                     //teacher metadata does not exit
                     Log.d(TAG, "onEvent: teacher metadata does not exit going to AddTeacherActivity");
-                    startActivity(new Intent(MainActivity.this, AddTeacherActivity.class));
 
+//                    Intent intent=new Intent(getContext(), AddTeacherActivity.class);
+//                    startActivity(intent);
                 } else {
                     if (documentSnapshot.getString("type").equals("teacher")) {
                         //its a teacher not admin

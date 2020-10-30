@@ -1,6 +1,5 @@
 package com.justice.schoolmanagement.alldata;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +17,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.justice.schoolmanagement.ClassesActivity;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.SubjectsActivity;
-import com.justice.schoolmanagement.dashboard.MainActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
@@ -44,9 +42,9 @@ public class ApplicationClass extends Application {
         switch (itemId) {
 
             case R.id.dashboardMenu:
-                Intent intent = new Intent(context, MainActivity.class);
-                context.startActivity(intent);
-                break;
+//                Intent intent = new Intent(context, MainActivity.class);
+//                context.startActivity(intent);
+//                break;
             case R.id.teacherMenu:
                 Intent intent2 = new Intent(context, TeachersActivity.class);
                 context.startActivity(intent2);
@@ -79,10 +77,10 @@ public class ApplicationClass extends Application {
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
                                 // user is now signed out
-                                Intent intent8 = new Intent(context, MainActivity.class);
-                                context.startActivity(intent8);
-                                Activity activity = (Activity) context;
-                                activity.finish();
+//                                Intent intent8 = new Intent(context, MainActivity.class);
+//                                context.startActivity(intent8);
+//                                Activity activity = (Activity) context;
+//                                activity.finish();
                             }
                         });
 

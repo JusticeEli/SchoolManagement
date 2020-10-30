@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/animation_list"
-    tools:context=".dashboard.DashBoardActivity">
+    tools:context=".main.MainFragment">
     <!--PROGRESS.._________________________________  -->
     <LinearLayout
         android:id="@+id/loadingLinearLayout"
@@ -48,14 +48,14 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_gravity="center_horizontal"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:orientation="horizontal">
 
                 <androidx.cardview.widget.CardView
+                    android:id="@+id/teacherCardView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/teacherCardView"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="20dp">
 
@@ -172,14 +172,14 @@
     </RelativeLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigationView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:background="@drawable/animation_list"
-        app:menu="@menu/menu_sidebar"
+    android:id="@+id/navigationView"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="@drawable/animation_list"
+    app:menu="@menu/menu_sidebar"
 
-        />
+    />
 
 
 </androidx.drawerlayout.widget.DrawerLayout>

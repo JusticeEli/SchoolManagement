@@ -40,7 +40,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.dashboard.MainActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -114,9 +113,9 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         public void onComplete(@NonNull Task<Void> task) {
                             // user is now signed out
-                            Intent intent8 = new Intent(AddTeacherActivity.this, MainActivity.class);
-                            startActivity(intent8);
-                            finish();
+//                            Intent intent8 = new Intent(AddTeacherActivity.this, MainActivity.class);
+//                            startActivity(intent8);
+//                            finish();
                         }
                     });
         }

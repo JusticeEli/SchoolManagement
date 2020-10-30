@@ -37,7 +37,8 @@
         <activity android:name=".parent.ParentsActivity" />
         <activity android:name=".teacher.TeachersActivity" />
         <activity
-            android:name=".dashboard.MainActivity"
+            android:name=".main.MainActivity"
+            android:theme="@style/NoActionBar"
             android:launchMode="singleTop" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

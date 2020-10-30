@@ -17,7 +17,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.alldata.AllData;
-import com.justice.schoolmanagement.dashboard.MainActivity;
 import com.justice.schoolmanagement.parent.ParentsActivity;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
@@ -179,9 +178,9 @@ public class SubjectsActivity extends AppCompatActivity implements NavigationVie
         switch (menuItem.getItemId()) {
 
             case R.id.dashboardMenu:
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
-                break;
+//                Intent intent = new Intent(this, MainActivity.class);
+//                startActivity(intent);
+//                break;
             case R.id.teacherMenu:
                 Intent intent2 = new Intent(this, TeachersActivity.class);
                 startActivity(intent2);
