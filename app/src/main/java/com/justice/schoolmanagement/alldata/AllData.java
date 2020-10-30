@@ -2,7 +2,6 @@ package com.justice.schoolmanagement.alldata;
 
 import android.os.Environment;
 
-import com.backendless.BackendlessUser;
 import com.justice.schoolmanagement.main.LoginData;
 import com.justice.schoolmanagement.parent.ParentData;
 import com.justice.schoolmanagement.student.StudentData;
@@ -28,7 +27,7 @@ public class AllData {
     public static List<StudentMarks> studentMarksList = new ArrayList<>();
 
 
-    public static BackendlessUser user;
+
 
     public static void createDirectoryForDataStorage() {
       path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/SchoolManagement";

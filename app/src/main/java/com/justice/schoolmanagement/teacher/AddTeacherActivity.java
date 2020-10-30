@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.backendless.BackendlessUser;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.auth.AuthUI;
@@ -41,7 +40,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.dashboard.DashBoardActivity;
+import com.justice.schoolmanagement.dashboard.MainActivity;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -82,7 +81,6 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
     private TeacherData teacherData;
     private String teacherId;
 
-    private BackendlessUser user;
 
     private CollectionReference collectionReference = FirebaseFirestore.getInstance().collection("Teachers");
     private Uri uri = null;
@@ -116,7 +114,7 @@ public class AddTeacherActivity extends AppCompatActivity implements NavigationV
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         public void onComplete(@NonNull Task<Void> task) {
                             // user is now signed out
-                            Intent intent8 = new Intent(AddTeacherActivity.this, DashBoardActivity.class);
+                            Intent intent8 = new Intent(AddTeacherActivity.this, MainActivity.class);
                             startActivity(intent8);
                             finish();
                         }

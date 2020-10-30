@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,11 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.student.StudentMarks;
-
-import java.util.List;
 
 public class ResultsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<StudentMarks, ResultsActivityRecyclerAdapter.ViewHolder> {
 

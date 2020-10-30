@@ -7,16 +7,12 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.backendless.Backendless;
-import com.backendless.async.callback.AsyncCallback;
-import com.backendless.exceptions.BackendlessFault;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
@@ -26,17 +22,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.student.EditStudentActivity;
 import com.justice.schoolmanagement.student.StudentData;
 import com.justice.schoolmanagement.student.StudentDetailsActivity;
-import com.justice.schoolmanagement.student.StudentMarks;
-import com.justice.schoolmanagement.student.StudentsActivity;
-import com.justice.schoolmanagement.student.StudentsActivityRecyclerAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
