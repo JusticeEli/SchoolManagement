@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.parent;
+package com.justice.schoolmanagement.presentation.ui.parent.model;
 
 import com.google.firebase.firestore.Exclude;
 

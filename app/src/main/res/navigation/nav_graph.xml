@@ -40,23 +40,35 @@
     <fragment
         android:id="@+id/parentsFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.parent.ParentsFragment"
-        android:label="fragment_parents"
-        tools:layout="@layout/fragment_parents" />
+        android:label="Parents"
+        tools:layout="@layout/fragment_parents" >
+        <action
+            android:id="@+id/action_parentsFragment_to_addParentFragment"
+            app:destination="@id/addParentFragment" />
+    </fragment>
     <fragment
         android:id="@+id/classesFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.classes.ClassesFragment"
         android:label="fragment_classes"
-        tools:layout="@layout/fragment_classes" />
+        tools:layout="@layout/fragment_classes" >
+        <action
+            android:id="@+id/action_classesFragment_to_choosenClassFragment"
+            app:destination="@id/choosenClassFragment" />
+    </fragment>
     <fragment
         android:id="@+id/subjectsFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.subjects.SubjectsFragment"
-        android:label="fragment_subjects"
+        android:label="Subjects"
         tools:layout="@layout/fragment_subjects" />
     <fragment
         android:id="@+id/resultsFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.results.ResultsFragment"
         android:label="fragment_results"
-        tools:layout="@layout/fragment_results" />
+        tools:layout="@layout/fragment_results" >
+        <action
+            android:id="@+id/action_resultsFragment_to_resultsEditFragment"
+            app:destination="@id/resultsEditFragment" />
+    </fragment>
     <fragment
         android:id="@+id/splashScreenFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.SplashScreenFragment"
@@ -112,6 +124,9 @@
         <argument
             android:name="parentURL"
             app:argType="string" />
+        <argument
+            android:name="email"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/editStudentFragment"
@@ -150,11 +165,19 @@
         android:id="@+id/parentDetailsFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.parent.ParentDetailsFragment"
         android:label="fragment_parent_details"
-        tools:layout="@layout/fragment_parent_details" />
+        tools:layout="@layout/fragment_parent_details" >
+        <argument
+            android:name="email"
+            app:argType="string" />
+    </fragment>
     <activity
         android:id="@+id/editParentActivity"
         android:name="com.justice.schoolmanagement.parent.EditParentActivity"
-        android:label="EditParentActivity" />
+        android:label="EditParentActivity" >
+        <argument
+            android:name="email"
+            app:argType="string" />
+    </activity>
     <activity
         android:id="@+id/editStudentActivity"
         android:name="com.justice.schoolmanagement.student.EditStudentActivity"
@@ -167,5 +190,27 @@
         android:id="@+id/blogFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.blog.BlogFragment"
         android:label="fragment_blog"
-        tools:layout="@layout/fragment_blog" />
+        tools:layout="@layout/fragment_blog" >
+        <action
+            android:id="@+id/action_blogFragment_to_addBlogFragment"
+            app:destination="@id/addBlogFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/choosenClassFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.class_.ChoosenClassFragment"
+        android:label="fragment_choosen_class"
+        tools:layout="@layout/fragment_choosen_class" >
+        <argument
+            android:name="class"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_choosenClassFragment_to_resultsEditFragment"
+            app:destination="@id/resultsEditFragment" />
+        <action
+            android:id="@+id/action_choosenClassFragment_to_editStudentActivity"
+            app:destination="@id/editStudentActivity" />
+        <action
+            android:id="@+id/action_choosenClassFragment_to_studentDetailsFragment"
+            app:destination="@id/studentDetailsFragment" />
+    </fragment>
 </navigation>

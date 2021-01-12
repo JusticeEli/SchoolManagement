@@ -27,7 +27,6 @@ public class ClassesActivity extends AppCompatActivity implements View.OnClickLi
     private Button class_8_btn;
 
 
-
     //////////////////DRAWER LAYOUT////////////////////////
 
     private NavigationView navigationView;
@@ -38,10 +37,12 @@ public class ClassesActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_classes);
-        initWidgets();   initNavigationDrawer();
+        initWidgets();
+        initNavigationDrawer();
 
         setOnClickListeners();
     }
+
     ////////////////////////NAVIGATION DRAWER/////////////////////////////////////////////
     private void initNavigationDrawer() {
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
@@ -77,9 +78,10 @@ public class ClassesActivity extends AppCompatActivity implements View.OnClickLi
         class_8_btn = findViewById(R.id.class_8_btn);
 
     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        ApplicationClass.onNavigationItemSelected(this,menuItem.getItemId());
+        ApplicationClass.onNavigationItemSelected(this, menuItem.getItemId());
         DrawerLayout drawerLayout = findViewById(R.id.drawer);
 
         drawerLayout.closeDrawer(GravityCompat.START);

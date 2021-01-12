@@ -2,8 +2,8 @@ package com.justice.schoolmanagement.alldata;
 
 import android.os.Environment;
 
-import com.justice.schoolmanagement.parent.ParentData;
 import com.justice.schoolmanagement.presentation.LoginData;
+import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData;
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData;

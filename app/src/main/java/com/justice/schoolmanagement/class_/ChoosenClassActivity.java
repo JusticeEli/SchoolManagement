@@ -26,6 +26,8 @@ import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.class_.ChoosenClassActivityResultsRecyclerAdapter;
+import com.justice.schoolmanagement.presentation.ui.class_.ChoosenClassActivityStudentsRecyclerAdapter;
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 

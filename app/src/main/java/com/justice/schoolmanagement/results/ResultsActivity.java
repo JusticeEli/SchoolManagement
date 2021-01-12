@@ -24,6 +24,7 @@ import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.results.ResultsActivityRecyclerAdapter;
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
     private ResultsActivityRecyclerAdapter resultsActivityRecyclerAdapter;
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
-    private int counter=1;
+    private int counter = 1;
 
 
     @Override
@@ -106,15 +107,16 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         searchEdtTxt = findViewById(R.id.searchEdtTxt);
-        }
+    }
+
     private void setUpRecyclerView() {
         Query query = FirebaseFirestore.getInstance().collection("StudentsMarks").orderBy("totalMarks", Query.Direction.DESCENDING);
 
-        FirestoreRecyclerOptions<StudentMarks> recyclerOptions=new FirestoreRecyclerOptions.Builder<StudentMarks>().setLifecycleOwner(this).setQuery(query, new SnapshotParser<StudentMarks>() {
+        FirestoreRecyclerOptions<StudentMarks> recyclerOptions = new FirestoreRecyclerOptions.Builder<StudentMarks>().setLifecycleOwner(this).setQuery(query, new SnapshotParser<StudentMarks>() {
             @NonNull
             @Override
             public StudentMarks parseSnapshot(@NonNull DocumentSnapshot snapshot) {
-                StudentMarks studentMarks=snapshot.toObject(StudentMarks.class);
+                StudentMarks studentMarks = snapshot.toObject(StudentMarks.class);
                 studentMarks.setPosition(counter++);
                 studentMarks.setId(snapshot.getId());
                 return studentMarks;
@@ -122,7 +124,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
         }).build();
 
         recyclerView = findViewById(R.id.recyclerView);
-        resultsActivityRecyclerAdapter = new ResultsActivityRecyclerAdapter(this,recyclerOptions);
+        resultsActivityRecyclerAdapter = new ResultsActivityRecyclerAdapter(this, recyclerOptions);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(resultsActivityRecyclerAdapter);
 
@@ -150,7 +152,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
                 super.onBackPressed();
                 break;
 
-             default:
+            default:
                 break;
 
         }
@@ -170,7 +172,6 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
         for (StudentMarks studentMarks : AllData.studentMarksList) {
             studentMarks.setPosition(x++);
         }
-
 
 
     }

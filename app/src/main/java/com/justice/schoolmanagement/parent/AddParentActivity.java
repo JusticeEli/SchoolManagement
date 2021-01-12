@@ -39,6 +39,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 

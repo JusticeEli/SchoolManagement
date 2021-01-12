@@ -27,6 +27,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.parent.ParentsActivityRecyclerAdapter;
+import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData;
 
 public class ParentsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ParentsActivityRecyclerAdapter parentsActivityRecyclerAdapter;

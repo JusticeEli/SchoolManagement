@@ -28,6 +28,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData;
 
 public class ParentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ParentData parentData;
