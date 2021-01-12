@@ -23,8 +23,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
 import com.justice.schoolmanagement.alldata.AllData;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.student.StudentMarks;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +42,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_results);
+        setContentView(R.layout.fragment_results);
         initWidgets();
         setUpRecyclerView();
         initNavigationDrawer();
@@ -65,7 +65,7 @@ public class ResultsActivity extends AppCompatActivity implements NavigationView
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_sort, menu);
+        getMenuInflater().inflate(R.menu.menu_blog, menu);
 
         return true;
     }

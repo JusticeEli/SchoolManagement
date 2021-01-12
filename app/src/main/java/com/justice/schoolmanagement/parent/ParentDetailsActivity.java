@@ -27,7 +27,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
 
 public class ParentDetailsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ParentData parentData;
@@ -54,7 +54,7 @@ public class ParentDetailsActivity extends AppCompatActivity implements Navigati
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_parent_details);
+        setContentView(R.layout.fragment_parent_details);
         email = getIntent().getStringExtra("email");
 
         parentData = ApplicationClass.documentSnapshot.toObject(ParentData.class);

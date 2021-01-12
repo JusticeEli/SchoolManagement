@@ -37,8 +37,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.parent.AddParentActivity;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -70,8 +72,8 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
     private NavigationView navigationView;
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
-    private CollectionReference collectionReferenceMarks = FirebaseFirestore.getInstance().collection("StudentsMarks");
-    private CollectionReference collectionReferenceData = FirebaseFirestore.getInstance().collection("Students");
+    private CollectionReference collectionReferenceMarks = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_STUDENTS_MARKS);
+    private CollectionReference collectionReferenceData = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_STUDENTS");
     private DocumentSnapshot documentSnapshot;
 
     private CircleImageView imageView;
@@ -81,7 +83,7 @@ public class AddStudentActivity extends AppCompatActivity implements NavigationV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_student);
+        setContentView(R.layout.fragment_add_student);
         initWidgets();
      //   initNavigationDrawer();
 

@@ -25,7 +25,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.StudentsActivityRecyclerAdapter;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
 
 public class StudentsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private StudentsActivityRecyclerAdapter studentsActivityRecyclerAdapter;
@@ -47,7 +49,7 @@ public class StudentsActivity extends AppCompatActivity implements NavigationVie
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_students);
+        setContentView(R.layout.fragment_students);
         setTitle("STUDENTS");
 
         initwidgets();

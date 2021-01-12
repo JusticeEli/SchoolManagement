@@ -38,7 +38,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -88,7 +88,7 @@ public class AddParentActivity extends AppCompatActivity implements NavigationVi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_parent);
+        setContentView(R.layout.fragment_add_parent);
         initWidgets();
         setSkipBtn();
         initAdapters();

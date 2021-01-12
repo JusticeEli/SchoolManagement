@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.student.StudentMarks;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 
 public class ResultsActivityRecyclerAdapter extends FirestoreRecyclerAdapter<StudentMarks, ResultsActivityRecyclerAdapter.ViewHolder> {
 

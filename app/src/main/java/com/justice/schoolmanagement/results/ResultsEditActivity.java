@@ -20,8 +20,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
-import com.justice.schoolmanagement.student.StudentMarks;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 
 public class ResultsEditActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private EditText mathEdtTxt, scienceEdtTxt, englishEdtTxt, kiswahiliEdtTxt, sst_creEdtTxt;
@@ -44,7 +44,7 @@ public class ResultsEditActivity extends AppCompatActivity implements Navigation
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_results_edit);
+        setContentView(R.layout.fragment_results_edit);
         studentMarks = ApplicationClass.documentSnapshot.toObject(StudentMarks.class);
         initWidgets();
         initNavigationDrawer();

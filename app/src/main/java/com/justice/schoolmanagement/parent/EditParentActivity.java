@@ -37,7 +37,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -49,7 +49,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import es.dmoral.toasty.Toasty;
 import id.zelory.compressor.Compressor;
 
-import static com.justice.schoolmanagement.alldata.ApplicationClass.documentSnapshot;
+import static com.justice.schoolmanagement.presentation.ApplicationClass.documentSnapshot;
 
 public class EditParentActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private EditText firstNameEdtTxt;
@@ -91,7 +91,7 @@ public class EditParentActivity extends AppCompatActivity implements NavigationV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_parent);
+        setContentView(R.layout.fragment_edit_parent);
         email = getIntent().getStringExtra("email");
         parentData = documentSnapshot.toObject(ParentData.class);
         initWidgets();

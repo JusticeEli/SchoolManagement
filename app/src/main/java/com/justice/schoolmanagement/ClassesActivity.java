@@ -13,8 +13,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
 import com.justice.schoolmanagement.class_.ChoosenClassActivity;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
 
 public class ClassesActivity extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
     private Button class_1_btn;
@@ -37,7 +37,7 @@ public class ClassesActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_classes);
+        setContentView(R.layout.fragment_classes);
         initWidgets();   initNavigationDrawer();
 
         setOnClickListeners();

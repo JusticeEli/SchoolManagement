@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/drawer"
+    tools:context=".presentation.ui.classes.ClassesFragment">
+    <!--NAVIGATION DRAWER-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:background="@mipmap/theatre_curtains"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:background="@color/colorPrimaryLight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@mipmap/theatre_curtains"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/class_1_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/class_button"
+                    android:text="Class 1"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/class_2_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 2"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/class_3_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 3"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/class_4_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 4"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/class_5_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 5"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/class_6_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 6"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/class_7_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 7"
+                    android:textAllCaps="false" />
+                <Button
+                    android:id="@+id/class_8_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/class_button"
+                    android:text="Class 8"
+                    android:textAllCaps="false" />
+
+
+            </LinearLayout>
+        </ScrollView>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

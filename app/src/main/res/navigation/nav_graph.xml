@@ -3,11 +3,169 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mainFragment">
-
+    app:startDestination="@id/splashScreenFragment">
     <fragment
-        android:id="@+id/mainFragment"
-        android:name="com.justice.schoolmanagement.main.MainFragment"
-        android:label="fragment_main"
-        tools:layout="@layout/fragment_main" />
+        android:id="@+id/dashboardFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.dashboard.DashboardFragment"
+        android:label="fragment_dashboard"
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_dashboardFragment_to_addTeacherFragment"
+            app:destination="@id/addTeacherFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/studentsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.student.StudentsFragment"
+        android:label="Students"
+        tools:layout="@layout/fragment_students" >
+        <action
+            android:id="@+id/action_studentsFragment_to_editStudentFragment"
+            app:destination="@id/editStudentFragment" />
+        <action
+            android:id="@+id/action_studentsFragment_to_studentDetailsFragment"
+            app:destination="@id/studentDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/teachersFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.teacher.TeachersFragment"
+        android:label="Teachers"
+        tools:layout="@layout/fragment_teachers" >
+        <action
+            android:id="@+id/action_teachersFragment_to_editTeacherFragment"
+            app:destination="@id/editTeacherFragment" />
+        <action
+            android:id="@+id/action_teachersFragment_to_teacherDetailsFragment"
+            app:destination="@id/teacherDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/parentsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.parent.ParentsFragment"
+        android:label="fragment_parents"
+        tools:layout="@layout/fragment_parents" />
+    <fragment
+        android:id="@+id/classesFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.classes.ClassesFragment"
+        android:label="fragment_classes"
+        tools:layout="@layout/fragment_classes" />
+    <fragment
+        android:id="@+id/subjectsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.subjects.SubjectsFragment"
+        android:label="fragment_subjects"
+        tools:layout="@layout/fragment_subjects" />
+    <fragment
+        android:id="@+id/resultsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.results.ResultsFragment"
+        android:label="fragment_results"
+        tools:layout="@layout/fragment_results" />
+    <fragment
+        android:id="@+id/splashScreenFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.SplashScreenFragment"
+        android:label="fragment_splash_screen"
+        tools:layout="@layout/fragment_splash_screen" />
+    <action android:id="@+id/action_global_teachersFragment" app:destination="@id/teachersFragment" />
+    <action android:id="@+id/action_global_parentsFragment" app:destination="@id/parentsFragment" />
+    <action android:id="@+id/action_global_studentsFragment" app:destination="@id/studentsFragment" />
+    <action android:id="@+id/action_global_classesFragment" app:destination="@id/classesFragment" />
+    <action android:id="@+id/action_global_resultsFragment" app:destination="@id/resultsFragment" />
+    <action android:id="@+id/action_global_subjectsFragment" app:destination="@id/subjectsFragment" />
+    <fragment
+        android:id="@+id/addTeacherFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.teacher.AddTeacherFragment"
+        android:label="fragment_add_teacher"
+        tools:layout="@layout/fragment_add_teacher" />
+    <fragment
+        android:id="@+id/addBlogFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.blog.AddBlogFragment"
+        android:label="fragment_add_blog"
+        tools:layout="@layout/fragment_add_blog" />
+    <fragment
+        android:id="@+id/addParentFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.parent.AddParentFragment"
+        android:label="fragment_add_parent"
+        tools:layout="@layout/fragment_add_parent" >
+        <argument
+            android:name="parentName"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="parentEmail"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="flag"
+            app:argType="boolean" />
+    </fragment>
+    <fragment
+        android:id="@+id/addStudentFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.student.AddStudentFragment"
+        android:label="fragment_add_student"
+        tools:layout="@layout/fragment_add_student" >
+        <action
+            android:id="@+id/action_addStudentFragment_to_addParentFragment"
+            app:destination="@id/addParentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editParentFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.parent.EditParentFragment"
+        android:label="fragment_edit_parent"
+        tools:layout="@layout/fragment_edit_parent" >
+        <argument
+            android:name="parentURL"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/editStudentFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.student.EditStudentFragment"
+        android:label="fragment_edit_student"
+        tools:layout="@layout/fragment_edit_student" >
+        <argument
+            android:name="studentURL"
+            app:argType="string" />
+        <argument
+            android:name="email"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/editTeacherFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.teacher.EditTeacherFragment"
+        android:label="fragment_edit_teacher"
+        tools:layout="@layout/fragment_edit_teacher" >
+        <argument
+            android:name="teacherURL"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/resultsEditFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.results.ResultsEditFragment"
+        android:label="fragment_results_edit"
+        tools:layout="@layout/fragment_results_edit" >
+        <argument android:name="resultsURL" />
+    </fragment>
+    <fragment
+        android:id="@+id/teacherDetailsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.teacher.TeacherDetailsFragment"
+        android:label="fragment_teacher_details"
+        tools:layout="@layout/fragment_teacher_details" />
+    <fragment
+        android:id="@+id/parentDetailsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.parent.ParentDetailsFragment"
+        android:label="fragment_parent_details"
+        tools:layout="@layout/fragment_parent_details" />
+    <activity
+        android:id="@+id/editParentActivity"
+        android:name="com.justice.schoolmanagement.parent.EditParentActivity"
+        android:label="EditParentActivity" />
+    <activity
+        android:id="@+id/editStudentActivity"
+        android:name="com.justice.schoolmanagement.student.EditStudentActivity"
+        android:label="EditStudentActivity" />
+    <fragment
+        android:id="@+id/studentDetailsFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.student.StudentDetailsFragment"
+        android:label="StudentDetailsFragment" />
+    <fragment
+        android:id="@+id/blogFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.blog.BlogFragment"
+        android:label="fragment_blog"
+        tools:layout="@layout/fragment_blog" />
 </navigation>

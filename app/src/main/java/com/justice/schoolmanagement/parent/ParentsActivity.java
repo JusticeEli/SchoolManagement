@@ -26,7 +26,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
 
 public class ParentsActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ParentsActivityRecyclerAdapter parentsActivityRecyclerAdapter;
@@ -50,7 +50,7 @@ public class ParentsActivity extends AppCompatActivity implements NavigationView
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_parents);
+        setContentView(R.layout.fragment_parents);
         setTitle("PARENTS");
         initwidgets();
         initNavigationDrawer();

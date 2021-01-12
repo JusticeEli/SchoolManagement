@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".alldata.ApplicationClass"
+        android:name=".presentation.ApplicationClass"
         android:allowBackup="true"
         android:icon="@mipmap/school_icon"
         android:label="@string/app_name"
@@ -19,25 +19,9 @@
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".class_.ChoosenClassActivity" />
-        <activity android:name=".results.ResultsEditActivity" />
-        <activity android:name=".student.StudentDetailsActivity" />
-        <activity android:name=".student.EditStudentActivity" />
-        <activity android:name=".parent.EditParentActivity" />
-        <activity android:name=".teacher.EditTeacherActivity" />
-        <activity android:name=".results.ResultsActivity" />
-        <activity android:name=".SubjectsActivity" />
-        <activity android:name=".ClassesActivity" />
-        <activity android:name=".student.AddStudentActivity" />
-        <activity android:name=".parent.AddParentActivity" />
-        <activity android:name=".teacher.AddTeacherActivity" />
-        <activity android:name=".parent.ParentDetailsActivity" />
-        <activity android:name=".teacher.TeacherDetailsActivity" />
-        <activity android:name=".student.StudentsActivity" />
-        <activity android:name=".parent.ParentsActivity" />
-        <activity android:name=".teacher.TeachersActivity" />
+
         <activity
-            android:name=".main.MainActivity"
+            android:name=".presentation.MainActivity"
             android:theme="@style/NoActionBar"
             android:launchMode="singleTop" >
             <intent-filter>

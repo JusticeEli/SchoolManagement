@@ -37,7 +37,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -86,7 +88,7 @@ public class EditStudentActivity extends AppCompatActivity implements Navigation
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_student);
+        setContentView(R.layout.fragment_edit_student);
         email = getIntent().getStringExtra("email");
         studentData = ApplicationClass.documentSnapshot.toObject(StudentData.class);
         studentData.setId(ApplicationClass.documentSnapshot.getId());

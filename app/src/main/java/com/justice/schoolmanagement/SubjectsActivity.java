@@ -18,10 +18,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import com.justice.schoolmanagement.alldata.AllData;
 import com.justice.schoolmanagement.parent.ParentsActivity;
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData;
 import com.justice.schoolmanagement.results.ResultsActivity;
 import com.justice.schoolmanagement.student.StudentsActivity;
-import com.justice.schoolmanagement.teacher.TeacherData;
-import com.justice.schoolmanagement.teacher.TeachersActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,7 @@ public class SubjectsActivity extends AppCompatActivity implements NavigationVie
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_subjects);
+        setContentView(R.layout.fragment_subjects);
         setTitle("Subjects");
         initWidgets();
         initNavigationDrawer();

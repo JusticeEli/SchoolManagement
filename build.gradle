@@ -1,6 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+    ext {
+        kotlinVersion = '1.4.0'
+        navigationVersion = '2.3.0'
+        hiltVersion = '2.28.3-alpha'
+        kotlin_version = '1.4.21'
+    }
     repositories {
         google()
         jcenter()
@@ -10,10 +16,12 @@ buildscript {
         classpath 'com.android.tools.build:gradle:4.0.2'
         //firebase google services
         classpath 'com.google.gms:google-services:4.3.4'
-        //safe args
-        def nav_version = "2.3.1"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
-
+        //kotlin gradle plugin
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+//safe args
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$navigationVersion"
+        //hilt
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$hiltVersion"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

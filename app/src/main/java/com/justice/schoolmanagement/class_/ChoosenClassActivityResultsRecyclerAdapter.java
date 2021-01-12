@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 import com.justice.schoolmanagement.results.ResultsEditActivity;
-import com.justice.schoolmanagement.student.StudentMarks;
 
 public class ChoosenClassActivityResultsRecyclerAdapter extends FirestoreRecyclerAdapter<StudentMarks,ChoosenClassActivityResultsRecyclerAdapter.ViewHolder> {
     private Context context;

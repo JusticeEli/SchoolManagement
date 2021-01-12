@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/dashboardMenu"
+        android:id="@+id/dashboardFragment"
         android:icon="@drawable/ic_dashboard"
         android:title="Dashboard" />
     <item
-        android:id="@+id/teacherMenu"
+        android:id="@+id/teachersFragment"
         android:icon="@drawable/ic_teacher"
         android:title="Teachers" />
     <item
-        android:id="@+id/studentsMenu"
+        android:id="@+id/studentsFragment"
         android:icon="@drawable/ic_students"
         android:title="Students" />
     <item
-        android:id="@+id/parentsMenu"
+        android:id="@+id/parentsFragment"
         android:icon="@drawable/ic_parents"
         android:title="Parents" />
     <item
-        android:id="@+id/classesMenu"
+        android:id="@+id/classesFragment"
         android:icon="@drawable/ic_classes"
         android:title="Classes" />
     <item
-        android:id="@+id/subjectsMenu"
+        android:id="@+id/subjectsFragment"
         android:icon="@drawable/ic_subjects"
         android:title="Subjects" />
     <item
-        android:id="@+id/resultsMenu"
+        android:id="@+id/resultsFragment"
         android:icon="@drawable/ic_results"
         android:title="Results" />
     <item

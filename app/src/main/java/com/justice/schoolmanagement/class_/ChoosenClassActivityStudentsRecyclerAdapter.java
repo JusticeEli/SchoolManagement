@@ -22,9 +22,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
 import com.justice.schoolmanagement.student.EditStudentActivity;
-import com.justice.schoolmanagement.student.StudentData;
 import com.justice.schoolmanagement.student.StudentDetailsActivity;
 
 import de.hdodenhof.circleimageview.CircleImageView;

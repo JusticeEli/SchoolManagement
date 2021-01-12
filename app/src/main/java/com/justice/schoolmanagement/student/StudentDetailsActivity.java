@@ -27,7 +27,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.justice.schoolmanagement.R;
-import com.justice.schoolmanagement.alldata.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ApplicationClass;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
 
 import es.dmoral.toasty.Toasty;
 
@@ -52,7 +54,7 @@ public class StudentDetailsActivity extends AppCompatActivity implements Navigat
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_student_details);
+        setContentView(R.layout.fragment_student_details);
 
         studentData = ApplicationClass.documentSnapshot.toObject(StudentData.class);
         studentData.setId(ApplicationClass.documentSnapshot.getId());

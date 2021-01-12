@@ -22,6 +22,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.justice.schoolmanagement.R;
+import com.justice.schoolmanagement.presentation.ui.blog.BlogRecyclerAdapter;
+import com.justice.schoolmanagement.presentation.ui.blog.model.Blog;
 
 import es.dmoral.toasty.Toasty;
 
@@ -33,7 +35,7 @@ public class BlogActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_blog);
+        setContentView(R.layout.fragment_blog);
         initWidgets();
         setUpRecyclerView();
         setOnClickListeners();
