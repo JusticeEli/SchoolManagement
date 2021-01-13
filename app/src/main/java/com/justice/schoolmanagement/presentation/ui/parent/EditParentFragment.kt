@@ -9,7 +9,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -35,7 +38,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
     private var email: String? = null
     private var uri: Uri? = null
     private var photoChanged = false
-
+    lateinit var progressBar: ProgressBar
     lateinit var binding: FragmentEditParentBinding
     val navArgs: EditParentFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -54,14 +57,23 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
         // initNavigationDrawer();
         setDefaulValues()
         setOnClickListeners()
+        initProgressBar()
+    }
 
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = false
     }
 
     private fun choosePhoto() {
         // start picker to get image for cropping and then use the image in cropping activity
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
-                .start(requireActivity())
+                .setAspectRatio(1, 1)
+                .start(requireContext(), this);
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -306,10 +318,6 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
 
     /////////////////////PROGRESS_BAR////////////////////////////
     private fun showProgress(show: Boolean) {
-        if (show) {
-            Toasty.info(requireContext(), "loading...")
-        } else {
-            Toasty.info(requireContext(), "finished loading")
-        }
+        progressBar.isVisible=show
     }
 }

@@ -13,7 +13,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
@@ -30,8 +33,10 @@ import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import es.dmoral.toasty.Toasty
 import id.zelory.compressor.Compressor
+import kotlinx.android.synthetic.main.fragment_add_parent.*
 import java.io.File
 import java.io.IOException
+
 
 @Suppress("DEPRECATION")
 class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
@@ -42,12 +47,11 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
     private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS)
     private var uri: Uri? = null
-
+    lateinit var progressBar: ProgressBar
     lateinit var binding: FragmentAddTeacherBinding
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-
         binding = FragmentAddTeacherBinding.bind(view)
         setDefaultValues()
         //   initNavigationDrawer();
@@ -55,7 +59,15 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         //   initNavigationDrawer();
         setOnClickListeners()
         setUpSubjectsSpinner();
+        initProgressBar()
+    }
 
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = false
     }
 
 
@@ -79,23 +91,33 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         binding.contactEdtTxt.setText("07")
     }
 
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Log.d(TAG, "onOptionsItemSelected: item selected")
         if (item.itemId == R.id.logoutMenu) {
+            Log.d(TAG, "onOptionsItemSelected: logout pressed")
             AuthUI.getInstance()
                     .signOut(requireContext())
-                    .addOnCompleteListener {
+                    .addOnSuccessListener {
+                        Log.d(TAG, "onOptionsItemSelected: signed out")
                         findNavController().popBackStack()
                     }
+
         }
-        return super.onOptionsItemSelected(item)
+        return true
+
     }
+
     private fun setOnClickListeners() {
 
         binding.apply {
 
             addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
             imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-            addBtn.setOnClickListener(View.OnClickListener { getDataFromEdtTxtAndAddItToDatabase() })
+            addBtn.setOnClickListener(View.OnClickListener {
+                Log.d(TAG, "setOnClickListeners: add btn pressed")
+                getDataFromEdtTxtAndAddItToDatabase()
+            })
             contactEdtTxt.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -116,19 +138,30 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
     }
 
     private fun choosePhoto() {
+        Log.d(TAG, "choosePhoto: ")
         // start picker to get image for cropping and then use the image in cropping activity
+        /*  CropImage.activity()
+                  .setGuidelines(CropImageView.Guidelines.ON)
+                  .setAspectRatio(1, 1)
+                  .start(requireActivity())
+  */
+
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .setAspectRatio(1, 1)
-                .start(requireActivity())
+                .start(requireContext(), this);
     }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        Log.d(TAG, "onActivityResult:  callback")
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             val result = CropImage.getActivityResult(data)
             if (resultCode == Activity.RESULT_OK) {
                 uri = result.uri
+                Log.d(TAG, "onActivityResult: image received" + uri)
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 val error = result.error
             }
@@ -175,7 +208,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
             return
         }
         binding.apply {
-            teacherData = TeacherData(firstNameEdtTxt.getText().toString().trim { it <= ' ' } + " " + lastNameEdtTxt.getText().toString().trim { it <= ' ' }, firstNameEdtTxt.getText().toString().trim { it <= ' ' }, lastNameEdtTxt.getText().toString().trim { it <= ' ' }, FirebaseAuth.getInstance().currentUser!!.email, salaryEdtTxt.getText().toString().trim { it <= ' ' }, cityEdtTxt.getText().toString().trim { it <= ' ' }, degreeEdtTxt.getText().toString().trim { it <= ' ' }, ageEdtTxt.getText().toString().trim { it <= ' ' }, getSelectedGenderRadioBtn(), "teacher", "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim { it <= ' ' })
+            teacherData = TeacherData(firstNameEdtTxt.getText().toString().trim { it <= ' ' } + " " + lastNameEdtTxt.getText().toString().trim { it <= ' ' }, firstNameEdtTxt.getText().toString().trim { it <= ' ' }, lastNameEdtTxt.getText().toString().trim { it <= ' ' }, emailEdtTxt.getText().toString().trim(), salaryEdtTxt.getText().toString().trim { it <= ' ' }, cityEdtTxt.getText().toString().trim { it <= ' ' }, degreeEdtTxt.getText().toString().trim { it <= ' ' }, ageEdtTxt.getText().toString().trim { it <= ' ' }, getSelectedGenderRadioBtn(), "teacher", "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim { it <= ' ' })
             registerTeacherAndPutDataInDatabase()
         }
 
@@ -204,7 +237,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         showProgress(true)
-        val ref = FirebaseStorage.getInstance().getReference("teachers_images").child("$teacherId.jpg")
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_IMAGES).child("$teacherId.jpg")
         val uploadTask = ref.putFile(uri!!)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -238,7 +271,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         }
         thumbnail = Uri.fromFile(compressedImgFile)
         showProgress(true)
-        val ref1 = FirebaseStorage.getInstance().getReference("teachers_thumbnail_images").child(teacherId!!)
+        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_THUMBNAIL_IMAGES).child(teacherId!!)
         val uploadTask1 = ref1.putFile(thumbnail)
         uploadTask1.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -268,11 +301,13 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                 Log.d(TAG, "putTeacherDataInDatabase: ")
                 Toasty.info(requireContext(), "Teacher Data Saved", Toast.LENGTH_SHORT).show()
                 resetEdtTxt()
-                findNavController().popBackStack()
+                Log.d(TAG, "putTeacherDataInDatabase: going to dashboard fragment")
+                findNavController().navigate(R.id.action_addTeacherFragment_to_dashboardFragment)
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
+
             showProgress(false)
         }
     }
@@ -289,13 +324,10 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
     /////////////////////PROGRESS_BAR////////////////////////////
     private fun showProgress(show: Boolean) {
-        if (show) {
-          Toasty.info(requireContext(),"loading...")
-        } else {
-            Toasty.info(requireContext(),"loading finished")
-        }
+        progressBar.isVisible=show
     }
-  companion object {
-          private  const val TAG="AddTeacherFragment"
-      }
+
+    companion object {
+        private const val TAG = "AddTeacherFragment"
+    }
 }

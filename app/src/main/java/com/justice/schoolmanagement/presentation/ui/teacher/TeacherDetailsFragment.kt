@@ -24,12 +24,12 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
     private val email: String? = null
     private var teacherData: TeacherData? = null
 
-    lateinit var binding:FragmentTeacherDetailsBinding
+    lateinit var binding: FragmentTeacherDetailsBinding
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding= FragmentTeacherDetailsBinding.bind(view)
+        binding = FragmentTeacherDetailsBinding.bind(view)
 
         teacherData = ApplicationClass.documentSnapshot!!.toObject(TeacherData::class.java)
         teacherData!!.id = ApplicationClass.documentSnapshot!!.id
@@ -45,7 +45,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
             intent.data = Uri.parse("tel:" + teacherData!!.contact)
             startActivity(intent)
         })
-       binding. emailImageView.setOnClickListener(View.OnClickListener {
+        binding.emailImageView.setOnClickListener(View.OnClickListener {
             val intent = Intent(Intent.ACTION_SEND)
             intent.type = "text/html"
             val email = arrayOf(teacherData!!.email)
@@ -56,9 +56,8 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
 
     private fun setOnClickListeners() {
         binding.deleteTxtView.setOnClickListener(View.OnClickListener { deleteTeacherDataFromDatabase() })
-       binding. editTxtView.setOnClickListener(View.OnClickListener {
-            val intent = Intent(requireContext(), EditTeacherActivity::class.java)
-            startActivity(intent)
+        binding.editTxtView.setOnClickListener(View.OnClickListener {
+            findNavController().navigate(R.id.action_teacherDetailsFragment_to_editTeacherFragment)
         })
     }
 
@@ -71,24 +70,29 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
     }
 
     private fun deleteTeacherDataFromDatabase() {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(),R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteTeacher() }.show()
+        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteTeacher() }.show()
     }
 
     private fun deleteTeacher() {
         showProgress(true)
-        FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_IMAGES).child(teacherData!!.id + ".jpg").delete().addOnCompleteListener { task ->
+      FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_IMAGES).child(teacherData!!.id + ".jpg").delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
+                deleteTeacherMetadata();
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
             showProgress(false)
         }
+
+    }
+
+    private fun deleteTeacherMetadata() {
         ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), " Teacher deleted", Toast.LENGTH_SHORT).show()
-               findNavController().popBackStack()
+                findNavController().popBackStack()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
@@ -122,9 +126,9 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
     /////////////////////PROGRESS_BAR////////////////////////////
     private fun showProgress(show: Boolean) {
         if (show) {
-         Toasty.info(requireContext(),"loading...")
+            Toasty.info(requireContext(), "loading...")
         } else {
-            Toasty.info(requireContext(),"finished loading")
+            Toasty.info(requireContext(), "finished loading")
         }
     }
 }

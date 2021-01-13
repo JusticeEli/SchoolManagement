@@ -34,12 +34,10 @@ class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFrag
         holder.binding.deleteTxtView.setOnClickListener { deleteStudentFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
              ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
-
-            studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToEditStudentFragment(ApplicationClass.documentSnapshot!!.reference!!.path,ApplicationClass.documentSnapshot!!.getString("email")!!))
+            studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToEditStudentFragment())
         }
         holder.itemView.setOnClickListener {
              ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
-
             studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToStudentDetailsFragment())
         }
     }

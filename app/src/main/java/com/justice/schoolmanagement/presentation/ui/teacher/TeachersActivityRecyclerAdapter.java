@@ -1,6 +1,5 @@
 package com.justice.schoolmanagement.presentation.ui.teacher;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -31,7 +31,6 @@ import es.dmoral.toasty.Toasty;
 
 public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<TeacherData, TeachersActivityRecyclerAdapter.ViewHolder> {
 
-    private Context context;
 
     private TeachersFragment teachersFragment;
 
@@ -52,7 +51,7 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
         RequestOptions requestOptions = new RequestOptions();
         requestOptions.centerCrop();
         requestOptions.placeholder(R.mipmap.place_holder);
-        Glide.with(context).applyDefaultRequestOptions(requestOptions).load(model.getPhoto()).thumbnail(Glide.with(context).load(model.getThumbnail())).into(holder.imageView);
+      Glide.with(teachersFragment.requireActivity()).applyDefaultRequestOptions(requestOptions).load(model.getPhoto()).thumbnail(Glide.with(teachersFragment.requireActivity()).load(model.getThumbnail())).into(holder.imageView);
 
         setOnClickListeners(holder, position);
 
@@ -95,7 +94,7 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
     }
 
     public void deleteTeacherDataFromDatabase(final int position) {
-        new MaterialAlertDialogBuilder(context).setBackground(context.getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", new DialogInterface.OnClickListener() {
+        new MaterialAlertDialogBuilder(teachersFragment.requireActivity()).setBackground(ContextCompat.getDrawable(teachersFragment.requireContext(),R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 notifyItemChanged(position);
@@ -122,11 +121,11 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toasty.success(context, "Photo Deleted", Toast.LENGTH_SHORT).show();
+                    Toasty.success(teachersFragment.requireActivity(), "Photo Deleted", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toasty.error(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(teachersFragment.requireActivity(), "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 teachersFragment.showProgress(false);
             }
@@ -137,11 +136,11 @@ public class TeachersActivityRecyclerAdapter extends FirestoreRecyclerAdapter<Te
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toasty.error(context, "Teacher Deleted", Toast.LENGTH_SHORT).show();
+                    Toasty.error(teachersFragment.requireActivity(), "Teacher Deleted", Toast.LENGTH_SHORT).show();
 
                 } else {
                     String error = task.getException().getMessage();
-                    Toasty.error(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                    Toasty.error(teachersFragment.requireActivity(), "Error: " + error, Toast.LENGTH_SHORT).show();
                 }
                 teachersFragment.showProgress(false);
 

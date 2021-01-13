@@ -1,22 +1,16 @@
 package com.justice.schoolmanagement.presentation.ui.dashboard
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
-import androidx.cardview.widget.CardView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI.IdpConfig.*
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.EventListener
-import com.google.firebase.firestore.FirebaseFirestore
 import com.justice.schoolmanagement.R
-import com.justice.schoolmanagement.blog.BlogActivity
 import com.justice.schoolmanagement.databinding.FragmentDashboardBinding
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
@@ -24,20 +18,29 @@ import java.util.*
 
 
 class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickListener {
-    val RC_SIGN_IN = 5
     private val TAG = "DashBoardActivity"
 
     private lateinit var binding: FragmentDashboardBinding
 
-    private val teacherCardView: CardView? = null
 
     private val firebaseAuth = FirebaseAuth.getInstance()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentDashboardBinding.bind(view)
         setOnClickListeners()
+        setHasOptionsMenu(true)
+        binding.teacherCardView!!.isVisible =Constants.isAdmin
+
     }
 
+    override fun onStart() {
+        super.onStart()
+        if(firebaseAuth.currentUser==null){
+            findNavController().navigate(R.id.action_dashboardFragment_to_splashScreenFragment)
+            findNavController().popBackStack()
+        }
+
+    }
 
     private fun setOnClickListeners() {
 
@@ -76,7 +79,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickLis
 
         when (item.itemId) {
             android.R.id.home -> findNavController().popBackStack()
-            R.id.blogsMenu -> startActivity(Intent(activity, BlogActivity::class.java))
+            R.id.blogsMenu -> findNavController().navigate(R.id.action_dashboardFragment_to_blogFragment)
             else -> {
             }
         }
@@ -84,37 +87,6 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickLis
     }
 
 
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart: called")
-        //if user is not logged in we want to exit this method
-        if (firebaseAuth.currentUser == null) {
-            Log.d(TAG, "onStart: user not signed in")
-            return
-        }
-        val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS)
-        collectionReference.document(FirebaseAuth.getInstance().currentUser!!.uid).addSnapshotListener(EventListener { documentSnapshot, e ->
-            if (e != null) {
-                Log.d(TAG, "onEvent: Error: " + e.message)
-                Toast.makeText(activity, "Error: " + e.message, Toast.LENGTH_SHORT).show()
-                return@EventListener
-            }
-            if (!documentSnapshot!!.exists()) {
-                //teacher metadata does not exit
-                Log.d(TAG, "onEvent: teacher metadata does not exit going to AddTeacherActivity")
-                findNavController().navigate(DashboardFragmentDirections.actionDashboardFragmentToAddTeacherFragment())
-//                    Intent intent=new Intent(getContext(), AddTeacherActivity.class);
-//                    startActivity(intent);
-            } else {
-                if (documentSnapshot.getString("type") == "teacher") {
-                    //its a teacher not admin
-                    Log.d(TAG, "onEvent: its a teacher not admin")
-                    Constants.isAdmin = false
-                    teacherCardView!!.visibility = View.GONE
-                }
-            }
-        })
-    }
 
     override fun onClick(v: View?) {
         when (v?.id) {

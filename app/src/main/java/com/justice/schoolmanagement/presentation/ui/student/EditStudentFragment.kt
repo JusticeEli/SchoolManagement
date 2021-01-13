@@ -7,9 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.firestore.FirebaseFirestore
@@ -36,13 +36,11 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
     private var uri: Uri? = null
     private var photoChanged = false
     lateinit var binding: FragmentEditStudentBinding
-
-    val navArgs: EditStudentFragmentArgs by navArgs()
+    lateinit var progressBar: ProgressBar
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditStudentBinding.bind(view)
 
-        email = navArgs.email
         studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)!!
         studentData!!.id = ApplicationClass.documentSnapshot!!.id
 
@@ -51,6 +49,15 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         setDefaultValuesToEdtTxt()
         setOnClickListeners()
         setValuesForSpinner()
+        initProgressBar()
+    }
+
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -162,11 +169,13 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         }
 
     }
+
     private fun choosePhoto() {
         // start picker to get image for cropping and then use the image in cropping activity
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
-                .start(requireActivity())
+                .setAspectRatio(1, 1)
+                .start(requireContext(), this);
     }
 
     private fun getSelectedRadioBtn(): String? {
@@ -253,7 +262,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                 val downloadUri = task.result
                 studentData!!.thumbnail = downloadUri.toString()
                 updateInDatabase()
-                Toasty.success(requireContext(), "Photo Uploaded", Toast.LENGTH_SHORT).show()
+                Toasty.success(requireContext(), "Thumbnail Uploaded", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
@@ -272,7 +281,6 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                         ApplicationClass.documentSnapshot = task.result
                         updateStudentMarks()
                         Toasty.success(requireContext(), "Student Data Updated", Toast.LENGTH_SHORT).show()
-                        findNavController().popBackStack()
                     } else {
                         val error = task.exception!!.message
                         Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
@@ -312,20 +320,19 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                     Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                 }
                 showProgress(false)
+                findNavController().popBackStack(R.id.studentsFragment, false)
+
             }
         }
     }
 
 
     /////////////////////PROGRESS_BAR////////////////////////////
-        private fun showProgress(show: Boolean) {
-            if (show) {
-             Toasty.info(requireContext(), "loading...")
-            } else {
-                Toasty.info(requireContext(), "finished loading")
-            }
-        }
-    private fun setValuesForSpinner() {
+    private fun showProgress(show: Boolean) {
+        progressBar.isVisible = show
+    }
+
+    fun setValuesForSpinner() {
         val classGrade = arrayOf("1", "2", "3", "4", "5", "6", "7", "8")
         val arrayAdapter1: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, classGrade)
         binding.classGradeSpinner.setAdapter(arrayAdapter1)
@@ -345,6 +352,6 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), R.layout.spinner_item, ApplicationClass.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
-    }
+}
 
 

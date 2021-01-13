@@ -1,5 +1,4 @@
 package com.justice.schoolmanagement.presentation.ui.student
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -17,7 +16,6 @@ import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import com.justice.schoolmanagement.presentation.utils.Constants
-import com.justice.schoolmanagement.student.EditStudentActivity
 import es.dmoral.toasty.Toasty
 
 class StudentDetailsFragment:Fragment(R.layout.fragment_student_details) {
@@ -53,9 +51,8 @@ class StudentDetailsFragment:Fragment(R.layout.fragment_student_details) {
     private fun setOnClickListeners() {
        binding. deleteTxtView.setOnClickListener(View.OnClickListener { deleteStudentDataFromDatabase() })
        binding. editTxtView.setOnClickListener(View.OnClickListener {
-            val intent = Intent(requireContext(), EditStudentActivity::class.java)
-            intent.putExtra("email", email)
-            startActivity(intent)
+
+           findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToEditStudentFragment())
         })
     }
 
@@ -138,7 +135,7 @@ class StudentDetailsFragment:Fragment(R.layout.fragment_student_details) {
     /////////////////////PROGRESS_BAR////////////////////////////
         private fun showProgress(show: Boolean) {
             if (show) {
-             Toasty.info(requireContext(),"loading...")
+
             } else {
                 Toasty.info(requireContext(),"finished loading")
             }

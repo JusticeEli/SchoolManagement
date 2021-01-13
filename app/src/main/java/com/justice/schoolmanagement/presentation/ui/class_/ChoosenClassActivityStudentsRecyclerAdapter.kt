@@ -34,7 +34,7 @@ class ChoosenClassActivityStudentsRecyclerAdapter(private val choosenClassFragme
         holder.binding.editTxtView.setOnClickListener {
             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
 
-            choosenClassFragment.navController.navigate(R.id.action_choosenClassFragment_to_editStudentActivity)
+            choosenClassFragment.navController.navigate(R.id.action_choosenClassFragment_to_editStudentFragment)
         }
         holder.itemView.setOnClickListener {
             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)

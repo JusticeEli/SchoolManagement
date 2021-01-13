@@ -15,7 +15,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentDetailsBinding
-import com.justice.schoolmanagement.parent.EditParentActivity
 import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import es.dmoral.toasty.Toasty
@@ -58,8 +57,7 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     private fun setOnClickListeners() {
         binding.deleteTxtView.setOnClickListener(View.OnClickListener { deleteFromDatabase() })
         binding.editTxtView.setOnClickListener(View.OnClickListener {
-            val intent = Intent(requireContext(), EditParentActivity::class.java)
-            startActivity(intent)
+           findNavController().navigate(R.id.action_parentDetailsFragment_to_editParentFragment)
         })
     }
 

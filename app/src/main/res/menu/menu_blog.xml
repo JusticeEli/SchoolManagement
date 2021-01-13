@@ -4,7 +4,9 @@
       <item
         android:id="@+id/blogsMenu"
         android:title="Blogs"
-        app:showAsAction="ifRoom" />
-
+        app:showAsAction="never" />
+      <item android:id="@+id/logoutMenu"
+          android:title="logout"
+          app:showAsAction="never"/>
 
 </menu>

@@ -24,11 +24,11 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
 
     private val firebaseFirestore = FirebaseFirestore.getInstance()
     lateinit var binding: FragmentParentsBinding
-    lateinit var navController:NavController
+    lateinit var navController: NavController
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentParentsBinding.bind(view)
-navController=findNavController()
+        navController = findNavController()
         initRecyclerViewAdapter()
         setOnClickListeners()
         setSwipeListenerForItems()
@@ -46,16 +46,16 @@ navController=findNavController()
 
         parentsActivityRecyclerAdapter = ParentsActivityRecyclerAdapter(this, firestoreRecyclerOptions)
         binding.recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
-       binding. recyclerView.setAdapter(parentsActivityRecyclerAdapter)
+        binding.recyclerView.setAdapter(parentsActivityRecyclerAdapter)
 
     }
 
     private fun setOnClickListeners() {
-      binding.  addParentBtn.setOnClickListener(View.OnClickListener {
+        binding.addParentBtn.setOnClickListener(View.OnClickListener {
 
-          ApplicationClass.documentSnapshot=null
+            ApplicationClass.documentSnapshot = null
 
-          navController.navigate(R.id.action_parentsFragment_to_addParentFragment)
+            navController.navigate(ParentsFragmentDirections.actionParentsFragmentToAddParentFragment(null,null))
         })
     }
 
@@ -70,12 +70,13 @@ navController=findNavController()
             }
         }).attachToRecyclerView(binding.recyclerView)
     }
+
     /////////////////////PROGRESS_BAR////////////////////////////
-         fun showProgress(show: Boolean) {
-            if (show) {
-             Toasty.info(requireContext(),"loading...")
-            } else {
-                Toasty.info(requireContext(),"finished loading")
-            }
+    fun showProgress(show: Boolean) {
+        if (show) {
+            Toasty.info(requireContext(), "loading...")
+        } else {
+            Toasty.info(requireContext(), "finished loading")
         }
     }
+}

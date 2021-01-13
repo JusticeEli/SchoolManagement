@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -8,40 +9,43 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
+import androidx.navigation.ui.*
+import androidx.navigation.ui.NavigationUI.navigateUp
 import com.firebase.ui.auth.AuthUI
-import com.google.android.material.navigation.NavigationView
 import com.justice.schoolmanagement.R
-import dagger.hilt.android.AndroidEntryPoint
+import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.activity_main.*
 
-@AndroidEntryPoint
+
 class MainActivity : AppCompatActivity() {
 
 
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-
+    lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+
+        setSupportActionBar(binding.toolbar)
 
         val navHostFragment =
                 supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.findNavController()
+        val set = setOf(R.id.dashboardFragment,R.id.teachersFragment,R.id.studentsFragment,R.id.parentsFragment,R.id.classesFragment,R.id.subjectsFragment,)
 
         appBarConfiguration = AppBarConfiguration(
-                setOf(R.id.dashboardFragment, R.id.teachersFragment, R.id.studentsFragment, R.id.parentsFragment, R.id.classesFragment, R.id.subjectsFragment, R.id.resultsFragment),
+                setOf(R.id.dashboardFragment,R.id.studentsFragment,R.id.splashScreenFragment),
                 drawer_layout
         )
-        setSupportActionBar(toolbar)
 
         setupActionBarWithNavController(navController, appBarConfiguration)
         nav_view.setupWithNavController(navController)
+      bottom_nav.setupWithNavController(navController)
 
-        nav_view.setNavigationItemSelectedListener(object : NavigationView.OnNavigationItemSelectedListener {
+        /*nav_view.setNavigationItemSelectedListener(object : NavigationView.OnNavigationItemSelectedListener {
             override fun onNavigationItemSelected(item: MenuItem): Boolean {
                 if (item.itemId == R.id.logoutMenu) {
                     AuthUI.getInstance().signOut(this@MainActivity).addOnSuccessListener {
@@ -54,27 +58,55 @@ class MainActivity : AppCompatActivity() {
                 return true
             }
         })
-
+*/
 
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        /*       menuInflater.inflate(R.menu.options_menu, menu)
-        */       return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        /*     return if (item.itemId == R.id.termsAndConditions) {
-                  true
-             } else {
-                 item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
-             }*/
+        menuInflater.inflate(R.menu.menu_blog, menu)
         return true
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+
+        return when (item.itemId) {
+            R.id.blogsMenu -> {
+
+                navController.navigate(R.id.addBlogFragment)
+                return true
+            }
+            R.id.logoutMenu -> {
+                logout()
+                return true
+            }
+            else -> {
+                item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+
+            }
+        }
+
+
     }
+
+    private fun logout() {
+        AuthUI.getInstance().signOut(this@MainActivity).addOnSuccessListener {
+
+            Log.d(Companion.TAG, "onNavigationItemSelected: logout success")
+            finish()
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+
+
+        return navigateUp(navController, drawer_layout)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+    // This might just fix your issue by itself.
 
     companion object {
         private const val TAG = "MainActivity"

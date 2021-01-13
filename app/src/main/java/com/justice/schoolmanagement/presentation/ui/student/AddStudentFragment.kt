@@ -7,7 +7,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
@@ -42,6 +45,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
 
     private var uri: Uri? = null
     lateinit var binding: FragmentAddStudentBinding;
+    lateinit var progressBar: ProgressBar
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddStudentBinding.bind(view)
@@ -50,13 +54,23 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         //   initNavigationDrawer();
         setOnClickListeners()
         setValuesForSpinner()
+        initProgressBar()
+    }
+
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = false
     }
 
     private fun choosePhoto() {
         // start picker to get image for cropping and then use the image in cropping activity
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
-                .start(requireActivity())
+                .setAspectRatio(1, 1)
+                .start(requireContext(), this);
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -169,14 +183,13 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
             showProgress(false)
         }
     }
+
     /////////////////////PROGRESS_BAR////////////////////////////
-        private fun showProgress(show: Boolean) {
-            if (show) {
-             Toasty.info(requireContext(),"loading...")
-            } else {
-                Toasty.info(requireContext(),"finished loading")
-            }
-        }
+    private fun showProgress(show: Boolean) {
+        progressBar.isVisible=show
+
+    }
+
     private fun putImageToStorage() {
         val photoName = UUID.randomUUID().toString()
         studentData.setPhotoName(photoName)
@@ -243,7 +256,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
 
     private fun addParent() {
 
-        findNavController().navigate(AddStudentFragmentDirections.actionAddStudentFragmentToAddParentFragment(studentData.parentName,studentData.email,true))
+        findNavController().navigate(AddStudentFragmentDirections.actionAddStudentFragmentToAddParentFragment(studentData.parentName, studentData.email, true))
     }
 
     private fun addStudentMarks() {
@@ -283,5 +296,5 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), R.layout.spinner_item, ApplicationClass.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
-    }
+}
 

@@ -7,7 +7,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -35,7 +38,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
     private val email: String? = null
     private var teacherData: TeacherData? = null
 
-
+    lateinit var progressBar: ProgressBar
     val navArgs: EditTeacherFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,13 +49,10 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
         teacherData = ApplicationClass.documentSnapshot!!.toObject(TeacherData::class.java)
         teacherData?.setId(ApplicationClass.documentSnapshot!!.id)
-        //  initNavigationDrawer();
-
-
-        //  initNavigationDrawer();
         setDefaultValues()
         setOnClickListeners()
         setUpSubjectsSpinner()
+        initProgressBar()
     }
 
     private fun setUpSubjectsSpinner() {
@@ -67,7 +67,8 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         // start picker to get image for cropping and then use the image in cropping activity
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
-                .start(requireActivity())
+                .setAspectRatio(1, 1)
+                .start(requireContext(), this);
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -101,11 +102,15 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
     }
 
     private fun showProgress(show: Boolean) {
-        if (show) {
-            Toasty.info(requireContext(), "loading...")
-        } else {
-            Toasty.info(requireContext(), "finished loading")
-        }
+        progressBar.isVisible = show
+    }
+
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = false
     }
 
     private fun setDefaultValues() {
@@ -164,9 +169,9 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
     }
 
     private fun setOnClickListeners() {
-       binding. addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
-       binding. imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-       binding. submitBtn.setOnClickListener(object : View.OnClickListener {
+        binding.addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
+        binding.imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
+        binding.submitBtn.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View) {
                 if (uri == null) {
                     Toast.makeText(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
@@ -188,11 +193,11 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
                     teacherData!!.fullName = binding.firstNameEdtTxt.getText().toString() + " " + binding.lastNameEdtTxt.getText().toString()
                     teacherData!!.firstName = binding.firstNameEdtTxt.getText().toString()
-                    teacherData!!.lastName =binding. lastNameEdtTxt.getText().toString()
-                    teacherData!!.email =binding. emailEdtTxt.getText().toString()
-                    teacherData!!.salary =binding. salaryEdtTxt.getText().toString()
-                    teacherData!!.city =binding. cityEdtTxt.getText().toString()
-                    teacherData!!.degree =binding. degreeEdtTxt.getText().toString()
+                    teacherData!!.lastName = binding.lastNameEdtTxt.getText().toString()
+                    teacherData!!.email = binding.emailEdtTxt.getText().toString()
+                    teacherData!!.salary = binding.salaryEdtTxt.getText().toString()
+                    teacherData!!.city = binding.cityEdtTxt.getText().toString()
+                    teacherData!!.degree = binding.degreeEdtTxt.getText().toString()
                     teacherData!!.age = binding.ageEdtTxt.getText().toString()
                     teacherData!!.gender = getSelectedGenderRadioBtn()
                     teacherData!!.type = getSelectedTypeRadioBtn()
@@ -227,6 +232,8 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
                     } else {
                         putDataInDatabase()
                     }
+
+                    teacherData
                 }
         })
     }
@@ -271,7 +278,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
                 Toast.makeText(requireContext(), "Teacher Data updated successfully", Toast.LENGTH_SHORT).show()
                 ApplicationClass.documentSnapshot!!.reference.get().addOnSuccessListener { documentSnapshot ->
                     ApplicationClass.documentSnapshot = documentSnapshot
-                   findNavController().popBackStack()
+                    findNavController().popBackStack()
                 }
             } else {
                 val error = task.exception!!.message

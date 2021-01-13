@@ -9,7 +9,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -34,7 +37,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
     private var parentData: ParentData? = null
 
     private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_PARENTS)
-
+    lateinit var progressBar: ProgressBar
 
     private var uri: Uri? = null
     lateinit var binding: FragmentAddParentBinding
@@ -48,14 +51,23 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         initAdapters()
         setOnClickListeners()
 
+        initProgressBar()
+    }
 
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = false
     }
 
     private fun choosePhoto() {
         // start picker to get image for cropping and then use the image in cropping activity
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
-                .start(requireActivity())
+                .setAspectRatio(1, 1)
+                .start(requireContext(), this);
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -138,7 +150,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
             }
             getDataFromEdtTxtAndSaveInDatabase()
         })
-        binding.skipBtn.setOnClickListener(View.OnClickListener { findNavController().popBackStack() })
+        binding.skipBtn.setOnClickListener(View.OnClickListener { findNavController().popBackStack(R.id.addStudentFragment, true) })
         binding.contactEdtTxt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -267,10 +279,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
 
     /////////////////////PROGRESS_BAR////////////////////////////
     private fun showProgress(show: Boolean) {
-        if (show) {
-            Toasty.info(requireContext(), "loading...")
-        } else {
-            Toasty.info(requireContext(), "finished loading")
-        }
+        progressBar.isVisible = show
+
     }
 }

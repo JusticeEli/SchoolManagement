@@ -39,7 +39,7 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChoosenClassBinding.bind(view)
         navController = findNavController()
-        class_ = navArgs.`class`
+        class_ = navArgs.classNumber
 
 
 

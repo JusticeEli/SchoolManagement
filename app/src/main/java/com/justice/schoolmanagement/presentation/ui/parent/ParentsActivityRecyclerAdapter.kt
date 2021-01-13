@@ -1,7 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.parent
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,19 +15,13 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemParentsBinding
-import com.justice.schoolmanagement.parent.EditParentActivity
-import com.justice.schoolmanagement.parent.ParentDetailsActivity
 import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import es.dmoral.toasty.Toasty
 
 class ParentsActivityRecyclerAdapter
-/**
- * Create a new RecyclerView adapter that listens to a Firestore Query.  See [ ] for configuration options.
- *
- * @param options
- */(private val parentsFragment: ParentsFragment, options: FirestoreRecyclerOptions<ParentData?>) : FirestoreRecyclerAdapter<ParentData, ParentsActivityRecyclerAdapter.ViewHolder>(options) {
-    private val context: Context? = null
+(private val parentsFragment: ParentsFragment, options: FirestoreRecyclerOptions<ParentData?>) : FirestoreRecyclerAdapter<ParentData, ParentsActivityRecyclerAdapter.ViewHolder>(options) {
+    private val context: Context? = parentsFragment.requireContext()
     private val parentData: ParentData? = null
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: ParentData) {
 
@@ -48,17 +41,16 @@ class ParentsActivityRecyclerAdapter
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         holder.binding.deleteTxtView.setOnClickListener { deleteFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-            val intent = Intent(context, EditParentActivity::class.java)
             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
-            context!!.startActivity(intent)
+            parentsFragment.navController.navigate(R.id.action_parentDetailsFragment_to_editParentFragment)
         }
         holder.itemView.setOnClickListener(View.OnClickListener {
             if (position == RecyclerView.NO_POSITION) {
                 return@OnClickListener
             }
-            val intent = Intent(context, ParentDetailsActivity::class.java)
-            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
-            context!!.startActivity(intent)
+             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+
+            parentsFragment.navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(ApplicationClass.documentSnapshot!!.getString("email")!!))
         })
     }
 

@@ -39,7 +39,7 @@ class AddBlogFragment : Fragment(R.layout.fragment_add_blog) {
             CropImage.activity()
                     .setGuidelines(CropImageView.Guidelines.ON)
                     .setAspectRatio(1, 1)
-                    .start(requireActivity())
+                    .start(requireContext(), this);
         })
         binding.submitBtn.setOnClickListener(View.OnClickListener { putPhotoInDatabase() })
     }

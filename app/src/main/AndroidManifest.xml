@@ -14,8 +14,7 @@
         android:roundIcon="@mipmap/school_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".blog.AddBlogActivity"></activity>
-        <activity android:name=".blog.BlogActivity" />
+
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />

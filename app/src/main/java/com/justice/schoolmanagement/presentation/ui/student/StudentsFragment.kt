@@ -1,6 +1,5 @@
 package com.justice.schoolmanagement.presentation.ui.student
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -16,7 +15,6 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentStudentsBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.utils.Constants
-import com.justice.schoolmanagement.student.AddStudentActivity
 import es.dmoral.toasty.Toasty
 
 class StudentsFragment : Fragment(R.layout.fragment_students) {
@@ -53,8 +51,7 @@ class StudentsFragment : Fragment(R.layout.fragment_students) {
 
     private fun setOnClickListeners() {
         binding.addStudentBtn.setOnClickListener(View.OnClickListener {
-            val intent = Intent(requireContext(), AddStudentActivity::class.java)
-            startActivity(intent)
+            findNavController().navigate(R.id.action_studentsFragment_to_addStudentFragment)
         })
     }
 
