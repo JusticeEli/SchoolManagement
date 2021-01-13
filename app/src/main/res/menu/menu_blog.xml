@@ -8,5 +8,10 @@
       <item android:id="@+id/logoutMenu"
           android:title="logout"
           app:showAsAction="never"/>
+      <item android:id="@+id/searchItem"
+          android:icon="@drawable/ic_search"
+          android:title="Search"
+          app:actionViewClass="androidx.appcompat.widget.SearchView"
+          app:showAsAction="ifRoom|collapseActionView"/>
 
 </menu>

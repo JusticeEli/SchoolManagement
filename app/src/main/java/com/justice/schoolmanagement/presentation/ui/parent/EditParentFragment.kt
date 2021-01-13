@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -15,7 +16,6 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.storage.FirebaseStorage
@@ -35,17 +35,16 @@ import java.util.*
 class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
 
     private var parentData: ParentData? = null
-    private var email: String? = null
     private var uri: Uri? = null
     private var photoChanged = false
     lateinit var progressBar: ProgressBar
     lateinit var binding: FragmentEditParentBinding
-    val navArgs: EditParentFragmentArgs by navArgs()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditParentBinding.bind(view)
 
-        email = navArgs.email
+
         parentData = ApplicationClass.documentSnapshot!!.toObject(ParentData::class.java)
 
         binding.contactEdtTxt.setText("07")
@@ -293,7 +292,12 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
                     if (task.isSuccessful) {
                         ApplicationClass.documentSnapshot = task.result
                         Toasty.success(requireContext(), parentData!!.firstName + " Edited Successfully", Toast.LENGTH_SHORT).show()
-                        findNavController().popBackStack()
+                        Handler().postDelayed(object : Runnable {
+                            override fun run() {
+                                findNavController().popBackStack()
+                            }
+
+                        }, 100)
                     } else {
                         val error = task.exception!!.message
                         Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
@@ -318,6 +322,6 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
 
     /////////////////////PROGRESS_BAR////////////////////////////
     private fun showProgress(show: Boolean) {
-        progressBar.isVisible=show
+        progressBar.isVisible = show
     }
 }

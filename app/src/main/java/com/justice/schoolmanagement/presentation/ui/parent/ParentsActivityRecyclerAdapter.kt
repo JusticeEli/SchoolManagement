@@ -26,7 +26,6 @@ class ParentsActivityRecyclerAdapter
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: ParentData) {
 
 
-
         holder.binding.apply {
             parentNameTxtView.text = model.fullName
             parentContactTxtView.text = model.contact
@@ -39,16 +38,17 @@ class ParentsActivityRecyclerAdapter
     }
 
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
+
         holder.binding.deleteTxtView.setOnClickListener { deleteFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
-            parentsFragment.navController.navigate(R.id.action_parentDetailsFragment_to_editParentFragment)
+            parentsFragment.navController.navigate(R.id.action_parentsFragment_to_editParentFragment)
         }
         holder.itemView.setOnClickListener(View.OnClickListener {
             if (position == RecyclerView.NO_POSITION) {
                 return@OnClickListener
             }
-             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
 
             parentsFragment.navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(ApplicationClass.documentSnapshot!!.getString("email")!!))
         })
@@ -78,11 +78,12 @@ class ParentsActivityRecyclerAdapter
             }
             parentsFragment.showProgress(false)
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_parents, parent, false)
-       val binding:ItemParentsBinding= ItemParentsBinding.bind(view)
+        val binding: ItemParentsBinding = ItemParentsBinding.bind(view)
 
         return ViewHolder(binding)
     }
@@ -94,5 +95,6 @@ class ParentsActivityRecyclerAdapter
     inner class ViewHolder(val binding: ItemParentsBinding) : RecyclerView.ViewHolder(binding.root) {
 
     }
+
 
 }

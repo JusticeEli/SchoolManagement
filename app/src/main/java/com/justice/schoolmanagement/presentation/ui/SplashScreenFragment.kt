@@ -5,7 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.firebase.ui.auth.AuthUI
@@ -16,6 +19,7 @@ import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.R
+import com.justice.schoolmanagement.databinding.FragmentSplashScreenBinding
 import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
@@ -28,14 +32,24 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
 
     }
 
+    lateinit var progressBar: ProgressBar
     lateinit var event: ListenerRegistration
     private val firebaseAuth = FirebaseAuth.getInstance()
-
+    lateinit var binding: FragmentSplashScreenBinding
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding = FragmentSplashScreenBinding.bind(view)
         checkIfUserIsLoggedIn()
+        initProgressBar()
     }
 
+    private fun initProgressBar() {
+        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
+        val params = RelativeLayout.LayoutParams(100, 100)
+        params.addRule(RelativeLayout.CENTER_IN_PARENT)
+        binding.relativeLayout.addView(progressBar, params)
+        progressBar.isVisible = true
+    }
 
     private fun checkIfUserIsLoggedIn() {
         Log.d(TAG, "checkIfUserIsLoggedIn: checking if user is logged in")
