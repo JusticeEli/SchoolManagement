@@ -20,7 +20,7 @@ import java.util.*
 
 class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: FirestoreRecyclerOptions<Blog?>) : FirestoreRecyclerAdapter<Blog, BlogRecyclerAdapter.ViewHolder>(options) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: Blog) {
-        FirebaseFirestore.getInstance().collection("Teachers").document(model.userId).get().addOnSuccessListener { documentSnapshot ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS).document(model.userId).get().addOnSuccessListener { documentSnapshot ->
             Glide.with(blogFragment.requireContext()).load(documentSnapshot.getString("photo")).into(holder.binding.userProfileImageView)
             holder.binding.userNameTxtView.text = documentSnapshot.getString("firstName")
             Toast.makeText(blogFragment.requireContext(), "Success loading user Data", Toast.LENGTH_SHORT).show()
@@ -31,7 +31,7 @@ class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: Fires
         holder.binding.descriptionTxtView.text = model.description
 
         ///////////////////////////////////////////
-        FirebaseFirestore.getInstance().collection("blogs").document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).get().addOnSuccessListener { documentSnapshot ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).get().addOnSuccessListener { documentSnapshot ->
             holder.binding.apply {
 
 

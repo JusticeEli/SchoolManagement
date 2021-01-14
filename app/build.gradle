@@ -111,6 +111,10 @@ dependencies {
     // Paging 3
     implementation "androidx.paging:paging-runtime:$pagingVersion"
 
+    //gson
+    implementation 'com.google.code.gson:gson:2.8.6'
+
+
 }
 kapt {
     correctErrorTypes true

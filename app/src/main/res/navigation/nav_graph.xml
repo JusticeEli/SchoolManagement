@@ -100,6 +100,9 @@
             app:destination="@id/addTeacherFragment"
             app:popUpTo="@id/splashScreenFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashScreenFragment_to_adminFragment"
+            app:destination="@id/adminFragment" />
     </fragment>
     <action
         android:id="@+id/action_global_teachersFragment"
@@ -244,5 +247,17 @@
         <action
             android:id="@+id/action_choosenClassFragment_to_editStudentFragment"
             app:destination="@id/editStudentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.register.RegisterFragment"
+        android:label="RegisterFragment" />
+    <fragment
+        android:id="@+id/adminFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.admin.AdminFragment"
+        android:label="AdminFragment" >
+        <action
+            android:id="@+id/action_adminFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment" />
     </fragment>
 </navigation>

@@ -1,8 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.results
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,31 +25,12 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
         setUpRecyclerView()
 
 
-        setOnClickListeners()
+
 
 
     }
 
-    private fun setOnClickListeners() {
-        binding.searchEdtTxt.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                val list: MutableList<StudentMarks> = ArrayList()
-                if (binding.searchEdtTxt.getText().toString().isEmpty()) {
-                } else {
-                    for (studentMarks in AllData.studentMarksList) {
-                        if (studentMarks.name.toLowerCase().contains(binding.searchEdtTxt.getText().toString().toLowerCase())) {
-                            if (!list.contains(studentMarks)) {
-                                list.add(studentMarks)
-                            }
-                        }
-                    }
-                }
-            }
 
-            override fun afterTextChanged(s: Editable) {}
-        })
-    }
 
 
     private fun setUpRecyclerView() {

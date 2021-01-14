@@ -1,16 +1,18 @@
 package com.justice.schoolmanagement.presentation.ui.teacher
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
-import android.widget.Toast
-import androidx.core.view.isVisible
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -101,17 +103,6 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         return true
     }
 
-    private fun showProgress(show: Boolean) {
-        progressBar.isVisible = show
-    }
-
-    private fun initProgressBar() {
-        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
-        val params = RelativeLayout.LayoutParams(100, 100)
-        params.addRule(RelativeLayout.CENTER_IN_PARENT)
-        binding.relativeLayout.addView(progressBar, params)
-        progressBar.isVisible = false
-    }
 
     private fun setDefaultValues() {
         binding.apply {
@@ -313,5 +304,72 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         }
 
     }
+    /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
+
+    private fun showProgress(show: Boolean) {
+
+        if (show) {
+            dialog.show()
+
+        } else {
+            dialog.dismiss()
+
+        }
+
+    }
+    private fun initProgressBar() {
+
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
+
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
+
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
+
+        ll.addView(progressBar)
+        ll.addView(tvText)
+
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
+
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+    //end progressbar
 
 }

@@ -1,21 +1,18 @@
 package com.justice.schoolmanagement.presentation.ui.teacher
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -38,7 +35,6 @@ import java.io.File
 import java.io.IOException
 
 
-@Suppress("DEPRECATION")
 class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
     private var teacherData: TeacherData? = null
@@ -62,13 +58,6 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         initProgressBar()
     }
 
-    private fun initProgressBar() {
-        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
-        val params = RelativeLayout.LayoutParams(100, 100)
-        params.addRule(RelativeLayout.CENTER_IN_PARENT)
-        binding.relativeLayout.addView(progressBar, params)
-        progressBar.isVisible = false
-    }
 
 
     private fun setUpSubjectsSpinner() {
@@ -116,6 +105,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
             imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
             addBtn.setOnClickListener(View.OnClickListener {
                 Log.d(TAG, "setOnClickListeners: add btn pressed")
+                addBtn.isVisible = false
                 getDataFromEdtTxtAndAddItToDatabase()
             })
             contactEdtTxt.addTextChangedListener(object : TextWatcher {
@@ -198,17 +188,36 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
     private fun getDataFromEdtTxtAndAddItToDatabase() {
         if (uri == null) {
             Toasty.info(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
+            addBtn.isVisible = true
             return
         }
         if (fieldsAreEmpty()) {
             Toasty.error(requireContext(), "Please Fill All Fields", Toast.LENGTH_SHORT).show()
+            addBtn.isVisible = true
             return
         }
         if (!contactEdtTxtFormatIsCorrect()) {
+            addBtn.isVisible = true
             return
         }
         binding.apply {
-            teacherData = TeacherData(firstNameEdtTxt.getText().toString().trim { it <= ' ' } + " " + lastNameEdtTxt.getText().toString().trim { it <= ' ' }, firstNameEdtTxt.getText().toString().trim { it <= ' ' }, lastNameEdtTxt.getText().toString().trim { it <= ' ' }, emailEdtTxt.getText().toString().trim(), salaryEdtTxt.getText().toString().trim { it <= ' ' }, cityEdtTxt.getText().toString().trim { it <= ' ' }, degreeEdtTxt.getText().toString().trim { it <= ' ' }, ageEdtTxt.getText().toString().trim { it <= ' ' }, getSelectedGenderRadioBtn(), "teacher", "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim { it <= ' ' })
+
+            val fullName = firstNameEdtTxt.getText().toString().trim() + " " + lastNameEdtTxt.getText().toString().trim()
+            val firstName = firstNameEdtTxt.getText().toString().trim()
+            val lastName = lastNameEdtTxt.getText().toString().trim()
+            val email = emailEdtTxt.getText().toString().trim()
+            val salary = salaryEdtTxt.getText().toString().trim()
+            val city = cityEdtTxt.getText().toString().trim()
+            val degree = degreeEdtTxt.getText().toString().trim()
+            val age = ageEdtTxt.getText().toString().trim()
+            val contact = contactEdtTxt.getText().toString().trim()
+
+
+
+
+            teacherData = TeacherData(firstNameEdtTxt.getText().toString().trim() + " " + lastNameEdtTxt.getText().toString().trim(), firstNameEdtTxt.getText().toString().trim(), lastNameEdtTxt.getText().toString().trim(), emailEdtTxt.getText().toString().trim(), salaryEdtTxt.getText().toString().trim(), cityEdtTxt.getText().toString().trim(), degreeEdtTxt.getText().toString().trim(), ageEdtTxt.getText().toString().trim(), getSelectedGenderRadioBtn(), "admin", "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim())
+
+
             registerTeacherAndPutDataInDatabase()
         }
 
@@ -323,10 +332,72 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
+
     private fun showProgress(show: Boolean) {
-        progressBar.isVisible=show
+
+        if (show) {
+            dialog.show()
+
+        } else {
+            dialog.dismiss()
+
+        }
+
+    }
+    private fun initProgressBar() {
+
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
     }
 
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
+
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
+
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
+
+        ll.addView(progressBar)
+        ll.addView(tvText)
+
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
+
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+    //end progressbar
     companion object {
         private const val TAG = "AddTeacherFragment"
     }

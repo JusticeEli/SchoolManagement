@@ -29,8 +29,8 @@
         android:icon="@drawable/ic_results"
         android:title="Results" />
     <item
-        android:id="@+id/logoutMenu"
+        android:id="@+id/registerFragment"
         android:icon="@drawable/ic_logout"
-        android:title="Logout" />
+        android:title="Register Data" />
 
 </menu>

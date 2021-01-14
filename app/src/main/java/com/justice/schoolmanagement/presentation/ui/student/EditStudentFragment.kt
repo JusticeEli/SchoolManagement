@@ -1,13 +1,19 @@
 package com.justice.schoolmanagement.presentation.ui.student
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.*
+import android.view.WindowManager
 import android.widget.*
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
@@ -52,13 +58,6 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         initProgressBar()
     }
 
-    private fun initProgressBar() {
-        progressBar = ProgressBar(requireContext(), null, android.R.attr.progressBarStyleLarge)
-        val params = RelativeLayout.LayoutParams(100, 100)
-        params.addRule(RelativeLayout.CENTER_IN_PARENT)
-        binding.relativeLayout.addView(progressBar, params)
-        progressBar.isVisible = false
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -327,12 +326,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
     }
 
 
-    /////////////////////PROGRESS_BAR////////////////////////////
-    private fun showProgress(show: Boolean) {
-        progressBar.isVisible = show
-    }
-
-    fun setValuesForSpinner() {
+     fun setValuesForSpinner() {
         val classGrade = arrayOf("1", "2", "3", "4", "5", "6", "7", "8")
         val arrayAdapter1: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, classGrade)
         binding.classGradeSpinner.setAdapter(arrayAdapter1)
@@ -352,6 +346,76 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), R.layout.spinner_item, ApplicationClass.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
+
+
+
+    /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
+
+    private fun showProgress(show: Boolean) {
+
+        if (show) {
+            dialog.show()
+
+        } else {
+            dialog.dismiss()
+
+        }
+
+    }
+    private fun initProgressBar() {
+
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
+
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
+
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
+
+        ll.addView(progressBar)
+        ll.addView(tvText)
+
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
+
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+    //end progressbar
 }
 
 

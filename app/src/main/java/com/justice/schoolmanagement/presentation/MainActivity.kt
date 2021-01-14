@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.navigation.ui.NavigationUI.navigateUp
 import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
+import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -34,16 +36,16 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
                 supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.findNavController()
-        val set = setOf(R.id.dashboardFragment,R.id.teachersFragment,R.id.studentsFragment,R.id.parentsFragment,R.id.classesFragment,R.id.subjectsFragment,)
+        val set = setOf(R.id.dashboardFragment, R.id.teachersFragment, R.id.studentsFragment, R.id.parentsFragment, R.id.classesFragment, R.id.subjectsFragment)
 
         appBarConfiguration = AppBarConfiguration(
-                setOf(R.id.dashboardFragment,R.id.studentsFragment,R.id.splashScreenFragment),
+                setOf(R.id.dashboardFragment, R.id.studentsFragment, R.id.splashScreenFragment),
                 drawer_layout
         )
 
         setupActionBarWithNavController(navController, appBarConfiguration)
         nav_view.setupWithNavController(navController)
-      bottom_nav.setupWithNavController(navController)
+        bottom_nav.setupWithNavController(navController)
 
         /*nav_view.setNavigationItemSelectedListener(object : NavigationView.OnNavigationItemSelectedListener {
             override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -63,7 +65,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-    //menuInflater.inflate(R.menu.menu_blog, menu)
+        //menuInflater.inflate(R.menu.menu_blog, menu)
         return true
     }
 
@@ -73,7 +75,7 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.blogsMenu -> {
 
-                navController.navigate(R.id.addBlogFragment)
+                navController.navigate(R.id.blogFragment)
                 return true
             }
             R.id.logoutMenu -> {
@@ -93,15 +95,46 @@ class MainActivity : AppCompatActivity() {
         AuthUI.getInstance().signOut(this@MainActivity).addOnSuccessListener {
 
             Log.d(Companion.TAG, "onNavigationItemSelected: logout success")
+
+            getRidOfSharedPreferenceData()
+
             finish()
         }
     }
 
+    private fun getRidOfSharedPreferenceData() {
+        val sharedPreferences = getSharedPreferences("shared_pref", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString(SplashScreenFragment.KEY_ADMIN_DATA, null).commit()
+
+    }
+
+    /*    override fun onSupportNavigateUp(): Boolean {
+
+
+           return navigateUp(navController, drawer_layout)
+       }*/
+
+    override fun onSupportNavigateUp(): Boolean {
+
+        return navigateUp(navController, drawer_layout)
+
+    }
+
+
+/*
     override fun onSupportNavigateUp(): Boolean {
 
 
-        return navigateUp(navController, drawer_layout)
+        return when(navController.currentDestination?.id) {
+            R.id.splashScreenFragment -> {
+                // custom behavior here
+                false
+            }
+            else -> !navigateUp(navController, drawer_layout)
+        }
     }
+*/
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

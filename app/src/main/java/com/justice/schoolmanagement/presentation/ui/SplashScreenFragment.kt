@@ -1,8 +1,11 @@
 package com.justice.schoolmanagement.presentation.ui
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
@@ -18,9 +21,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.gson.Gson
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentSplashScreenBinding
 import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.ui.admin.AdminData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
 import java.util.*
@@ -29,8 +34,10 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     companion object {
         private const val TAG = "SplashScreenFragment"
         private const val RC_SIGN_IN = 4
+         val KEY_ADMIN_DATA = "admin_data"
 
     }
+    lateinit var sharedPreferences: SharedPreferences
 
     lateinit var progressBar: ProgressBar
     lateinit var event: ListenerRegistration
@@ -39,6 +46,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSplashScreenBinding.bind(view)
+        sharedPreferences = requireContext().getSharedPreferences("shared_pref", Context.MODE_PRIVATE)
         checkIfUserIsLoggedIn()
         initProgressBar()
     }
@@ -100,8 +108,19 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     }
 
     private fun goToDashBoard() {
+        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
+        if (stringData == null) {
+            findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
+        }else{
 
-        findNavController().navigate(R.id.action_splashScreenFragment_to_dashboardFragment)
+            val gson = Gson()
+            val adminData = gson.fromJson(stringData, AdminData::class.java)
+
+            Constants.DOCUMENT_CODE=adminData.institutionCode
+            findNavController().navigate(R.id.action_splashScreenFragment_to_dashboardFragment)
+
+        }
+
 
     }
 
@@ -130,9 +149,11 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
                 if (!documentSnapshot!!.exists()) {
                     //teacher metadata does not exit
                     Log.d(TAG, "onEvent: teacher metadata does not exit going to AddTeacherActivity")
-
-
-                    findNavController().navigate(R.id.action_splashScreenFragment_to_addTeacherFragment)
+                    Handler().postDelayed(object : Runnable {
+                        override fun run() {
+                            goToTeacherFragmentOrAdminFragment()
+                          }
+                    }, 100)
 
 
                 } else {
@@ -149,6 +170,24 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
             })
 
         }
+
+    }
+
+    private fun goToTeacherFragmentOrAdminFragment() {
+
+        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
+        if (stringData == null) {
+            findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
+          }else{
+
+            val gson = Gson()
+            val adminData = gson.fromJson(stringData, AdminData::class.java)
+
+            Constants.DOCUMENT_CODE=adminData.institutionCode
+            findNavController().navigate(R.id.action_splashScreenFragment_to_addTeacherFragment)
+
+        }
+
 
     }
 

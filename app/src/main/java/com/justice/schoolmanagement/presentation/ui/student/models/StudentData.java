@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.student.models;
 
+import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.Exclude;
 
 import java.io.Serializable;
@@ -19,6 +20,7 @@ public class StudentData implements Serializable {
     private String gender;
     private String classTeacherName;
     private String city;
+    @DocumentId
     private String id;
     private String photo;
 
