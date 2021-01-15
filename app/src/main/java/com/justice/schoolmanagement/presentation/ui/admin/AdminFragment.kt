@@ -1,12 +1,21 @@
 package com.justice.schoolmanagement.presentation.ui.admin
 
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
+import android.view.Gravity
 import android.view.View
-import androidx.core.view.isVisible
+import android.view.ViewGroup
+import android.view.ViewGroup.*
+import android.view.WindowManager
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,11 +32,16 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
     private val KEY_ADMIN_DATA = "admin_data"
     lateinit var adminData: AdminData
     val firestore = FirebaseFirestore.getInstance()
+
+    companion object {
+        private const val TAG = "AdminFragment"
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAdminBinding.bind(view)
         sharedPreferences = requireContext().getSharedPreferences("shared_pref", MODE_PRIVATE)
-
+        initProgressBar()
         setDefaultValues()
         setOnClickListeners()
     }
@@ -40,6 +54,7 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
     }
 
     private fun submitBtnClicked() {
+        Log.d(TAG, "submitBtnClicked: ")
         //first check if data is already available in database
         if (TextUtils.isEmpty(institutionCodeEdtTxt.text.toString().trim())) {
 
@@ -47,8 +62,10 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
             return
         }
         val institutionCode = institutionCodeEdtTxt.text.toString().trim().replace("/", "")
+        showProgress(true)
         firestore.collection(Constants.COLLECTION_ROOT).document(institutionCode).get().addOnSuccessListener {
             if (it.exists()) {
+                Log.d(TAG, "submitBtnClicked: institution code does not exit setting it")
                 //u are ordinary teacher
                 Constants.DOCUMENT_CODE = institutionCode
                 val gson = Gson()
@@ -56,12 +73,18 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
                 val stringData = gson.toJson(adminData)
                 //save data in share preference
                 sharedPreferences.edit().putString(KEY_ADMIN_DATA, stringData).commit()
-
+                //save institution code//
+                Log.d(TAG, "submitBtnClicked: institution code does not exit setting it")
+                Constants.DOCUMENT_CODE = institutionCode
+                showProgress(false)
                 findNavController().popBackStack()
 
             } else {
+                showProgress(false)
                 ///you are admin first to create this school
                 Constants.DOCUMENT_CODE = institutionCode
+                Log.d(TAG, "submitBtnClicked: institution code exists ${Constants.DOCUMENT_CODE }")
+
                 fillAdminData()
             }
         }
@@ -70,10 +93,12 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
     }
 
     private fun fillAdminData() {
+
         //set visibility of edit text on
         binding.apply {
-            nameEdtTxt.isVisible = true
-            phoneNumberEdtTxt.isVisible = true
+            institutionCodeEdtTxt.isEnabled=false
+            name.visibility = View.VISIBLE
+            phone.visibility = View.VISIBLE
         }
         binding.apply {
             if (TextUtils.isEmpty(nameEdtTxt.text?.trim()) || TextUtils.isEmpty(phoneNumberEdtTxt.text?.trim()) || TextUtils.isEmpty(institutionCodeEdtTxt.text?.trim())) {
@@ -120,7 +145,73 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
 
     }
 
-    companion object {
-        private const val TAG = "AdminFragment"
+    /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
+
+    private fun showProgress(show: Boolean) {
+
+        if (show) {
+            dialog.show()
+
+        } else {
+            dialog.dismiss()
+
+        }
+
     }
+
+    private fun initProgressBar() {
+
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
+
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
+
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
+
+        ll.addView(progressBar)
+        ll.addView(tvText)
+
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
+
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+    //end progressbar
+
 }

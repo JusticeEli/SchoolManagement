@@ -34,9 +34,10 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     companion object {
         private const val TAG = "SplashScreenFragment"
         private const val RC_SIGN_IN = 4
-         val KEY_ADMIN_DATA = "admin_data"
+        val KEY_ADMIN_DATA = "admin_data"
 
     }
+
     lateinit var sharedPreferences: SharedPreferences
 
     lateinit var progressBar: ProgressBar
@@ -110,14 +111,21 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     private fun goToDashBoard() {
         val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
         if (stringData == null) {
-            findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
-        }else{
+
+            if (findNavController().currentDestination?.id == R.id.splashScreenFragment) {
+                findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
+
+            }
+        } else {
 
             val gson = Gson()
             val adminData = gson.fromJson(stringData, AdminData::class.java)
 
-            Constants.DOCUMENT_CODE=adminData.institutionCode
-            findNavController().navigate(R.id.action_splashScreenFragment_to_dashboardFragment)
+            Constants.DOCUMENT_CODE = adminData.institutionCode
+
+            if (findNavController().currentDestination?.id == R.id.splashScreenFragment) {
+                findNavController().navigate(R.id.action_splashScreenFragment_to_dashboardFragment)
+            }
 
         }
 
@@ -138,8 +146,8 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
 
         } else {
             Log.d(TAG, "onStart: user signed in")
-
-            val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS)
+            checkIfInstitutionCodeExits()
+            val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
             event = collectionReference.document(FirebaseAuth.getInstance().currentUser!!.uid).addSnapshotListener(EventListener { documentSnapshot, e ->
                 if (e != null) {
                     Log.d(TAG, "onEvent: Error: " + e.message)
@@ -152,7 +160,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
                     Handler().postDelayed(object : Runnable {
                         override fun run() {
                             goToTeacherFragmentOrAdminFragment()
-                          }
+                        }
                     }, 100)
 
 
@@ -173,17 +181,30 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
 
     }
 
+    private fun checkIfInstitutionCodeExits() {
+        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
+        if (stringData == null) {
+            findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
+        } else {
+            val gson = Gson()
+            val adminData = gson.fromJson(stringData, AdminData::class.java)
+            Log.d(TAG, "checkIfInstitutionCodeExits: code: ${adminData.institutionCode}")
+            Constants.DOCUMENT_CODE = adminData.institutionCode
+        }
+    }
+
     private fun goToTeacherFragmentOrAdminFragment() {
 
         val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
         if (stringData == null) {
             findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
-          }else{
+        } else {
 
             val gson = Gson()
             val adminData = gson.fromJson(stringData, AdminData::class.java)
 
-            Constants.DOCUMENT_CODE=adminData.institutionCode
+            Constants.DOCUMENT_CODE = adminData.institutionCode
+            Log.d(TAG, "goToTeacherFragmentOrAdminFragment: code: ${adminData.institutionCode}")
             findNavController().navigate(R.id.action_splashScreenFragment_to_addTeacherFragment)
 
         }

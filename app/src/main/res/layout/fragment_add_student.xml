@@ -61,8 +61,8 @@
                         android:orientation="horizontal">
 
                         <de.hdodenhof.circleimageview.CircleImageView
-                            android:layout_width="100dp"
                             android:id="@+id/imageView"
+                            android:layout_width="100dp"
                             android:layout_height="100dp"
                             android:src="@mipmap/place_holder" />
 
@@ -123,10 +123,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Class/Grade"
-                            app:helperText="Class/Grade"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
-                            app:boxCornerRadiusTopStart="20dp">
+                            app:boxCornerRadiusTopStart="20dp"
+                            app:helperText="Class/Grade">
 
                             <Spinner
                                 android:id="@+id/classGradeSpinner"
@@ -140,16 +140,16 @@
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:helperText="Nationality"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
-                            app:boxCornerRadiusTopStart="20dp">
+                            app:boxCornerRadiusTopStart="20dp"
+                            app:helperText="Nationality">
 
                             <Spinner
-                                android:padding="10dp"
                                 android:id="@+id/nationalitySpinner"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:padding="10dp" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -158,16 +158,16 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Religion"
-                            app:helperText="Religion"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
-                            app:boxCornerRadiusTopStart="20dp">
+                            app:boxCornerRadiusTopStart="20dp"
+                            app:helperText="Religion">
 
                             <Spinner
                                 android:id="@+id/religionSpinner"
                                 android:layout_width="match_parent"
-                                android:padding="10dp"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:padding="10dp" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -182,9 +182,9 @@
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/emailEdtTxt"
-                                android:inputType="textEmailAddress"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:inputType="textEmailAddress" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -199,9 +199,9 @@
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/parentNameEdtTxt"
-                                android:inputType="text"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:inputType="text" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -216,9 +216,9 @@
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/dateOfBirthEdtTxt"
-                                android:inputType="date"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:inputType="date" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -233,9 +233,9 @@
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/dateOfArrivalEdtTxt"
-                                android:inputType="date"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:inputType="date" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -250,9 +250,9 @@
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/ageEdtTxt"
-                                android:inputType="number"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:inputType="number" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -261,17 +261,17 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Gender"
-                            app:helperText="Gender"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
-                            app:boxCornerRadiusTopStart="20dp">
+                            app:boxCornerRadiusTopStart="20dp"
+                            app:helperText="Gender">
 
                             <RadioGroup
                                 android:id="@+id/genderRadioGroup"
                                 android:layout_width="match_parent"
-                                android:padding="10dp"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal">
+                                android:orientation="horizontal"
+                                android:padding="10dp">
 
                                 <RadioButton
                                     android:id="@+id/maleRadioBtn"
@@ -300,38 +300,38 @@
                             android:layout_height="wrap_content"
                             android:hint="Class Teacher Name"
                             app:boxBackgroundMode="outline"
-                            app:helperText="Class Teacher Name"
                             app:boxCornerRadiusTopEnd="20dp"
-                            app:boxCornerRadiusTopStart="20dp">
+                            app:boxCornerRadiusTopStart="20dp"
+                            app:helperText="Class Teacher Name">
 
                             <Spinner
-                                android:padding="10dp"
                                 android:id="@+id/classTeacherNameSpinner"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:padding="10dp" />
 
                         </com.google.android.material.textfield.TextInputLayout>
+
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="City"
-                            app:endIconMode="dropdown_menu"
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
-                            app:boxCornerRadiusTopStart="20dp">
+                            app:boxCornerRadiusTopStart="20dp"
+                            app:endIconMode="dropdown_menu">
 
                             <AutoCompleteTextView
                                 android:id="@+id/cityEdtTxt"
-                                android:inputType="number"
-                                android:padding="10dp"
-                                android:completionThreshold="1"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
+                                android:layout_height="wrap_content"
+                                android:completionThreshold="1"
+                                android:padding="10dp" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 
-a
+                        a
                         <!--
                            <LinearLayout
                             android:layout_width="wrap_content"

@@ -199,7 +199,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
                     }
                     if (photoChanged) {
                         showProgress(true)
-                        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_IMAGES).child(teacherData!!.id + ".jpg")
+                        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child(teacherData!!.id + ".jpg")
                         val uploadTask = ref.putFile(uri!!)
                         uploadTask.continueWithTask { task ->
                             if (!task.isSuccessful) {
@@ -218,8 +218,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
                                 val error = task.exception!!.message
                                 Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                             }
-                            showProgress(false)
-                        }
+                         }
                     } else {
                         putDataInDatabase()
                     }
@@ -239,7 +238,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         }
         thumbnail = Uri.fromFile(compressedImgFile)
         showProgress(true)
-        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_THUMBNAIL_IMAGES).child(teacherData!!.id)
+        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES).child(teacherData!!.id)
         val uploadTask1 = ref1.putFile(thumbnail)
         uploadTask1.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -257,8 +256,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
                 val error = task.exception!!.message
                 Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
-        }
+         }
     }
 
 
@@ -269,13 +267,14 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
                 Toast.makeText(requireContext(), "Teacher Data updated successfully", Toast.LENGTH_SHORT).show()
                 ApplicationClass.documentSnapshot!!.reference.get().addOnSuccessListener { documentSnapshot ->
                     ApplicationClass.documentSnapshot = documentSnapshot
+                    showProgress(false)
                     findNavController().popBackStack()
                 }
             } else {
                 val error = task.exception!!.message
                 Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
     }
 

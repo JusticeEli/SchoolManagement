@@ -96,7 +96,7 @@ class StudentDetailsFragment:Fragment(R.layout.fragment_student_details) {
 
     private fun removeStudentMarksFromDatabase() {
         showProgress(true)
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_STUDENTS_MARKS).document(studentData!!.id).delete().addOnCompleteListener { task ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).document(studentData!!.id).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), "Student Marks removed", Toast.LENGTH_SHORT).show()
             } else {

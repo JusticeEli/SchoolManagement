@@ -52,7 +52,7 @@ class AbsentFragment : Fragment(R.layout.fragment_present) {
     }
 
     private fun setUpFirestore() {
-        firebaseFirestore.collection(Constants.COLLECTION_DATE).document(RegisterFragment.currentInfo.currentDate).get().addOnSuccessListener { documentsnapshot ->
+        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).get().addOnSuccessListener { documentsnapshot ->
             if (documentsnapshot.exists()) {
                 docucumentExist(documentsnapshot)
                 Log.d(TAG, "setUpFirestore: document exists")
@@ -83,10 +83,10 @@ class AbsentFragment : Fragment(R.layout.fragment_present) {
 
         val query: Query
         if (RegisterFragment.currentInfo.currentClass.equals("all")) {
-            query = documentsnapshot?.reference?.collection(Constants.COLLECTION_STUDENTS)!!.whereEqualTo("present", false)
+            query = documentsnapshot?.reference?.collection(Constants.STUDENTS)!!.whereEqualTo("present", false)
 
         } else {
-            query = documentsnapshot?.reference?.collection(Constants.COLLECTION_STUDENTS)!!.whereEqualTo("currentClass", RegisterFragment.currentInfo.currentClass).whereEqualTo("present", false)
+            query = documentsnapshot?.reference?.collection(Constants.STUDENTS)!!.whereEqualTo("currentClass", RegisterFragment.currentInfo.currentClass).whereEqualTo("present", false)
 
         }
         val firestoreRecyclerOptions: FirestoreRecyclerOptions<StudentRegistrationData> = FirestoreRecyclerOptions.Builder<StudentRegistrationData>().setQuery(query, StudentRegistrationData::class.java).setLifecycleOwner(viewLifecycleOwner).build()
@@ -100,7 +100,7 @@ class AbsentFragment : Fragment(R.layout.fragment_present) {
 
     private fun startFetchingData(documentsnapshot: DocumentSnapshot?) {
         docucumentExist(documentsnapshot)
-        firebaseFirestore.collection(Constants.COLLECTION_STUDENTS).get().addOnCompleteListener { task ->
+        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS).get().addOnCompleteListener { task ->
 
             if (task.isSuccessful) {
 
@@ -110,7 +110,7 @@ class AbsentFragment : Fragment(R.layout.fragment_present) {
 
                     val studentRegistrationData = StudentRegistrationData(queryDocumentSnapshot.id, true, studentData.classGrade.toString(), studentData)
 
-                    firebaseFirestore.collection(Constants.COLLECTION_DATE).document(RegisterFragment.currentInfo.currentDate).collection(Constants.COLLECTION_STUDENTS).add(studentRegistrationData).addOnCompleteListener {
+                    firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).collection(Constants.STUDENTS).add(studentRegistrationData).addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.d(TAG, "startFetchingData: success adding student registration data")
 

@@ -23,9 +23,10 @@ class ApplicationClass : Application() {
     }
 
     fun loadTeacherNames() {
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS).get().addOnCompleteListener { task ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
          //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
             if (task.isSuccessful) {
+                teacherNames.clear()
                 for (documentSnapshot in task.result!!) {
                     teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
                     AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))

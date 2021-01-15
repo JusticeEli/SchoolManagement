@@ -208,7 +208,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
 
         if (photoChanged) {
             showProgress(true)
-            val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_STUDENTS_IMAGES).child(studentData!!.photoName)
+            val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_IMAGES).child(studentData!!.photoName)
             val uploadTask = ref.putFile(uri!!)
             uploadTask.continueWithTask { task ->
                 if (!task.isSuccessful) {
@@ -226,8 +226,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                     val error = task.exception!!.message
                     Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                 }
-                showProgress(false)
-            }
+             }
 
             /////////////////////////////////////////////
         } else {
@@ -247,13 +246,12 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
             e.printStackTrace()
         }
         thumbnail = Uri.fromFile(compressedImgFile)
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_STUDENTS_THUMBNAIL_IMAGES).child(photoName)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_THUMBNAIL_IMAGES).child(photoName)
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
                 throw task.exception!!
             }
-            showProgress(false)
             // Continue with the task to get the download URL
             ref.downloadUrl
         }.addOnCompleteListener { task ->
@@ -266,8 +264,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
-        }
+         }
     }
 
     private fun updateInDatabase() {
@@ -284,14 +281,12 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                         val error = task.exception!!.message
                         Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                     }
-                    showProgress(false)
-                }
+                 }
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
-        }
+         }
     }
 
     private fun updateStudentMarks() {
@@ -304,14 +299,14 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         map["classGrade"] = studentData!!.classGrade
         map["email"] = studentData!!.email
         showProgress(true)
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_STUDENTS_MARKS).document(studentData!!.id).get().addOnSuccessListener { documentSnapshot ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).document(studentData!!.id).get().addOnSuccessListener { documentSnapshot ->
             studentMarks = documentSnapshot.toObject(StudentMarks::class.java)!!
             studentMarks!!.fullName = studentData!!.fullName
             studentMarks!!.classGrade = studentData!!.classGrade
             studentMarks!!.email = studentData!!.email
 
             ///////////////////////////
-            FirebaseFirestore.getInstance().collection(Constants.COLLECTION_STUDENTS_MARKS).document(studentData!!.id).set(studentMarks!!).addOnCompleteListener { task ->
+            FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).document(studentData!!.id).set(studentMarks!!).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toasty.success(requireContext(), "Student Marks updated", Toast.LENGTH_SHORT).show()
                 } else {

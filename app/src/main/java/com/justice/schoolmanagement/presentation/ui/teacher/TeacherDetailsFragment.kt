@@ -75,7 +75,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
 
     private fun deleteTeacher() {
         showProgress(true)
-      FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_IMAGES).child(teacherData!!.id + ".jpg").delete().addOnCompleteListener { task ->
+      FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child(teacherData!!.id + ".jpg").delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
                 deleteTeacherMetadata();

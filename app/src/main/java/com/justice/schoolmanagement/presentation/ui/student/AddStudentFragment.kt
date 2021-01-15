@@ -26,8 +26,6 @@ import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import com.justice.schoolmanagement.presentation.utils.Constants
-import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_STUDENTS
-import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_STUDENTS_MARKS
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import es.dmoral.toasty.Toasty
@@ -39,8 +37,8 @@ import java.util.*
 class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
 
     private var documentSnapshot: DocumentSnapshot? = null
-    private val collectionReferenceMarks = FirebaseFirestore.getInstance().collection(COLLECTION_STUDENTS_MARKS)
-    private val collectionReferenceData = FirebaseFirestore.getInstance().collection(COLLECTION_STUDENTS);
+    private val collectionReferenceMarks = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS)
+    private val collectionReferenceData = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS);
     private lateinit var studentData: StudentData
     private lateinit var studentMarks: StudentMarks
 
@@ -58,7 +56,6 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         setValuesForSpinner()
         initProgressBar()
     }
-
 
 
     private fun choosePhoto() {
@@ -130,7 +127,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
             ageEdtTxt.setText("")
             cityEdtTxt.setText("")
         }
-
+        showProgress(false)
     }
 
     private fun getDataFromEdtTxtAndSaveInDatabase() {
@@ -164,9 +161,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
                     if (task.isSuccessful) {
                         documentSnapshot = task.result
                         addStudentMarks()
-                        resetEdtTxt()
                         Toasty.success(requireContext(), "Student Added ", Toast.LENGTH_SHORT).show()
-                        addParent()
                     } else {
                         val error = task.exception!!.message
                         Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
@@ -176,7 +171,6 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
         }
     }
 
@@ -185,13 +179,12 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         val photoName = UUID.randomUUID().toString()
         studentData.setPhotoName(photoName)
         showProgress(true)
-        val ref = FirebaseStorage.getInstance().getReference("students_images").child(photoName)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_IMAGES).child(photoName)
         val uploadTask = ref.putFile(uri!!)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
                 throw task.exception!!
             }
-            showProgress(false)
             // Continue with the task to get the download URL
             ref.downloadUrl
         }.addOnCompleteListener { task ->
@@ -204,7 +197,6 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
         }
 
         /////////////////////////////////////////////
@@ -222,13 +214,12 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
             e.printStackTrace()
         }
         thumbnail = Uri.fromFile(compressedImgFile)
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_STUDENTS_THUMBNAIL_IMAGES).child(photoName)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_THUMBNAIL_IMAGES).child(photoName)
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
                 throw task.exception!!
             }
-            showProgress(false)
             // Continue with the task to get the download URL
             ref.downloadUrl
         }.addOnCompleteListener { task ->
@@ -236,12 +227,11 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
                 val downloadUri = task.result
                 studentData.setThumbnail(downloadUri.toString())
                 putDataIntoDatabase()
-                Toasty.success(requireContext(), "Photo Uploaded", Toast.LENGTH_SHORT).show()
+                Toasty.success(requireContext(), "Thumbnail Uploaded", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
         }
     }
 
@@ -263,7 +253,8 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+            resetEdtTxt()
+            addParent()
         }
     }
 
@@ -272,7 +263,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         val arrayAdapter1: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, classGrade)
         binding.classGradeSpinner.setAdapter(arrayAdapter1)
         val cities = arrayOf("Kisumu", "Kitui", "Lamu", "Nairobi", "Machakos", "Marsabit", "Meru", "Migori", "Mombasa", "Nakuru", "Narok", "Trans Nzoia", "Turkana", "Vihiga", "Naivasha", "Eldoret", "Kericho")
-        val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, cities)
+        val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, cities)
         binding.cityEdtTxt.setAdapter<ArrayAdapter<String>>(cityAdapter)
         val nationality = arrayOf("Kenyan", "Foreigner")
         val arrayAdapter2: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, nationality)
@@ -287,6 +278,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), R.layout.spinner_item, ApplicationClass.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
+
     /////////////////////PROGRESS_BAR////////////////////////////
     lateinit var dialog: AlertDialog
 
@@ -301,6 +293,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         }
 
     }
+
     private fun initProgressBar() {
 
         dialog = setProgressDialog(requireContext(), "Loading..")

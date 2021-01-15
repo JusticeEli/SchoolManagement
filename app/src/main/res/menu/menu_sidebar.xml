@@ -32,5 +32,8 @@
         android:id="@+id/registerFragment"
         android:icon="@drawable/ic_logout"
         android:title="Register Data" />
+    <item
+        android:id="@+id/markExamFragment"
+        android:title="Mark Exam" />
 
 </menu>

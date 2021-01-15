@@ -43,11 +43,11 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentParentsBinding.bind(view)
         navController = findNavController()
+        initProgressBar()
         initRecyclerViewAdapter()
         setOnClickListeners()
         setSwipeListenerForItems()
         setHasOptionsMenu(true)
-        initProgressBar()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -104,8 +104,8 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
     }
 
     private fun initRecyclerViewAdapter() {
-        parentFilterAdapter = ParentFilterAdapter(this)
-        val query: Query = firebaseFirestore.collection(Constants.COLLECTION_PARENTS)
+       parentFilterAdapter = ParentFilterAdapter(this)
+        val query: Query = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
         val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<ParentData>().setQuery(query) { snapshot ->
             val parentData = snapshot.toObject(ParentData::class.java)
             parentData!!.id = snapshot.id

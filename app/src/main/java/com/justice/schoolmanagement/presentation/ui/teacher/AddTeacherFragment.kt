@@ -41,7 +41,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
     private var teacherId: String? = null
 
 
-    private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS)
+    private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
     private var uri: Uri? = null
     lateinit var progressBar: ProgressBar
     lateinit var binding: FragmentAddTeacherBinding
@@ -172,7 +172,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
             ageEdtTxt.setText("")
             contactEdtTxt.setText("")
         }
-
+showProgress(false)
     }
 
     private fun fieldsAreEmpty(): Boolean {
@@ -246,7 +246,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         showProgress(true)
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_IMAGES).child("$teacherId.jpg")
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child("$teacherId.jpg")
         val uploadTask = ref.putFile(uri!!)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -264,7 +264,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
 
         /////////////////////////////////////////////
@@ -280,7 +280,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         }
         thumbnail = Uri.fromFile(compressedImgFile)
         showProgress(true)
-        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_TEACHERS_THUMBNAIL_IMAGES).child(teacherId!!)
+        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES).child(teacherId!!)
         val uploadTask1 = ref1.putFile(thumbnail)
         uploadTask1.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -298,7 +298,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
     }
 
@@ -317,7 +317,6 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
 
-            showProgress(false)
         }
     }
 

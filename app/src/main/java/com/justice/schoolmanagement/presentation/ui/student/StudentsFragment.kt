@@ -108,7 +108,7 @@ class StudentsFragment : Fragment(R.layout.fragment_students) {
     private fun initRecyclerViewAdapter() {
         studentFilterAdapter = StudentFilterAdapter(this)
 
-        val query: Query = firebaseFirestore.collection(Constants.COLLECTION_STUDENTS)
+        val query: Query = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS)
         val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<StudentData>().setQuery(query) { snapshot ->
             val studentData = snapshot.toObject(StudentData::class.java)
             studentData!!.id = snapshot.id

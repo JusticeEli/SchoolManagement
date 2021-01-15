@@ -64,7 +64,7 @@ class BlogFragment : Fragment(R.layout.fragment_blog) {
     }
 
     private fun setUpRecyclerView() {
-        val query = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).orderBy("date", Query.Direction.DESCENDING)
+        val query = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS).orderBy("date", Query.Direction.DESCENDING)
         val recyclerOptions = FirestoreRecyclerOptions.Builder<Blog>().setLifecycleOwner(viewLifecycleOwner).setQuery(query) { snapshot ->
             val blog = snapshot.toObject(Blog::class.java)
             blog!!.id = snapshot.id

@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -35,10 +36,13 @@ import java.io.IOException
 import java.util.*
 
 class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
+    companion object {
+        private const val TAG = "AddParentFragment"
+    }
 
     private var parentData: ParentData? = null
 
-    private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_PARENTS)
+    private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
     lateinit var progressBar: ProgressBar
     private var uri: Uri? = null
     lateinit var binding: FragmentAddParentBinding
@@ -46,7 +50,9 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddParentBinding.bind(view)
-
+        Log.d(TAG, "onViewCreated: CODE: ${Constants.DOCUMENT_CODE}")
+        Log.d(TAG, "onViewCreated: ALL: ${Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS}")
+        Log.d(TAG, "onViewCreated: "+ Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/parents")
         binding.contactEdtTxt.setText("07")
         setSkipBtn()
         initAdapters()
@@ -95,10 +101,10 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
 
     private fun initAdapters() {
         val jobStatus = arrayOf("Employed", "Unemployed", "Retired")
-        val jobStatusAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, jobStatus)
+        val jobStatusAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobStatus)
         binding.jobStatusSpinner.setAdapter(jobStatusAdapter)
         val cities = arrayOf("Kisumu", "Kitui", "Lamu", "Machakos", "Marsabit", "Meru", "Migori", "Mombasa", "Nakuru", "Narok", "Trans Nzoia", "Turkana", "Vihiga", "Naivasha", "Eldoret", "Kericho")
-        val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_item, cities)
+        val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, cities)
         binding.cityEdtTxt.setAdapter<ArrayAdapter<String>>(cityAdapter)
         val jobType = arrayOf("medical", "business", "health", "administrative", "secretarial", "sales", "marketing", "finance", "auditing", "accounting", "education", "ngo", "ict", "building", "construction", "procument", "engineering", "media", "computer", "human resource", "law", "research", "manufacturing", "hospitality")
         val jobTypeAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobType)
@@ -185,7 +191,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
     private fun putPhotoIntoDatabase() {
         showProgress(true)
         val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference("parents_images").child(photoName)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_IMAGES).child(photoName)
         val uploadTask = ref.putFile(uri!!)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -203,7 +209,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
 
         /////////////////////////////////////////////
@@ -220,7 +226,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         thumbnail = Uri.fromFile(compressedImgFile)
         showProgress(true)
         val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_PARENTS_THUMBNAIL_IMAGES).child(photoName)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES).child(photoName)
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -238,7 +244,6 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
         }
     }
 
@@ -253,7 +258,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
             ageEdtTxt.setText("")
             contactEdtTxt.setText("")
         }
-
+        showProgress(false)
     }
 
 
@@ -267,7 +272,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
     }
 
@@ -285,6 +290,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         }
 
     }
+
     private fun initProgressBar() {
 
         dialog = setProgressDialog(requireContext(), "Loading..")

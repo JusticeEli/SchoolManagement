@@ -59,7 +59,7 @@ class AddBlogFragment : Fragment(R.layout.fragment_add_blog) {
     private fun putBlogIntoDatabase() {
         blog = Blog(FirebaseAuth.getInstance().uid, binding.descriptionEdtTxt.getText().toString().trim { it <= ' ' }, downLoadLink, downLoadLink, Date())
         showProgress(true)
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).add(blog!!).addOnCompleteListener { task ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS).add(blog!!).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), "Blog Added", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
@@ -79,7 +79,7 @@ class AddBlogFragment : Fragment(R.layout.fragment_add_blog) {
         val name = UUID.randomUUID().toString()
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         showProgress(true)
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_BLOGS_IMAGES).child(name)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS_IMAGES).child(name)
         val uploadTask = ref.putFile(uri!!)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {

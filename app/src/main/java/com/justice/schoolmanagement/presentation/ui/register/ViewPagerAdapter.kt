@@ -7,7 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 
 
 class ViewPagerAdapter(fa: FragmentActivity?) : FragmentStateAdapter(fa!!) {
-    private val mFragments: Array<Fragment> = arrayOf<Fragment>(
+     val mFragments: Array<Fragment> = arrayOf<Fragment>(
 
             AllFragment(),
             PresentFragment(),
@@ -15,7 +15,8 @@ class ViewPagerAdapter(fa: FragmentActivity?) : FragmentStateAdapter(fa!!) {
     )
     val mFragmentNames = arrayOf( //Tabs names array
             "All",
-            "Present", "Absent"
+            "Present",
+            "Absent"
     )
 
     override fun getItemCount(): Int {

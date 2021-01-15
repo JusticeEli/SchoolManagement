@@ -20,7 +20,7 @@ import java.util.*
 
 class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: FirestoreRecyclerOptions<Blog?>) : FirestoreRecyclerAdapter<Blog, BlogRecyclerAdapter.ViewHolder>(options) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: Blog) {
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_TEACHERS).document(model.userId).get().addOnSuccessListener { documentSnapshot ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(model.userId).get().addOnSuccessListener { documentSnapshot ->
             Glide.with(blogFragment.requireContext()).load(documentSnapshot.getString("photo")).into(holder.binding.userProfileImageView)
             holder.binding.userNameTxtView.text = documentSnapshot.getString("firstName")
             Toast.makeText(blogFragment.requireContext(), "Success loading user Data", Toast.LENGTH_SHORT).show()
@@ -31,7 +31,7 @@ class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: Fires
         holder.binding.descriptionTxtView.text = model.description
 
         ///////////////////////////////////////////
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).get().addOnSuccessListener { documentSnapshot ->
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).get().addOnSuccessListener { documentSnapshot ->
             holder.binding.apply {
 
 
@@ -47,18 +47,18 @@ class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: Fires
                 if (holder.hasLiked) {
                     holder.hasLiked = false
                     holder.binding.likeImageView.setImageDrawable(ContextCompat.getDrawable(blogFragment.requireContext(), R.drawable.ic_unlike))
-                    FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).delete()
+                    FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).delete()
                 } else {
                     val map: MutableMap<String, Any> = HashMap()
                     map["data"] = "data"
                     holder.hasLiked = true
                     holder.binding.likeImageView.setImageDrawable(ContextCompat.getDrawable(blogFragment.requireContext(), R.drawable.ic_like))
-                    FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).set(map)
+                    FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS).document(model.id).collection("likes").document(FirebaseAuth.getInstance().uid!!).set(map)
                 }
             }
 
             ///////////////////////////////////////////
-            FirebaseFirestore.getInstance().collection(Constants.COLLECTION_BLOGS).document(model.id).collection("likes").addSnapshotListener(blogFragment.requireActivity(), EventListener { queryDocumentSnapshots, e ->
+            FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS).document(model.id).collection("likes").addSnapshotListener(blogFragment.requireActivity(), EventListener { queryDocumentSnapshots, e ->
                 if (e != null) {
                     Toast.makeText(blogFragment.requireContext(), "Error: " + e.message, Toast.LENGTH_SHORT).show()
                     return@EventListener

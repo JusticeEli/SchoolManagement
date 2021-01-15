@@ -34,7 +34,7 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
 
 
     private fun setUpRecyclerView() {
-        val query = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_STUDENTS_MARKS).orderBy("totalMarks", Query.Direction.DESCENDING)
+        val query = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).orderBy("totalMarks", Query.Direction.DESCENDING)
         val recyclerOptions = FirestoreRecyclerOptions.Builder<StudentMarks>().setLifecycleOwner(viewLifecycleOwner).setQuery(query) { snapshot ->
             val studentMarks = snapshot.toObject(StudentMarks::class.java)
             studentMarks!!.position = counter++

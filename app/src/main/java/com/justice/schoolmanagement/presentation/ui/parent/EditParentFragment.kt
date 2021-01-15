@@ -111,11 +111,16 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
             setDefaultValueForRadioBtn()
             contactEdtTxt.setText(parentData!!.contact)
         }
+        try {
+            uri = Uri.parse(parentData!!.photo)
+            val requestOptions = RequestOptions()
+            requestOptions.placeholder(R.mipmap.place_holder)
+            Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData!!.photo).thumbnail(Glide.with(this).load(parentData!!.thumbnail)).into(binding.imageView)
 
-        uri = Uri.parse(parentData!!.photo)
-        val requestOptions = RequestOptions()
-        requestOptions.placeholder(R.mipmap.place_holder)
-        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData!!.photo).thumbnail(Glide.with(this).load(parentData!!.thumbnail)).into(binding.imageView)
+        } catch (e: Exception) {
+
+        }
+
     }
 
     private fun setJobStatusDefaultValue() {
@@ -235,8 +240,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
                     val error = task.exception!!.message
                     Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                 }
-                showProgress(false)
-            }
+             }
 
             /////////////////////////////////////////////
         } else {
@@ -255,7 +259,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
         thumbnail = Uri.fromFile(compressedImgFile)
         showProgress(true)
         val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_PARENTS_THUMBNAIL_IMAGES).child(photoName)
+        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES).child(photoName)
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -273,7 +277,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
     }
 
@@ -288,6 +292,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
                         Toasty.success(requireContext(), parentData!!.firstName + " Edited Successfully", Toast.LENGTH_SHORT).show()
                         Handler().postDelayed(object : Runnable {
                             override fun run() {
+                                showProgress(false)
                                 findNavController().popBackStack()
                             }
 
@@ -301,7 +306,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+
         }
     }
 
