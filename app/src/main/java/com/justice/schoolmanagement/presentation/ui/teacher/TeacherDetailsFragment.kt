@@ -1,9 +1,18 @@
 package com.justice.schoolmanagement.presentation.ui.teacher
 
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -36,7 +45,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
         setDefaultValues()
         setOnClickListeners()
         setImageViewClickListeners()
-
+        initProgressBar()
     }
 
     private fun setImageViewClickListeners() {
@@ -70,12 +79,12 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
     }
 
     private fun deleteTeacherDataFromDatabase() {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteTeacher() }.show()
+        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteTeacherPhoto() }.show()
     }
 
-    private fun deleteTeacher() {
+    private fun deleteTeacherPhoto() {
         showProgress(true)
-      FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child(teacherData!!.id + ".jpg").delete().addOnCompleteListener { task ->
+        FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child(teacherData!!.id + ".jpg").delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
                 deleteTeacherMetadata();
@@ -83,8 +92,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
-        }
+         }
 
     }
 
@@ -92,12 +100,12 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
         ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), " Teacher deleted", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            showProgress(false)
+            findNavController().popBackStack()
+
         }
     }
 
@@ -124,11 +132,71 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
+
     private fun showProgress(show: Boolean) {
+
         if (show) {
-            Toasty.info(requireContext(), "loading...")
+            dialog.show()
+
         } else {
-            Toasty.info(requireContext(), "finished loading")
+            dialog.dismiss()
+
         }
+
     }
+
+    private fun initProgressBar() {
+
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
+
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
+
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
+
+        ll.addView(progressBar)
+        ll.addView(tvText)
+
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
+
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+    //end progressbar
 }

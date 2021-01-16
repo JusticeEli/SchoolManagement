@@ -94,7 +94,8 @@
         tools:layout="@layout/fragment_splash_screen">
         <action
             android:id="@+id/action_splashScreenFragment_to_dashboardFragment"
-            app:destination="@id/dashboardFragment" />
+            app:destination="@id/dashboardFragment"
+            app:launchSingleTop="true" />
         <action
             android:id="@+id/action_splashScreenFragment_to_addTeacherFragment"
             app:destination="@id/addTeacherFragment"
@@ -129,7 +130,9 @@
         tools:layout="@layout/fragment_add_teacher">
         <action
             android:id="@+id/action_addTeacherFragment_to_dashboardFragment"
-            app:destination="@id/dashboardFragment" />
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/addTeacherFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/addBlogFragment"
@@ -258,7 +261,10 @@
         android:label="AdminFragment" >
         <action
             android:id="@+id/action_adminFragment_to_dashboardFragment"
-            app:destination="@id/dashboardFragment" />
+            app:destination="@id/dashboardFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/adminFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/markExamFragment"

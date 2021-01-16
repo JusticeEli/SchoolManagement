@@ -217,6 +217,7 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
     }
 
     private fun setUpRecyclerView() {
+        counter=1
         //////////////////STUDENTS/////////////////////////////
         val query = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS).whereEqualTo("classGrade", class_)
         val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<StudentData>().setQuery(query) { snapshot ->

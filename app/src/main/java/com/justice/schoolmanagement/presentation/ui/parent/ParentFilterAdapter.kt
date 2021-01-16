@@ -82,7 +82,7 @@ class ParentFilterAdapter(val parentsFragment: ParentsFragment) : ListAdapter<Do
     }
 
     fun deleteFromDatabase(position: Int) {
-        MaterialAlertDialogBuilder(context!!).setBackground(context.getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> notifyItemChanged(position) }.setPositiveButton("yes") { dialog, which -> deleteParent(position) }.show()
+        MaterialAlertDialogBuilder(context!!).setBackground(context.getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> notifyItemMoved(position,position) }.setPositiveButton("yes") { dialog, which -> deleteParent(position) }.show()
     }
 
     private fun deleteParent(position: Int) {
@@ -103,6 +103,7 @@ class ParentFilterAdapter(val parentsFragment: ParentsFragment) : ListAdapter<Do
                 val error = task.exception!!.message
                 Toasty.error(context!!, "Error: $error", Toast.LENGTH_SHORT).show()
             }
+            notifyItemRemoved(position)
             parentsFragment.showProgress(false)
         }
 

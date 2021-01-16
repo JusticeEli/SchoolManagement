@@ -8,10 +8,13 @@ import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.firebase.ui.common.ChangeEventType
+import com.firebase.ui.firestore.ChangeEventListener
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentPresentBinding
@@ -20,7 +23,7 @@ import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import kotlinx.android.synthetic.main.fragment_present.*
 
-class PresentFragment : Fragment(R.layout.fragment_present) {
+class PresentFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fragment_present) {
     companion object {
         private const val TAG = "PresentFragment"
     }
@@ -35,7 +38,7 @@ class PresentFragment : Fragment(R.layout.fragment_present) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentPresentBinding.bind(view)
 
-       setSwipeRefreshListener()
+        setSwipeRefreshListener()
 
 
         initProgressBar()
@@ -47,7 +50,12 @@ class PresentFragment : Fragment(R.layout.fragment_present) {
 
     }
 
-    private fun setUpFirestore() {
+    fun setUpFirestore() {
+        if (binding.swipeRefreshLayout.isRefreshing){
+            Log.d(TAG, "setUpFirestore: Data is already refreshing")
+            return
+        }
+
         firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDate).get().addOnSuccessListener { documentsnapshot ->
             if (documentsnapshot.exists()) {
                 docucumentExist(documentsnapshot)
@@ -55,19 +63,21 @@ class PresentFragment : Fragment(R.layout.fragment_present) {
             } else {
                 val map = mapOf<String, String>("currentDate" to currentInfo.currentDate)
                 documentsnapshot.reference.set(map).addOnSuccessListener {
-                    startFetchingData(documentsnapshot)
-
+                          startFetchingData(documentsnapshot)
 
                     Log.d(TAG, "setUpFirestore: document doesnt exit")
                 }
             }
 
+            swipeRefreshLayout?.isRefreshing = false
 
         }
-    }    private fun setSwipeRefreshListener() {
+    }
+
+    private fun setSwipeRefreshListener() {
+    //    binding.swipeRefreshLayout.
         binding.swipeRefreshLayout.setOnRefreshListener {
             setUpFirestore()
-            swipeRefreshLayout.isRefreshing=false
         }
     }
 
@@ -81,6 +91,10 @@ class PresentFragment : Fragment(R.layout.fragment_present) {
             }
     */
         ///delete
+
+        if (view==null){
+            return
+        }
         val query: Query
         if (currentInfo.currentClass.equals("all")) {
             query = documentsnapshot?.reference?.collection(Constants.STUDENTS)!!.whereEqualTo("present", true)
@@ -95,13 +109,29 @@ class PresentFragment : Fragment(R.layout.fragment_present) {
         registerAdapter = RegisterAdapter(this, firestoreRecyclerOptions)
         binding.recyclerView.layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.adapter = registerAdapter
+        registerAdapter.snapshots.addChangeEventListener(object : ChangeEventListener {
+            override fun onChildChanged(type: ChangeEventType, snapshot: DocumentSnapshot, newIndex: Int, oldIndex: Int) {
+                Log.d(TAG, "onChildChanged: ")
 
+            }
+
+            override fun onDataChanged() {
+                Log.d(TAG, "onDataChanged: ")
+                registerFragment.sendPresentFragmentSize(registerAdapter.snapshots.size)
+            }
+
+            override fun onError(e: FirebaseFirestoreException) {
+            }
+        })
     }
 
 
     private fun startFetchingData(documentsnapshot: DocumentSnapshot?) {
-        docucumentExist(documentsnapshot)
-        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS).get().addOnCompleteListener { task ->
+        if(view!=null){
+            docucumentExist(documentsnapshot)
+
+        }
+       firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS).get().addOnCompleteListener { task ->
 
             if (task.isSuccessful) {
 

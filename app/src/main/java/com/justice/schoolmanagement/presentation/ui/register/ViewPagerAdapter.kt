@@ -6,12 +6,12 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
 
-class ViewPagerAdapter(fa: FragmentActivity?) : FragmentStateAdapter(fa!!) {
+class ViewPagerAdapter(fa: FragmentActivity?,val registerFragment: RegisterFragment) : FragmentStateAdapter(fa!!) {
      val mFragments: Array<Fragment> = arrayOf<Fragment>(
 
-            AllFragment(),
-            PresentFragment(),
-            AbsentFragment()
+            AllFragment(registerFragment),
+            PresentFragment(registerFragment),
+            AbsentFragment(registerFragment)
     )
     val mFragmentNames = arrayOf( //Tabs names array
             "All",

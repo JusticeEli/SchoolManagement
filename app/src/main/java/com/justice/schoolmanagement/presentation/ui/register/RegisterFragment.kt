@@ -15,6 +15,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentRegisterBinding
 import com.justice.schoolmanagement.presentation.utils.Constants
+import es.dmoral.toasty.Toasty
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -47,7 +48,8 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             myCalendar[Calendar.YEAR] = year
             myCalendar[Calendar.MONTH] = monthOfYear
             myCalendar[Calendar.DAY_OF_MONTH] = dayOfMonth
-            updateLabel(dayOfMonth, monthOfYear, year)
+            //month usually starts from 0
+            updateLabel(dayOfMonth, monthOfYear + 1, year)
         }
 
         binding.dateBtn.setOnClickListener(object : View.OnClickListener {
@@ -60,17 +62,45 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
     }
 
     private fun updateLabel(dayOfMonth: Int, monthOfYear: Int, year: Int) {
-        val data = "$dayOfMonth" + "/" + "${monthOfYear + 1}" + "/" + "$year"
+        val data = "$dayOfMonth" + "/" + "${monthOfYear}" + "/" + "$year"
         Log.d(TAG, "updateLabel: ${data}")
-        binding.currentDateTxtView.text = data
+//check if we have choosen a future date and reject it if its future date
 
-        currentInfo.currentDate = data.replace("/", "")
-        updateBadgeListener()
+        val myCalendar = Calendar.getInstance()
+        myCalendar.set(Calendar.YEAR, year);
+        myCalendar.set(Calendar.MONTH, monthOfYear - 1);
+        myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+        val choosenDate = myCalendar.time
+
+///checks if we are on same day
+        val cal1 = Calendar.getInstance()
+        val cal2 = Calendar.getInstance()
+        cal1.time = choosenDate
+        cal2.time = currentDateServer
+
+        val sameDay = cal1[Calendar.DAY_OF_YEAR] == cal2[Calendar.DAY_OF_YEAR] &&
+                cal1[Calendar.YEAR] == cal2[Calendar.YEAR]
+
+        if (sameDay) {
+            //nothing to do hear
+        } else if (choosenDate.after(currentDateServer)) {
+
+            myCalendar.get(Calendar.YEAR)
+
+            Toasty.error(requireContext(), "Please Don't Choose  Future date only past  can be choosen").show()
+            return
+        }
+
+        binding.currentDateTxtView.text = data
+        currentInfo.currentDate = data.replace("/", "_")
+        currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+        setUpViewPager()
+
     }
 
 
     private fun getCurrentDateAndInitCurrentInfo() {
-        currentInfo = CurrentInfo("16", 1.toString(), true)
+        currentInfo = CurrentInfo("16", "all", true)
 
         FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
             Log.d(TAG, "getCurrentDateAndInitCurrentInfo: date sent to database")
@@ -86,9 +116,12 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
 
                 Log.d(TAG, "getCurrentDateAndInitCurrentInfo: retrieving current date from database ${date}")
-                currentInfo.currentDate = date.replace("/", "")
-                setUpViewPager()
 
+                //this symbols act weird with database
+                currentInfo.currentDate = date.replace("/", "_")
+                currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+                setUpViewPager()
+                //   updateBadgeListener()
             }
         }
 
@@ -99,14 +132,19 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
         viewPager = binding.viewPager
 
-        viewPager!!.adapter = ViewPagerAdapter(activity) //Attach the adapter with our ViewPagerAdapter passing the host activity
+        viewPager!!.adapter = ViewPagerAdapter(activity, this) //Attach the adapter with our ViewPagerAdapter passing the host activity
 
         TabLayoutMediator(binding.tabs, viewPager!!
         ) { tab, position ->
             tab.text = (viewPager!!.adapter as ViewPagerAdapter?)!!.mFragmentNames[position] //Sets tabs names as mentioned in ViewPagerAdapter fragmentNames array, this can be implemented in many different ways.
         }.attach()
+
+        //  binding.tabs.addOnTabSelectedListener()
+
     }
 
+    //checking when to call spinner onItemSelected
+    var check = 0
     private fun setValuesForSpinner() {
         val classGrade = arrayOf("all", "1", "2", "3", "4", "5", "6", "7", "8")
         val arrayAdapter1: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, classGrade)
@@ -114,12 +152,21 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
         binding.classGradeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val newClass = binding.classGradeSpinner.selectedItem as String
 
-                Log.d(TAG, "onItemSelected: spinner value changed: $newClass")
+                val newClass = binding.classGradeSpinner.selectedItem as String
                 currentInfo.currentClass = newClass.trim()
 
-                updateBadgeListener()
+                if (++check > 1) {
+
+                    Log.d(TAG, "onItemSelected: spinner value changed: $newClass")
+                    // updateBadgeListener()
+                    //  refreshList()
+                    setUpViewPager()
+                    // updateBadgeListener()
+
+                }
+
+
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -134,7 +181,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             //    listenerRegistration?.remove()
         }
 
-        listenerRegistration = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS).addSnapshotListener { _, _ ->
+        listenerRegistration = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).collection(Constants.STUDENTS).addSnapshotListener { _, _ ->
             Log.d(TAG, "updateBadgeListener: data changed ")
             val adapter = (viewPager?.adapter as ViewPagerAdapter?)
 
@@ -150,10 +197,9 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                     Log.d(TAG, "updateBadgeListener: badges updated")
 
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
 
             }
-
 
 
         }
@@ -168,25 +214,57 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
 
     }
-fun updateBadge(){
-    val adapter = (viewPager?.adapter as ViewPagerAdapter?)
 
-    try {
-        if (adapter != null) {
-            val allSize = (adapter.mFragments[0] as AllFragment).registerAdapter.snapshots.size
-            val presentSize = (adapter.mFragments[1] as PresentFragment).registerAdapter.snapshots.size
-            val absentSize = (adapter.mFragments[2] as AbsentFragment).registerAdapter.snapshots.size
+    fun refreshList() {
+        val adapter = (viewPager?.adapter as ViewPagerAdapter?)
 
-            binding.tabs.getTabAt(0)?.orCreateBadge?.number = allSize
-            binding.tabs.getTabAt(1)?.orCreateBadge?.number = presentSize
-            binding.tabs.getTabAt(2)?.orCreateBadge?.number = absentSize
-            Log.d(TAG, "updateBadgeListener: badges updated")
+        try {
+            if (adapter != null) {
+
+
+                (adapter.mFragments[0] as AllFragment).setUpFirestore()
+                (adapter.mFragments[1] as PresentFragment).setUpFirestore()
+                (adapter.mFragments[2] as AbsentFragment).setUpFirestore()
+
+
+            }
+        } catch (e: Exception) {
 
         }
-    }catch (e:Exception){
+    }
+
+    fun updateBadge() {
+        val adapter = (viewPager?.adapter as ViewPagerAdapter?)
+
+        try {
+            if (adapter != null) {
+                val allSize = (adapter.mFragments[0] as AllFragment).registerAdapter.snapshots.size
+                val presentSize = (adapter.mFragments[1] as PresentFragment).registerAdapter.snapshots.size
+                val absentSize = (adapter.mFragments[2] as AbsentFragment).registerAdapter.snapshots.size
+
+                binding.tabs.getTabAt(0)?.orCreateBadge?.number = allSize
+                binding.tabs.getTabAt(1)?.orCreateBadge?.number = presentSize
+                binding.tabs.getTabAt(2)?.orCreateBadge?.number = absentSize
+                Log.d(TAG, "updateBadgeListener: badges updated")
+
+            }
+        } catch (e: Exception) {
+
+        }
 
     }
 
-}
+    fun sendAllFragmentSize(size: Int) {
+        binding.tabs.getTabAt(0)?.orCreateBadge?.number = size
+    }
+
+    fun sendPresentFragmentSize(size: Int) {
+        binding.tabs.getTabAt(1)?.orCreateBadge?.number = size
+
+    }
+
+    fun sendAbsentFragmentSize(size: Int) {
+        binding.tabs.getTabAt(2)?.orCreateBadge?.number = size
+    }
 
 }

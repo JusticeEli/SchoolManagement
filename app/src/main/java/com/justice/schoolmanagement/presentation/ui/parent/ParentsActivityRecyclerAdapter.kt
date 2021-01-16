@@ -76,6 +76,7 @@ class ParentsActivityRecyclerAdapter
                 val error = task.exception!!.message
                 Toasty.error(context!!, "Error: $error", Toast.LENGTH_SHORT).show()
             }
+            notifyItemRemoved(position)
             parentsFragment.showProgress(false)
         }
 

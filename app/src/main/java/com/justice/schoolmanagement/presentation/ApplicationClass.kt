@@ -23,8 +23,10 @@ class ApplicationClass : Application() {
     }
 
     fun loadTeacherNames() {
+        teacherNames.clear()
+        AllData.teacherDataList.clear()
         FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
-         //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
+            //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
             if (task.isSuccessful) {
                 teacherNames.clear()
                 for (documentSnapshot in task.result!!) {

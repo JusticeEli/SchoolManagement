@@ -33,39 +33,48 @@ class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFrag
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         holder.binding.deleteTxtView.setOnClickListener { deleteStudentFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
             studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToEditStudentFragment())
         }
         holder.itemView.setOnClickListener {
-             ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
             studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToStudentDetailsFragment())
         }
     }
 
     fun deleteStudentFromDatabase(position: Int) {
-        MaterialAlertDialogBuilder(studentsFragment.requireContext()).setBackground(studentsFragment.requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> notifyItemChanged(position) }.setPositiveButton("yes") { dialog, which -> deleteStudent(position) }.show()
+        MaterialAlertDialogBuilder(studentsFragment.requireContext()).setBackground(studentsFragment.requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> notifyItemChanged(position) }.setPositiveButton("yes") { dialog, which -> deleteStudentPhoto(position) }.show()
     }
 
-    private fun deleteStudent(position: Int) {
+    private fun deleteStudentPhoto(position: Int) {
         studentsFragment.showProgress(true)
         FirebaseStorage.getInstance().getReferenceFromUrl(snapshots.getSnapshot(position).toObject(StudentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                deleteStudentMetaData(position);
                 Toasty.success(studentsFragment.requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(studentsFragment.requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            studentsFragment.showProgress(false)
+
         }
+
+
+    }
+
+    private fun deleteStudentMetaData(position: Int) {
         snapshots.getSnapshot(position).reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                deleteStudentMarks(position)
                 Toasty.success(studentsFragment.requireContext(), "StudentData Deleted ", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(studentsFragment.requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            studentsFragment.showProgress(false)
         }
+    }
+
+    private fun deleteStudentMarks(position: Int) {
         FirebaseFirestore.getInstance().collection("StudentsMarks").document(snapshots.getSnapshot(position).id).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(studentsFragment.requireContext(), "StudentsMarks Deleted ", Toast.LENGTH_SHORT).show()
@@ -79,7 +88,7 @@ class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFrag
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_students, parent, false)
-        val binding:ItemStudentsBinding= ItemStudentsBinding.bind(view)
+        val binding: ItemStudentsBinding = ItemStudentsBinding.bind(view)
         return ViewHolder(binding)
     }
 

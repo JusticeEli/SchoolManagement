@@ -12,7 +12,7 @@ object Constants {
     public var DOCUMENT_CODE = "institution"
 
     //root
-    public val COLLECTION_ROOT = "root/"
+    public val COLLECTION_ROOT = "Institutions/"
 
     //teacher
     val TEACHERS= "/teachers"

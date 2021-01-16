@@ -7,11 +7,16 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.firebase.ui.common.ChangeEventType
+import com.firebase.ui.firestore.ChangeEventListener
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.Query
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentPresentBinding
@@ -21,7 +26,7 @@ import com.justice.schoolmanagement.presentation.utils.Constants
 import kotlinx.android.synthetic.main.fragment_present.*
 
 
-class AllFragment : Fragment(R.layout.fragment_present) {
+class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fragment_present) {
     companion object {
         private const val TAG = "AllFragment"
     }
@@ -34,7 +39,10 @@ class AllFragment : Fragment(R.layout.fragment_present) {
     lateinit var progressBar: ProgressBar
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated: called")
         binding = FragmentPresentBinding.bind(view)
+
+
 
         setSwipeRefreshListener()
 
@@ -42,32 +50,52 @@ class AllFragment : Fragment(R.layout.fragment_present) {
         binding.recyclerView.setHasFixedSize(true)
         if (FirebaseAuth.getInstance().currentUser != null) {
             setUpFirestore()
+
+        }
+    }
+
+/*
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume: called")
+        if (FirebaseAuth.getInstance().currentUser != null) {
+            setUpFirestore()
         }
 
-
     }
+*/
 
     private fun setSwipeRefreshListener() {
         binding.swipeRefreshLayout.setOnRefreshListener {
+            Log.d(TAG, "setSwipeRefreshListener: on refresh")
             setUpFirestore()
-            swipeRefreshLayout.isRefreshing = false
         }
     }
 
-    private fun setUpFirestore() {
+    fun setUpFirestore() {
+        if (binding.swipeRefreshLayout.isRefreshing) {
+            Log.d(TAG, "setUpFirestore: Data is already refreshing")
+            return
+        }
+
+        binding.swipeRefreshLayout.post(Runnable { binding.swipeRefreshLayout.setRefreshing(true) })
         firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).get().addOnSuccessListener { documentsnapshot ->
             if (documentsnapshot.exists()) {
-                docucumentExist(documentsnapshot)
                 Log.d(TAG, "setUpFirestore: document exists")
+                docucumentExist(documentsnapshot)
             } else {
                 val map = mapOf<String, String>("currentDate" to currentInfo.currentDate)
                 documentsnapshot.reference.set(map).addOnSuccessListener {
-                    startFetchingData(documentsnapshot)
+
+
+                        startFetchingData(documentsnapshot)
+
 
 
                     Log.d(TAG, "setUpFirestore: document doesnt exit")
                 }
             }
+            swipeRefreshLayout.isRefreshing = false
 
 
         }
@@ -98,13 +126,39 @@ class AllFragment : Fragment(R.layout.fragment_present) {
         binding.recyclerView.adapter = registerAdapter
         Log.d(TAG, "docucumentExist: finished initializing the recycler adapter")
 
+
+        registerAdapter.snapshots.addChangeEventListener(object : ChangeEventListener {
+            override fun onChildChanged(type: ChangeEventType, snapshot: DocumentSnapshot, newIndex: Int, oldIndex: Int) {
+                Log.d(TAG, "onChildChanged: ")
+
+            }
+
+            override fun onDataChanged() {
+                Log.d(TAG, "onDataChanged: ")
+                registerFragment.sendAllFragmentSize(registerAdapter.snapshots.size)
+            }
+
+            override fun onError(e: FirebaseFirestoreException) {
+            }
+        })
+
     }
 
+    private fun setSwipeListenerForItems() {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                registerAdapter!!.deleteStudentFromDatabase(viewHolder.adapterPosition)
+            }
+        }).attachToRecyclerView(binding.recyclerView)
+    }
 
     private fun startFetchingData(documentsnapshot: DocumentSnapshot?) {
         docucumentExist(documentsnapshot)
         firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS).get().addOnCompleteListener { task ->
-
             if (task.isSuccessful) {
 
                 task.result?.forEach { queryDocumentSnapshot ->

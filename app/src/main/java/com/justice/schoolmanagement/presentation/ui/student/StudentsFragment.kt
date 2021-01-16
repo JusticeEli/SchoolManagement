@@ -98,7 +98,7 @@ class StudentsFragment : Fragment(R.layout.fragment_students) {
         studentsActivityRecyclerAdapter?.snapshots?.forEachIndexed { index, _ ->
             (originalList as MutableList<DocumentSnapshot>).add(studentsActivityRecyclerAdapter!!.snapshots.getSnapshot(index))
         }
-        studentFilterAdapter.submitList(originalList)
+       // studentFilterAdapter.submitList(originalList)
         binding.recyclerView.adapter = studentFilterAdapter
 
         studentFilterAdapter.getFilter().filter(string)
