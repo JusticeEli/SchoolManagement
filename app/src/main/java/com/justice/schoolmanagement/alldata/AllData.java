@@ -2,12 +2,11 @@ package com.justice.schoolmanagement.alldata;
 
 import android.os.Environment;
 
-import com.backendless.BackendlessUser;
-import com.justice.schoolmanagement.main.LoginData;
-import com.justice.schoolmanagement.parent.ParentData;
-import com.justice.schoolmanagement.student.StudentData;
-import com.justice.schoolmanagement.student.StudentMarks;
-import com.justice.schoolmanagement.teacher.TeacherData;
+import com.justice.schoolmanagement.presentation.LoginData;
+import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData;
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks;
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +27,7 @@ public class AllData {
     public static List<StudentMarks> studentMarksList = new ArrayList<>();
 
 
-    public static BackendlessUser user;
+
 
     public static void createDirectoryForDataStorage() {
       path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/SchoolManagement";
