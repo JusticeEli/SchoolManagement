@@ -21,11 +21,13 @@ import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.StudentsFragment
 import com.justice.schoolmanagement.presentation.ui.student.StudentsFragmentDirections
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
+import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
 
 class StudentFilterAdapter(val studentsFragment: StudentsFragment) : ListAdapter<DocumentSnapshot, StudentFilterAdapter.ViewHolder>(DIFF_UTIL), Filterable {
-private  val TAG="ParentFilterAdapter"
+    private val TAG = "ParentFilterAdapter"
     val context = studentsFragment.requireContext()
+    private lateinit var currentSnapshot: DocumentSnapshot
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<DocumentSnapshot>() {
@@ -48,7 +50,7 @@ private  val TAG="ParentFilterAdapter"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_students, parent, false)
-        val binding:ItemStudentsBinding= ItemStudentsBinding.bind(view)
+        val binding: ItemStudentsBinding = ItemStudentsBinding.bind(view)
         return ViewHolder(binding)
     }
 
@@ -82,26 +84,35 @@ private  val TAG="ParentFilterAdapter"
     }
 
     private fun deleteStudent(position: Int) {
+        currentSnapshot = getItem(position)
         studentsFragment.showProgress(true)
-        FirebaseStorage.getInstance().getReferenceFromUrl(getItem(position).toObject(StudentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
+        FirebaseStorage.getInstance().getReferenceFromUrl(currentSnapshot.toObject(StudentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(studentsFragment.requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
+                deleteStudentMetaData()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(studentsFragment.requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            studentsFragment.showProgress(false)
-        }
-        getItem(position).reference.delete().addOnCompleteListener { task ->
+          }
+
+
+    }
+
+    private fun deleteStudentMetaData() {
+        currentSnapshot.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(studentsFragment.requireContext(), "StudentData Deleted ", Toast.LENGTH_SHORT).show()
+                deleteStudentMarks()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(studentsFragment.requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            studentsFragment.showProgress(false)
-        }
-        FirebaseFirestore.getInstance().collection("StudentsMarks").document(getItem(position).id).delete().addOnCompleteListener { task ->
+          }
+    }
+
+    private fun deleteStudentMarks() {
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).document(currentSnapshot.id).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(studentsFragment.requireContext(), "StudentsMarks Deleted ", Toast.LENGTH_SHORT).show()
             } else {
@@ -111,7 +122,6 @@ private  val TAG="ParentFilterAdapter"
             studentsFragment.showProgress(false)
         }
     }
-
 
 
     override fun getFilter(): Filter {

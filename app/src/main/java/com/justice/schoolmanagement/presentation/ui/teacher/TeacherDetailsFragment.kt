@@ -104,6 +104,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
+            showProgress(false)
             findNavController().popBackStack()
 
         }

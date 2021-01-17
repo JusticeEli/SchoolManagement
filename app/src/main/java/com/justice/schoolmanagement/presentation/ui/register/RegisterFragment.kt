@@ -42,6 +42,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
     }
 
     private fun setOnClickListeners() {
+
         val myCalendar = Calendar.getInstance()
         myCalendar.time = currentDateServer
         val date = OnDateSetListener { view, year, monthOfYear, dayOfMonth -> // TODO Auto-generated method stub
@@ -94,7 +95,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         binding.currentDateTxtView.text = data
         currentInfo.currentDate = data.replace("/", "_")
         currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
-        setUpViewPager()
+        setUpViewPager(null)
 
     }
 
@@ -120,7 +121,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 //this symbols act weird with database
                 currentInfo.currentDate = date.replace("/", "_")
                 currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
-                setUpViewPager()
+                setUpViewPager(null)
                 //   updateBadgeListener()
             }
         }
@@ -128,13 +129,17 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
     }
 
-    fun setUpViewPager() {
-
+    fun setUpViewPager(position:Int?) {
         viewPager = binding.viewPager
-
         viewPager!!.adapter = ViewPagerAdapter(activity, this) //Attach the adapter with our ViewPagerAdapter passing the host activity
 
-        TabLayoutMediator(binding.tabs, viewPager!!
+
+     if (position!=null){
+         viewPager!!.postDelayed({ viewPager!!.currentItem = position }, 10)
+
+     }
+
+       TabLayoutMediator(binding.tabs, viewPager!!
         ) { tab, position ->
             tab.text = (viewPager!!.adapter as ViewPagerAdapter?)!!.mFragmentNames[position] //Sets tabs names as mentioned in ViewPagerAdapter fragmentNames array, this can be implemented in many different ways.
         }.attach()
@@ -161,7 +166,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                     Log.d(TAG, "onItemSelected: spinner value changed: $newClass")
                     // updateBadgeListener()
                     //  refreshList()
-                    setUpViewPager()
+                    setUpViewPager(viewPager?.currentItem)
                     // updateBadgeListener()
 
                 }

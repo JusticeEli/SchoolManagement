@@ -258,7 +258,7 @@
     <fragment
         android:id="@+id/adminFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.admin.AdminFragment"
-        android:label="AdminFragment" >
+        android:label="Admin">
         <action
             android:id="@+id/action_adminFragment_to_dashboardFragment"
             app:destination="@id/dashboardFragment"

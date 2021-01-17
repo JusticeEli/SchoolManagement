@@ -68,7 +68,7 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
     private fun setSwipeRefreshListener() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             Log.d(TAG, "setSwipeRefreshListener: on refresh")
-            setUpFirestore()
+            registerFragment.setUpViewPager(0)
         }
     }
 

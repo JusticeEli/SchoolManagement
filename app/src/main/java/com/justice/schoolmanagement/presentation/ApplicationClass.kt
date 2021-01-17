@@ -19,7 +19,7 @@ class ApplicationClass : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        //   loadTeacherNames()
+        //loadTeacherNames()
     }
 
     fun loadTeacherNames() {

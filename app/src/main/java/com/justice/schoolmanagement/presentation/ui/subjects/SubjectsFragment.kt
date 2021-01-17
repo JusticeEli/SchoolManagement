@@ -1,15 +1,25 @@
 package com.justice.schoolmanagement.presentation.ui.subjects
 
 import android.R.layout
+import android.app.AlertDialog
+import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
-import android.widget.AdapterView
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.*
 import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
+import com.google.firebase.firestore.FirebaseFirestore
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentSubjectsBinding
+import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
+import com.justice.schoolmanagement.presentation.utils.Constants
+import java.util.*
 
 class SubjectsFragment : Fragment(R.layout.fragment_subjects) {
     private var list: ArrayList<String> = ArrayList()
@@ -18,10 +28,31 @@ class SubjectsFragment : Fragment(R.layout.fragment_subjects) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSubjectsBinding.bind(view)
+        initProgressBar()
+        loadTeacherNames()
 
-        setSpinnerValues()
-        setOnClickListeners()
+    }
 
+    fun loadTeacherNames() {
+        showProgress(true)
+        ApplicationClass.teacherNames.clear()
+        AllData.teacherDataList.clear()
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
+            //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
+            if (task.isSuccessful) {
+                ApplicationClass.teacherNames.clear()
+                for (documentSnapshot in task.result!!) {
+                    ApplicationClass.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
+                    AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
+                }
+                setSpinnerValues()
+                setOnClickListeners()
+
+            } else {
+                Toast.makeText(requireContext(), "Error: " + task.exception!!.message, Toast.LENGTH_SHORT).show()
+            }
+            showProgress(false)
+        }
     }
 
     private fun setOnClickListeners() {
@@ -127,5 +158,71 @@ class SubjectsFragment : Fragment(R.layout.fragment_subjects) {
         binding.spinner.setAdapter(arrayAdapter)
     }
 
+  /////////////////////PROGRESS_BAR////////////////////////////
+      lateinit var dialog: AlertDialog
 
+      private fun showProgress(show: Boolean) {
+
+          if (show) {
+              dialog.show()
+
+          } else {
+              dialog.dismiss()
+
+          }
+
+      }
+      private fun initProgressBar() {
+
+          dialog = setProgressDialog(requireContext(), "Loading..")
+          dialog.setCancelable(false)
+          dialog.setCanceledOnTouchOutside(false)
+      }
+
+      fun setProgressDialog(context: Context, message: String): AlertDialog {
+          val llPadding = 30
+          val ll = LinearLayout(context)
+          ll.orientation = LinearLayout.HORIZONTAL
+          ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+          ll.gravity = Gravity.CENTER
+          var llParam = LinearLayout.LayoutParams(
+                  LinearLayout.LayoutParams.WRAP_CONTENT,
+                  LinearLayout.LayoutParams.WRAP_CONTENT)
+          llParam.gravity = Gravity.CENTER
+          ll.layoutParams = llParam
+
+          val progressBar = ProgressBar(context)
+          progressBar.isIndeterminate = true
+          progressBar.setPadding(0, 0, llPadding, 0)
+          progressBar.layoutParams = llParam
+
+          llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                  ViewGroup.LayoutParams.WRAP_CONTENT)
+          llParam.gravity = Gravity.CENTER
+          val tvText = TextView(context)
+          tvText.text = message
+          tvText.setTextColor(Color.parseColor("#000000"))
+          tvText.textSize = 20.toFloat()
+          tvText.layoutParams = llParam
+
+          ll.addView(progressBar)
+          ll.addView(tvText)
+
+          val builder = AlertDialog.Builder(context)
+          builder.setCancelable(true)
+          builder.setView(ll)
+
+          val dialog = builder.create()
+          val window = dialog.window
+          if (window != null) {
+              val layoutParams = WindowManager.LayoutParams()
+              layoutParams.copyFrom(dialog.window?.attributes)
+              layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+              layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+              dialog.window?.attributes = layoutParams
+          }
+          return dialog
+      }
+
+      //end progressbar
 }

@@ -10,16 +10,18 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemStudentsBinding
 import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
+import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
 
 class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFragment, options: FirestoreRecyclerOptions<StudentData?>) : FirestoreRecyclerAdapter<StudentData, StudentsActivityRecyclerAdapter.ViewHolder>(options) {
-
+    lateinit var currentSnapShot: DocumentSnapshot
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: StudentData) {
         holder.binding.studentNameTxtView.text = model.fullName
         holder.binding.studentClassTxtView.text = "" + model.classGrade
@@ -47,11 +49,13 @@ class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFrag
     }
 
     private fun deleteStudentPhoto(position: Int) {
+        currentSnapShot = snapshots.getSnapshot(position)
         studentsFragment.showProgress(true)
-        FirebaseStorage.getInstance().getReferenceFromUrl(snapshots.getSnapshot(position).toObject(StudentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
+        FirebaseStorage.getInstance().getReferenceFromUrl(currentSnapShot.toObject(StudentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                deleteStudentMetaData(position);
                 Toasty.success(studentsFragment.requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
+                deleteStudentMetaData();
+
             } else {
                 val error = task.exception!!.message
                 Toasty.error(studentsFragment.requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
@@ -62,10 +66,10 @@ class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFrag
 
     }
 
-    private fun deleteStudentMetaData(position: Int) {
-        snapshots.getSnapshot(position).reference.delete().addOnCompleteListener { task ->
+    private fun deleteStudentMetaData() {
+        currentSnapShot.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                deleteStudentMarks(position)
+                deleteStudentMarks()
                 Toasty.success(studentsFragment.requireContext(), "StudentData Deleted ", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
@@ -74,8 +78,8 @@ class StudentsActivityRecyclerAdapter(private val studentsFragment: StudentsFrag
         }
     }
 
-    private fun deleteStudentMarks(position: Int) {
-        FirebaseFirestore.getInstance().collection("StudentsMarks").document(snapshots.getSnapshot(position).id).delete().addOnCompleteListener { task ->
+    private fun deleteStudentMarks() {
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).document(currentSnapShot.id).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(studentsFragment.requireContext(), "StudentsMarks Deleted ", Toast.LENGTH_SHORT).show()
             } else {

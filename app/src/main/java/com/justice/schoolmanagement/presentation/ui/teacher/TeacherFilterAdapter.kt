@@ -26,7 +26,7 @@ import es.dmoral.toasty.Toasty
 
 class TeacherFilterAdapter(val teachersFragment: TeachersFragment) : ListAdapter<DocumentSnapshot, TeacherFilterAdapter.ViewHolder>(DIFF_UTIL), Filterable {
     private var teacherData: TeacherData? = null
-
+private lateinit var currentSnapshot: DocumentSnapshot
     val context = teachersFragment.requireContext()
 
     companion object {
@@ -97,19 +97,23 @@ class TeacherFilterAdapter(val teachersFragment: TeachersFragment) : ListAdapter
     }
 
     private fun deleteTeacher(position: Int) {
-        val documentSnapshot = getItem(position)
+       currentSnapshot = getItem(position)
         teacherData = getItem(position).toObject(TeacherData::class.java)
         teachersFragment.showProgress(true)
-        FirebaseStorage.getInstance().getReference("teachers_images").child(documentSnapshot.id + ".jpg").delete().addOnCompleteListener { task ->
+        FirebaseStorage.getInstance().getReferenceFromUrl(currentSnapshot.toObject(TeacherData::class.java)!!.photo).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(teachersFragment.requireActivity(), "Photo Deleted", Toast.LENGTH_SHORT).show()
+                deleteTeacherMetaData()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(teachersFragment.requireActivity(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            teachersFragment.showProgress(false)
-        }
-        getItem(position).reference.delete().addOnCompleteListener { task ->
+         }
+
+    }
+
+    private fun deleteTeacherMetaData() {
+       currentSnapshot.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.error(teachersFragment.requireActivity(), "Teacher Deleted", Toast.LENGTH_SHORT).show()
             } else {
@@ -117,8 +121,7 @@ class TeacherFilterAdapter(val teachersFragment: TeachersFragment) : ListAdapter
                 Toasty.error(teachersFragment.requireActivity(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
             teachersFragment.showProgress(false)
-        }
-    }
+        }   }
 
     override fun getFilter(): Filter {
         return filter

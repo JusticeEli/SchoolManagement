@@ -12,6 +12,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemParentsBinding
@@ -22,6 +23,7 @@ import es.dmoral.toasty.Toasty
 class ParentsActivityRecyclerAdapter
 (private val parentsFragment: ParentsFragment, options: FirestoreRecyclerOptions<ParentData?>) : FirestoreRecyclerAdapter<ParentData, ParentsActivityRecyclerAdapter.ViewHolder>(options) {
     private val context: Context? = parentsFragment.requireContext()
+    private lateinit var currentSnapshot: DocumentSnapshot
     private val parentData: ParentData? = null
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: ParentData) {
 
@@ -59,27 +61,31 @@ class ParentsActivityRecyclerAdapter
     }
 
     private fun deleteParent(position: Int) {
+        currentSnapshot = snapshots.getSnapshot(position)
         parentsFragment.showProgress(true)
         FirebaseStorage.getInstance().getReferenceFromUrl(snapshots.getSnapshot(position).toObject(ParentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(context!!, "Photo Deleted", Toast.LENGTH_SHORT).show()
+                deleteParentMetaData()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(context!!, "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            parentsFragment.showProgress(false)
         }
-        snapshots.getSnapshot(position).reference.delete().addOnCompleteListener { task ->
+
+
+    }
+
+    private fun deleteParentMetaData() {
+        currentSnapshot.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(context!!, "Deletion Success", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(context!!, "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            notifyItemRemoved(position)
             parentsFragment.showProgress(false)
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

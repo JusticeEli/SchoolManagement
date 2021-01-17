@@ -50,7 +50,7 @@ class AbsentFragment(val registerFragment: RegisterFragment) : Fragment(R.layout
 
     private fun setSwipeRefreshListener() {
         binding.swipeRefreshLayout.setOnRefreshListener {
-            setUpFirestore()
+            registerFragment.setUpViewPager(2)
         }
     }
 

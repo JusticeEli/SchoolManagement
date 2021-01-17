@@ -22,7 +22,7 @@ import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import es.dmoral.toasty.Toasty
 
 class ParentFilterAdapter(val parentsFragment: ParentsFragment) : ListAdapter<DocumentSnapshot, ParentFilterAdapter.ViewHolder>(DIFF_UTIL), Filterable {
-
+    private lateinit var currentSnapshot: DocumentSnapshot
     val context = parentsFragment.requireContext()
 
     companion object {
@@ -82,31 +82,36 @@ class ParentFilterAdapter(val parentsFragment: ParentsFragment) : ListAdapter<Do
     }
 
     fun deleteFromDatabase(position: Int) {
-        MaterialAlertDialogBuilder(context!!).setBackground(context.getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> notifyItemMoved(position,position) }.setPositiveButton("yes") { dialog, which -> deleteParent(position) }.show()
+        MaterialAlertDialogBuilder(context!!).setBackground(context.getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> notifyItemMoved(position, position) }.setPositiveButton("yes") { dialog, which -> deleteParent(position) }.show()
     }
 
     private fun deleteParent(position: Int) {
+        currentSnapshot = getItem(position)
         parentsFragment.showProgress(true)
         FirebaseStorage.getInstance().getReferenceFromUrl(getItem(position).toObject(ParentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(context!!, "Photo Deleted", Toast.LENGTH_SHORT).show()
+                deleteParentMetaData()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(context!!, "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            parentsFragment.showProgress(false)
         }
-        getItem(position).reference.delete().addOnCompleteListener { task ->
+
+
+    }
+
+    private fun deleteParentMetaData() {
+        currentSnapshot.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(context!!, "Deletion Success", Toast.LENGTH_SHORT).show()
             } else {
                 val error = task.exception!!.message
                 Toasty.error(context!!, "Error: $error", Toast.LENGTH_SHORT).show()
             }
-            notifyItemRemoved(position)
             parentsFragment.showProgress(false)
-        }
 
+        }
     }
 
 

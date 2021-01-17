@@ -21,10 +21,12 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
+import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentEditStudentBinding
 import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -50,13 +52,13 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)!!
         studentData!!.id = ApplicationClass.documentSnapshot!!.id
 
+        initProgressBar()
 
         //   initNavigationDrawer();
         setDefaultValuesToEdtTxt()
         setOnClickListeners()
         setValuesForSpinner()
-        initProgressBar()
-    }
+     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -226,7 +228,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                     val error = task.exception!!.message
                     Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                 }
-             }
+            }
 
             /////////////////////////////////////////////
         } else {
@@ -264,7 +266,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-         }
+        }
     }
 
     private fun updateInDatabase() {
@@ -281,12 +283,12 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                         val error = task.exception!!.message
                         Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                     }
-                 }
+                }
             } else {
                 val error = task.exception!!.message
                 Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
             }
-         }
+        }
     }
 
     private fun updateStudentMarks() {
@@ -321,7 +323,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
     }
 
 
-     fun setValuesForSpinner() {
+    fun setValuesForSpinner() {
         val classGrade = arrayOf("1", "2", "3", "4", "5", "6", "7", "8")
         val arrayAdapter1: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, classGrade)
         binding.classGradeSpinner.setAdapter(arrayAdapter1)
@@ -334,14 +336,36 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         val religion = arrayOf("Christian", "Muslim")
         val arrayAdapter3: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, religion)
         binding.religionSpinner.setAdapter(arrayAdapter3)
-        setValuesForClassTeacherNameSpinner()
+        loadTeacherNames()
     }
 
     private fun setValuesForClassTeacherNameSpinner() {
-        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), R.layout.spinner_item, ApplicationClass.teacherNames)
+
+
+        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, ApplicationClass.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
 
+    fun loadTeacherNames() {
+        showProgress(true)
+        ApplicationClass.teacherNames.clear()
+        AllData.teacherDataList.clear()
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
+            //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
+            if (task.isSuccessful) {
+                ApplicationClass.teacherNames.clear()
+                for (documentSnapshot in task.result!!) {
+                    ApplicationClass.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
+                    AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
+                }
+                setValuesForClassTeacherNameSpinner()
+
+            } else {
+                Toast.makeText(requireContext(), "Error: " + task.exception!!.message, Toast.LENGTH_SHORT).show()
+            }
+            showProgress(false)
+        }
+    }
 
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -358,6 +382,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         }
 
     }
+
     private fun initProgressBar() {
 
         dialog = setProgressDialog(requireContext(), "Loading..")

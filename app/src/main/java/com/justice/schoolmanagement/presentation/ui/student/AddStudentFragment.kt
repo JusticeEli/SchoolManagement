@@ -21,10 +21,12 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
+import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentAddStudentBinding
 import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -42,6 +44,9 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
     private lateinit var studentData: StudentData
     private lateinit var studentMarks: StudentMarks
 
+    companion object {
+        private const val TAG = "AddStudentFragment"
+    }
 
     private var uri: Uri? = null
     lateinit var binding: FragmentAddStudentBinding;
@@ -49,12 +54,12 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddStudentBinding.bind(view)
+        initProgressBar()
 
 
         //   initNavigationDrawer();
         setOnClickListeners()
         setValuesForSpinner()
-        initProgressBar()
     }
 
 
@@ -146,7 +151,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
             studentData.setDateOfArrival(dateOfArrivalEdtTxt.getText().toString())
             studentData.setAge(ageEdtTxt.getText().toString())
             studentData.setGender(getSelectedRadioBtn())
-            studentData.setClassTeacherName(classTeacherNameSpinner.getSelectedItem().toString())
+            studentData.setClassTeacherName(classTeacherNameSpinner.text.toString())
             studentData.setCity(cityEdtTxt.getText().toString())
             putImageToStorage()
         }
@@ -271,12 +276,36 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
         val religion = arrayOf("Christian", "Muslim")
         val arrayAdapter3: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_spinner_dropdown_item, religion)
         binding.religionSpinner.setAdapter(arrayAdapter3)
-        setValuesForClassTeacherNameSpinner()
+
+        loadTeacherNames()
     }
 
     private fun setValuesForClassTeacherNameSpinner() {
-        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), R.layout.spinner_item, ApplicationClass.teacherNames)
+
+
+        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, ApplicationClass.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
+    }
+
+    fun loadTeacherNames() {
+        showProgress(true)
+        ApplicationClass.teacherNames.clear()
+        AllData.teacherDataList.clear()
+        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
+            //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
+            if (task.isSuccessful) {
+                ApplicationClass.teacherNames.clear()
+                for (documentSnapshot in task.result!!) {
+                    ApplicationClass.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
+                    AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
+                }
+                setValuesForClassTeacherNameSpinner()
+
+            } else {
+                Toast.makeText(requireContext(), "Error: " + task.exception!!.message, Toast.LENGTH_SHORT).show()
+            }
+            showProgress(false)
+        }
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
