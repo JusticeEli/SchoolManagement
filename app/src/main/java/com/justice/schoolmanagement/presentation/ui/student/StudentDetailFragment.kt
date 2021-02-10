@@ -64,6 +64,11 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
 
             findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToEditStudentFragment())
         })
+        binding.feesTxtView.setOnClickListener{
+
+            ApplicationClass.studentSnapshot=ApplicationClass.documentSnapshot
+            findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToFeesFragment(studentData!!.fullName))
+        }
     }
 
     private fun deleteStudentDataFromDatabase() {

@@ -65,6 +65,11 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
 
     private fun setOnClickListeners() {
         binding.deleteTxtView.setOnClickListener(View.OnClickListener { deleteTeacherDataFromDatabase() })
+
+        binding.chatTxtView.setOnClickListener{
+
+            findNavController().navigate(TeacherDetailsFragmentDirections.actionTeacherDetailsFragmentToChatFragment(teacherData!!.fullName))
+        }
         binding.editTxtView.setOnClickListener(View.OnClickListener {
             findNavController().navigate(R.id.action_teacherDetailsFragment_to_editTeacherFragment)
         })

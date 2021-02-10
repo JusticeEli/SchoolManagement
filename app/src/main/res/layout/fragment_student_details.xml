@@ -356,12 +356,20 @@
                                 android:layout_height="wrap_content"
                                 android:text="Delete"
                                 android:textColor="@color/colorAccent" />
+                            <TextView
+                                android:id="@+id/feesTxtView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginLeft="60dp"
+                                android:text="Fees"
+
+                                android:textColor="@color/colorAccent" />
 
                             <TextView
                                 android:id="@+id/editTxtView"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginLeft="130dp"
+                                android:layout_marginLeft="20dp"
                                 android:text="Edit "
                                 android:textColor="@color/colorPrimary" />
 

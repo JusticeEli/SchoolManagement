@@ -26,6 +26,15 @@ public class StudentData implements Serializable {
 
     private String photoName;
     private String thumbnail;
+    private int totalFees;
+
+    public int getTotalFees() {
+        return totalFees;
+    }
+
+    public void setTotalFees(int totalFees) {
+        this.totalFees = totalFees;
+    }
 
     public String getThumbnail() {
         return thumbnail;

@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
+    android:layout_marginStart="8dp"
     android:layout_marginEnd="8dp"
     android:layout_marginBottom="8dp">
     <RelativeLayout
@@ -18,12 +18,12 @@
             android:id="@+id/imageView_message_image"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
+            android:paddingTop="4dp"
             android:adjustViewBounds="true"
             android:paddingStart="8dp"
-            android:paddingTop="4dp"
             android:paddingEnd="8dp"
             android:scaleType="fitCenter"
-            tools:src="@mipmap/place_holder" />
+            tools:src="@drawable/ic_image_black_24dp" />
         <TextView
             android:id="@+id/textView_message_time"
             android:layout_width="wrap_content"
@@ -32,6 +32,7 @@
             android:layout_alignEnd="@id/imageView_message_image"
             android:layout_marginEnd="8dp"
             android:textSize="12sp"
+            android:textColor="@android:color/black"
             tools:text="3/15/2018 3:00 PM"/>
     </RelativeLayout>
 </FrameLayout>

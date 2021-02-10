@@ -40,12 +40,14 @@ class ApplicationClass : Application() {
     }
 
     companion object {
-        private const val APPLICATION_ID = "AEBEC993-390A-CC14-FF29-1A31BA9A7000"
+         private const val APPLICATION_ID = "AEBEC993-390A-CC14-FF29-1A31BA9A7000"
         private const val API_KEY = "88CE15DA-73EF-4399-82FD-AD69D4C3412C"
         private const val SERVER_URL = "https://api.backendless.com"
 
-        @JvmField
         var documentSnapshot: DocumentSnapshot? = null
+
+        @JvmField
+        var studentSnapshot: DocumentSnapshot?=null
 
         @JvmField
         var teacherData: TeacherData? = null

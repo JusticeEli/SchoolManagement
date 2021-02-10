@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +33,9 @@ import java.io.File
 import java.io.IOException
 
 class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
-
+  companion object {
+          private  const val TAG="EditTeacherFragment"
+      }
     lateinit var binding: FragmentEditTeacherBinding
     private var uri: Uri? = null
     private var photoChanged = false
@@ -62,7 +65,6 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, subjects)
         binding.subjectSpinner.setAdapter(arrayAdapter)
 
-        binding.contactEdtTxt.setText("07")
     }
 
     private fun choosePhoto() {
@@ -116,6 +118,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
             setDefaultValueForGenderRadioBtn()
             setDefaultValueForTypeRadioBtn()
             setDefaultValueForSubjectSpinner()
+            Log.d(TAG, "setDefaultValues: ${teacherData!!.contact}")
             contactEdtTxt.setText(teacherData!!.contact)
             uri = Uri.parse(teacherData!!.photo)
             val requestOptions = RequestOptions()

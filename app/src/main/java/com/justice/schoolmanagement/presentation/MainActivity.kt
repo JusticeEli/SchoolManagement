@@ -16,6 +16,7 @@ import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -82,6 +83,10 @@ class MainActivity : AppCompatActivity() {
                 logout()
                 return true
             }
+            R.id.myAccountMenu -> {
+                showMyAccountDetails()
+                return true
+            }
             else -> {
                 item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
 
@@ -89,6 +94,16 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+    }
+
+    private fun showMyAccountDetails() {
+
+
+        FirestoreUtil.getCurrentUser {
+            ApplicationClass.documentSnapshot=it
+            navController.navigate(R.id.action_global_teacherDetailsFragment)
+
+        }
     }
 
     private fun logout() {
