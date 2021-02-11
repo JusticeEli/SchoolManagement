@@ -134,6 +134,9 @@ dependencies {
     //exif interface for rotating image
     implementation "androidx.exifinterface:exifinterface:1.0.0"
 
+    //play service location
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
+
 }
 kapt {
     correctErrorTypes true

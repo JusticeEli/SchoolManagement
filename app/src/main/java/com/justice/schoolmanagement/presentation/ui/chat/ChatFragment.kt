@@ -41,7 +41,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         binding = FragmentChatBinding.bind(view)
         initRecyclerView()
         FirestoreUtil.getCurrentUser {
-            currentUser = it.toObject(TeacherData::class.java)!!
+            currentUser = it!!.toObject(TeacherData::class.java)!!
         }
         otherUserId = ApplicationClass.documentSnapshot!!.id
 

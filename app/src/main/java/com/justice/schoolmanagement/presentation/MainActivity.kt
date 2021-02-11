@@ -156,7 +156,11 @@ class MainActivity : AppCompatActivity() {
     }
     // This might just fix your issue by itself.
 
+
+
     companion object {
         private const val TAG = "MainActivity"
     }
+
+
 }

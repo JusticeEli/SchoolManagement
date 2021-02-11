@@ -311,4 +311,20 @@
             app:argType="string" />
     </fragment>
     <action android:id="@+id/action_global_teacherDetailsFragment" app:destination="@id/teacherDetailsFragment" />
+    <fragment
+        android:id="@+id/checkInCheckOutFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.attendance.CheckInCheckOutFragment"
+        android:label="CheckInCheckOutFragment" />
+    <fragment
+        android:id="@+id/attendanceFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.attendance.AttendanceFragment"
+        android:label="AttendanceFragment" >
+        <action
+            android:id="@+id/action_attendanceFragment_to_setLocationFragment"
+            app:destination="@id/setLocationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/setLocationFragment"
+        android:name="com.justice.schoolmanagement.presentation.ui.attendance.SetLocationFragment"
+        android:label="SetLocationFragment" />
 </navigation>

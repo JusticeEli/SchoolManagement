@@ -8,18 +8,27 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.presentation.ui.chat.model.*
+import com.justice.schoolmanagement.presentation.ui.register.CurrentDate
+import com.justice.schoolmanagement.presentation.ui.register.CurrentInfo
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_ENGAGED_CHAT_CHANNELS
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_MESSAGES
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 object FirestoreUtil {
+
+
+        private const val TAG = "FirestoreUtil"
+
+
     private val firestoreInstance: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     private val currentUserDocRef: DocumentReference
-        get() =firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
-    private val chatChannelsCollectionRef = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE+"/"+Constants.COLLECTION_CHAT_CHANNELS)
+        get() = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
+    private val chatChannelsCollectionRef = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
 
     fun initCurrentUserIfFirstTime(onComplete: () -> Unit) {
         currentUserDocRef.get().addOnSuccessListener { documentSnapshot ->
@@ -44,7 +53,7 @@ object FirestoreUtil {
         currentUserDocRef.update(userFieldMap)
     }
 
-    fun getCurrentUser(onComplete: (DocumentSnapshot) -> Unit) {
+    fun getCurrentUser(onComplete: (DocumentSnapshot?) -> Unit) {
         firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid).get()
                 .addOnSuccessListener {
                     onComplete(it)
@@ -103,6 +112,53 @@ object FirestoreUtil {
                     }
                     onListen(items)
                 }
+    }
+
+
+    fun getUid():String{
+        return FirebaseAuth.getInstance().currentUser!!.uid
+
+
+    }
+
+    fun getAdminCurrentLocation(onComplete: (DocumentSnapshot?) -> Unit){
+     val documentReferenceCurrentLocation = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
+        documentReferenceCurrentLocation.get().addOnSuccessListener {
+            if (it.exists()){
+                onComplete(it)
+
+            }else{
+                onComplete(null)
+
+            }
+         }
+
+    }
+
+     fun getCurrentDateFormatted(onComplete: (String?) -> Unit) {
+        val currentInfo = CurrentInfo("16", "all", true)
+
+        FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
+
+
+            FirebaseFirestore.getInstance().collection("dummy").document("date").get().addOnSuccessListener {
+
+
+                val date = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(it.toObject(CurrentDate::class.java)?.date)
+
+
+                Log.d(TAG, "getCurrentDateAndInitCurrentInfo: retrieving current date from database ${date}")
+
+                //this symbols act weird with database
+                currentInfo.currentDate = date.replace("/", "_")
+                currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+
+                onComplete(currentInfo.currentDate)
+
+            }
+        }
+
+
     }
 
     fun sendMessage(message: Message, channelId: String) {

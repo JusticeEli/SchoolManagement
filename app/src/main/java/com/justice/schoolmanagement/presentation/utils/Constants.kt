@@ -69,4 +69,9 @@ object Constants {
     var teachersAnswers: ArrayList<Answer> = ArrayList<Answer>()
     var imagePath: String? = null
 
+
+    //attendance
+    var COLLECTION_ATTENDANCE="/attendance"
+    var DOCUMENT_CURRENT_LOCATION="currentLocation"
+
 }
