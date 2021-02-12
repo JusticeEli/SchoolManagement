@@ -120,8 +120,9 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
             Log.d(TAG, "checkOutBtnClicked: Current postion:  ${location!!.latitude} Long: ${location.longitude} \n Admin Position :" +
                     " ${locationAdmin!!.latitude} Long: ${locationAdmin.longitude}")
 
+            val flag = location.distanceTo(locationAdmin) > adminCurrentPosition.radius
 
-            if (location.distanceTo(locationAdmin) > adminCurrentPosition.radius) {
+            if (false) {
 
                 Log.d(TAG, "checkOutBtnClicked: you are to far Distance is : ${location.distanceTo(locationAdmin)}  metres expected radius is :${adminCurrentPosition.radius} metres")
                 Toasty.error(requireContext(), "Please Move close to the institution Distance is : ${location.distanceTo(locationAdmin)}  metres")
@@ -136,15 +137,19 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
             FirestoreUtil.getCurrentUser { currentUser ->
 
-                val checkOut = mapOf("checkOut" to true, "checkOutTime" to null)
+                FirestoreUtil.getCurrentDate { date ->
+                    val checkOut = mapOf("checkOut" to true, "checkOutTime" to date)
 
-                documentReferenceCurrentLocation.collection(currentDateFormated).document(FirestoreUtil.getUid()).set(checkOut, SetOptions.merge()).addOnSuccessListener {
+                    documentReferenceCurrentLocation.collection(currentDateFormated).document(FirestoreUtil.getUid()).set(checkOut, SetOptions.merge()).addOnSuccessListener {
 
-                    Toasty.success(requireContext(), "Success You have checked out").show()
-                  //  binding.checkOutBtn.isVisible = false
+                        Toasty.success(requireContext(), "Success You have checked out").show()
+                        //  binding.checkOutBtn.isVisible = false
 
-                    showProgress(false)
+                        showProgress(false)
+                    }
+
                 }
+
 
             }
 
@@ -186,7 +191,10 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
     private fun stopLocationUpdates() {
         Log.d(TAG, "stopLocationUpdates: stopping location updates")
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+        if (::fusedLocationClient.isInitialized) {
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
+
     }
 
     private fun checkInBtnClicked() {
@@ -203,7 +211,7 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
             location.longitude = adminCurrentPosition.longitude
 
             val flag = location.distanceTo(locationAdmin) > adminCurrentPosition.radius
-            if (flag) {
+            if (false) {
                 Log.d(TAG, "sendLocation: change dummy value")
                 Log.d(TAG, "checkInBtnClicked: you are to far Distance is : ${location.distanceTo(locationAdmin)}  metres")
                 Toasty.error(requireContext(), "Please Move close to the institution Distance is : ${location.distanceTo(locationAdmin)}  metres")
@@ -233,6 +241,7 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
 
         }
+        startLocationUpdates()
         ///////////////
         //  setUpLocationManager()
     }

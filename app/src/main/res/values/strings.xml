@@ -5,4 +5,10 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+
+    <string name="agora_app_id">f902f08fec87444cbecb14fee780b8d2</string>
+    <!-- Obtain a temp Access Token at https://dashboard.agora.io -->
+    <!-- You will need to deploy your own token server for production release -->
+    <!-- Leave this value empty if Security keys/Token is not enabled for your project -->
+    <string name="agora_access_token">006f902f08fec87444cbecb14fee780b8d2IACWE2/pLebxIiURugJEdADdO1K39s0dgiWcuMKR4I5q/o4te0wAAAAAEABFd1n8k8onYAEAAQCXyidg</string>
 </resources>

@@ -137,6 +137,10 @@ dependencies {
     //play service location
     implementation 'com.google.android.gms:play-services-location:17.1.0'
 
+    //very large libray increased my apk from 12mb -> 36mb
+    //agora video voice chat
+    implementation 'io.agora.rtc:full-sdk:3.0.0'
+
 }
 kapt {
     correctErrorTypes true

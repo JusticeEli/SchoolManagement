@@ -17,6 +17,7 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
+import com.justice.schoolmanagement.presentation.ui.videochat.VideoChatViewActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -85,6 +86,10 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.myAccountMenu -> {
                 showMyAccountDetails()
+                return true
+            }
+            R.id.videoChatMenu->{
+                startActivity(Intent(this,VideoChatViewActivity::class.java))
                 return true
             }
             else -> {

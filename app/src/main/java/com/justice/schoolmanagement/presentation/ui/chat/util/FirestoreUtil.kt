@@ -160,7 +160,22 @@ object FirestoreUtil {
 
 
     }
+    fun getCurrentDate(onComplete: (Date?) -> Unit) {
+        val currentInfo = CurrentInfo("16", "all", true)
 
+        FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
+
+
+            FirebaseFirestore.getInstance().collection("dummy").document("date").get().addOnSuccessListener {
+
+                onComplete(it.toObject(CurrentDate::class.java)?.date)
+
+            }
+        }
+
+
+
+    }
     fun sendMessage(message: Message, channelId: String) {
         chatChannelsCollectionRef.document(channelId)
                 .collection("messages")
