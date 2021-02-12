@@ -11,7 +11,9 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
@@ -25,6 +27,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.FirebaseFirestore
 import com.justice.schoolmanagement.R
@@ -35,7 +41,19 @@ import es.dmoral.toasty.Toasty
 
 
 class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocationListener.LocationListenerCallbacks {
-    ////////////////////////
+    companion object {
+
+        val RC_LOCATION_PERMISSION = 3
+        private const val TAG = "SetLocationFragment"
+    }
+
+    //////////////fuse location client////
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationRequest: LocationRequest
+    private lateinit var locationCallback: LocationCallback
+
+    //////////////fuse location client////
+
     ////////0 seconds/////////
     private val LOCATION_REFRESH_TIME: Long = 0
     private val LOCATION_PERMISSION = 3
@@ -50,11 +68,6 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
 
     ///////////////////////////////////
-    companion object {
-
-        val RC_LOCATION_PERMISSION = 3
-        private const val TAG = "SetLocationFragment"
-    }
 
     private val documentReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
 
@@ -71,15 +84,25 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     }
 
     private fun setUpLocationManager() {
+        Log.d(TAG, "setUpLocationManager: ")
         locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         seeIfGPSisEnabled()
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "setUpLocationManager: permissions available requesting location updates")
+
+            mLocationListener = MyLocationListener(this, locationManager)
+            locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                    LOCATION_REFRESH_DISTANCE, mLocationListener
+            )
+
+        } else {
+
+            Log.d(TAG, "setUpLocationManager: requesting permission")
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_PERMISSION)
-            return
+
+
         }
-        mLocationListener = MyLocationListener(this, locationManager)
-        locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                LOCATION_REFRESH_DISTANCE, mLocationListener)
+
     }
 
     private fun buildAlertMessageNoGps() {
@@ -150,7 +173,7 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     }
 
     override fun sendLocation(location: Location?) {
-        Log.d(TAG, "sendLocation: ")
+        Log.d(TAG, "sendLocation: $location")
         uploadCurrentPosition(location!!)
     }
 
@@ -182,11 +205,54 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
         // getLastKnownLocation()
         // startLocationUpdates()
         showProgress(true)
-        setUpLocationManager()
+
+        //////////////
+
+
+        locationCallback = MyLocationCallback { location ->
+            stopLocationUpdates()
+            Log.d(TAG, "setBtnClicked: :  ${location!!.latitude} Long: ${location.longitude} ")
+            uploadCurrentPosition(location)
+        }
+
+
+        startLocationUpdates();
 
 
     }
 
+
+    private fun startLocationUpdates() {
+        Log.d(TAG, "startLocationUpdates: started location updates")
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        locationRequest = LocationRequest.create()
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+        locationRequest.setInterval(0)
+        locationRequest.setFastestInterval(0)
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
+
+                return
+            }
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper())
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopLocationUpdates()
+    }
+
+    private fun stopLocationUpdates() {
+        Log.d(TAG, "stopLocationUpdates: ")
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
 
     private fun uploadCurrentPosition(location: Location) {
 

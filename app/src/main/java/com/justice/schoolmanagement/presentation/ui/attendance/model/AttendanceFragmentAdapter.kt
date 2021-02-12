@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.attendance.model
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
@@ -22,6 +23,9 @@ import java.text.SimpleDateFormat
 
 class AttendanceFragmentAdapter(private val attendanceFragment: AttendanceFragment, options: FirestoreRecyclerOptions<CheckInOut?>) : FirestoreRecyclerAdapter<CheckInOut, AttendanceFragmentAdapter.ViewHolder>(options) {
 
+      companion object {
+              private  const val TAG="AttendanceFragmentAdapt"
+          }
     private lateinit var currentSnapshot: DocumentSnapshot
     private var teacherData: TeacherData? = null
     private val firebaseFirestore = FirebaseFirestore.getInstance()
@@ -29,12 +33,20 @@ class AttendanceFragmentAdapter(private val attendanceFragment: AttendanceFragme
         holder.binding.apply {
 
             nameTxtView.text = model.fullName
-            checkInTxtView.text = SimpleDateFormat.getDateTimeInstance().format(model.checkInTime)
 
-            if (model.checkOut){
-                checkOutTxtView.text = SimpleDateFormat.getDateTimeInstance().format(model.checkOutTime)
+            model.checkInTime?.let {
+                checkInTxtView.text = SimpleDateFormat.getDateTimeInstance().format(model.checkInTime)
 
             }
+
+            if (model.checkOut){
+                model.checkOutTime?.let {
+                    checkOutTxtView.text = SimpleDateFormat.getDateTimeInstance().format(model.checkOutTime)
+
+                }
+
+            }
+            Log.d(TAG, "onBindViewHolder: image: ${model.image}")
            val requestOptions = RequestOptions()
             requestOptions.centerCrop()
             requestOptions.placeholder(R.mipmap.place_holder)
