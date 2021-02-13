@@ -17,7 +17,7 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
-import com.justice.schoolmanagement.presentation.ui.videochat.VideoChatViewActivity
+import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 

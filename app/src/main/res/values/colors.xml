@@ -8,4 +8,10 @@
     <!--VideoChatViewActivity-->
     <color name="localBackground">#827b92</color>
     <color name="remoteBackground">#484258</color>
+
+
+    <!-- Logs -->
+    <color name="logInfo">#4a90e2</color>
+    <color name="logWarn">#fedd56</color>
+    <color name="logError">#fe375f</color>
 </resources>

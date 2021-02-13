@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui.videochat;
+package com.justice.schoolmanagement.presentation.ui.video_chat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -26,9 +26,11 @@ import io.agora.rtc.RtcEngine;
 import io.agora.rtc.video.VideoCanvas;
 import io.agora.rtc.video.VideoEncoderConfiguration;
 
-
 public class VideoChatViewActivity extends AppCompatActivity {
-    private static final String TAG = VideoChatViewActivity.class.getSimpleName();
+    private static final String TAG = "VideoChatViewActivity";
+
+
+
 
     private static final int PERMISSION_REQ_ID = 22;
 
@@ -40,7 +42,7 @@ public class VideoChatViewActivity extends AppCompatActivity {
             Manifest.permission.CAMERA,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    private static final String CHANNEL_NAME = "eli";
+    private static final String CHANNEL_NAME ="collet" ;
 
     private RtcEngine mRtcEngine;
     private boolean mCallEnd;
@@ -50,13 +52,20 @@ public class VideoChatViewActivity extends AppCompatActivity {
     private RelativeLayout mRemoteContainer;
     private VideoCanvas mLocalVideo;
     private VideoCanvas mRemoteVideo;
+
+    private ImageView mCallBtn;
+    private ImageView mMuteBtn;
+    private ImageView mSwitchCameraBtn;
+
+    // Customized logger view
+    private LoggerRecyclerView mLogView;
+
     /**
      * Event handler registered into RTC engine for RTC callbacks.
      * Note that UI operations needs to be in UI thread because RTC
      * engine deals with the events in a separate thread.
      */
     private final IRtcEngineEventHandler mRtcEventHandler = new IRtcEngineEventHandler() {
-
         /**
          * Occurs when the local user joins a specified channel.
          * The channel name assignment is based on channelName specified in the joinChannel method.
@@ -71,7 +80,7 @@ public class VideoChatViewActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG,"Join channel success, uid: " + (uid & 0xFFFFFFFFL));
+                    mLogView.logI("Join channel success, uid: " + (uid & 0xFFFFFFFFL));
                 }
             });
         }
@@ -97,7 +106,7 @@ public class VideoChatViewActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "First remote video decoded, uid: " + (uid & 0xFFFFFFFFL));
+                    mLogView.logI("First remote video decoded, uid: " + (uid & 0xFFFFFFFFL));
                     setupRemoteVideo(uid);
                 }
             });
@@ -130,18 +139,12 @@ public class VideoChatViewActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "User offline, uid: " + (uid & 0xFFFFFFFFL));
+                    mLogView.logI("User offline, uid: " + (uid & 0xFFFFFFFFL));
                     onRemoteUserLeft(uid);
                 }
             });
         }
     };
-    private ImageView mCallBtn;
-    private ImageView mMuteBtn;
-
-    // Customized logger view
-   // private LoggerRecyclerView mLogView;
-    private ImageView mSwitchCameraBtn;
 
     private void setupRemoteVideo(int uid) {
         ViewGroup parent = mRemoteContainer;
@@ -203,16 +206,16 @@ public class VideoChatViewActivity extends AppCompatActivity {
         mMuteBtn = findViewById(R.id.btn_mute);
         mSwitchCameraBtn = findViewById(R.id.btn_switch_camera);
 
-        //mLogView = findViewById(R.id.log_recycler_view);
+        mLogView = findViewById(R.id.log_recycler_view);
 
         // Sample logs are optional.
         showSampleLogs();
     }
 
     private void showSampleLogs() {
-        Log.d(TAG, "showSampleLogs: Welcome to Agora 1v1 video call");
-        Log.d(TAG, "showSampleLogs:You will see custom logs here");
-        Log.d(TAG, "showSampleLogs:You can also use this to show errors");
+        mLogView.logI("Welcome to Agora 1v1 video call");
+        mLogView.logW("You will see custom logs here");
+        mLogView.logE("You can also use this to show errors");
     }
 
     private boolean checkSelfPermission(String permission, int requestCode) {
@@ -310,6 +313,8 @@ public class VideoChatViewActivity extends AppCompatActivity {
         // you use to generate this token.
         String token = getString(R.string.agora_access_token);
         if (TextUtils.isEmpty(token) || TextUtils.equals(token, "#YOUR ACCESS TOKEN#")) {
+
+            Log.d(TAG, "joinChannel: token is null");
             token = null; // default, no token
         }
         mRtcEngine.joinChannel(token, CHANNEL_NAME, "Extra Optional Data", 0);

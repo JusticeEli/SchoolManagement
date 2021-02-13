@@ -9,4 +9,8 @@
     <!-- buttons -->
     <dimen name="control_bottom_margin">24dp</dimen>
     <dimen name="control_bottom_horizontal_margin">30dp</dimen>
+
+    <!--logger-->
+    <dimen name="log_container_width">240dp</dimen>
+    <dimen name="log_container_height">120dp</dimen>
 </resources>
