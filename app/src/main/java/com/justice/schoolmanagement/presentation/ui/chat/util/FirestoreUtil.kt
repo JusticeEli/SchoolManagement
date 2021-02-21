@@ -10,6 +10,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.presentation.ui.chat.model.*
 import com.justice.schoolmanagement.presentation.ui.register.CurrentDate
 import com.justice.schoolmanagement.presentation.ui.register.CurrentInfo
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_ENGAGED_CHAT_CHANNELS
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_MESSAGES
@@ -185,7 +186,7 @@ object FirestoreUtil {
     //region FCM
     fun getFCMRegistrationTokens(onComplete: (tokens: MutableList<String>) -> Unit) {
         currentUserDocRef.get().addOnSuccessListener {
-            val user = it.toObject(User::class.java)!!
+            val user = it.toObject(TeacherData::class.java)!!
             onComplete(user.registrationTokens)
         }
     }

@@ -80,7 +80,7 @@ public class VideoChatViewActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mLogView.logI("Join channel success, uid: " + (uid & 0xFFFFFFFFL));
+                    mLogView.logI("Join channel success,Channel Name: "+channel+" uid: " + (uid & 0xFFFFFFFFL));
                 }
             });
         }
@@ -209,7 +209,7 @@ public class VideoChatViewActivity extends AppCompatActivity {
         mLogView = findViewById(R.id.log_recycler_view);
 
         // Sample logs are optional.
-        showSampleLogs();
+       // showSampleLogs();
     }
 
     private void showSampleLogs() {

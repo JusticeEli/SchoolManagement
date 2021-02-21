@@ -4,6 +4,7 @@ import com.google.firebase.firestore.DocumentId;
 import com.google.firebase.firestore.Exclude;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class TeacherData implements Serializable {
     private String fullName;
@@ -23,6 +24,15 @@ public class TeacherData implements Serializable {
     private String id;
     private String thumbnail;
 
+    private List<String> registrationTokens;
+
+    public List<String> getRegistrationTokens() {
+        return registrationTokens;
+    }
+
+    public void setRegistrationTokens(List<String> registrationTokens) {
+        this.registrationTokens = registrationTokens;
+    }
 
     public TeacherData() {
 
