@@ -26,3 +26,5 @@ Teachers can easily update marks of students remotely and contact their respecti
 ![WhatsApp Image 2021-02-25 at 3 42 00 PM(1)](https://user-images.githubusercontent.com/63531125/109155443-98eb2a80-7780-11eb-8746-4bff3e34b1a6.jpeg)
 ![WhatsApp Image 2021-02-25 at 3 42 00 PM(2)](https://user-images.githubusercontent.com/63531125/109155446-9a1c5780-7780-11eb-95af-1f7716a21d1e.jpeg)
 ![WhatsApp Image 2021-02-25 at 3 42 00 PM](https://user-images.githubusercontent.com/63531125/109155448-9b4d8480-7780-11eb-90ab-ab2251d2dd83.jpeg)
+![WhatsApp Image 2021-02-11 at 5 52 25 PM](https://user-images.githubusercontent.com/63531125/109155611-d5b72180-7780-11eb-9e5b-6b22ffad1ad3.jpeg)
+![WhatsApp Image 2021-02-13 at 2 10 08 PM](https://user-images.githubusercontent.com/63531125/109155621-d6e84e80-7780-11eb-8a16-f8acd8b3cec0.jpeg)
