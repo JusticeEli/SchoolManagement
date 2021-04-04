@@ -2,16 +2,18 @@
 This is the [link](https://play.google.com/store/apps/details?id=com.justice.schoolmanagement) to the app in google play store
 
 Mobile app that makes it easier to maintain records of a school, has a section for managing.
-  *teachers
- *parents
- *students
-*classes
-*subjects 
-*results
+  * teachers
+ * parents
+ * students
+* classes
+* subjects 
+* results
 Teachers can easily update marks of students remotely and contact their respective parents.: implemented in **Kotlin** using Android Framework ,data is stored in *Cloud firestore* whereas profile pictures of the users are stored in *firebase storage*. 
 
-
+# login screen
 ![WhatsApp Image 2021-02-25 at 3 36 53 PM](https://user-images.githubusercontent.com/63531125/109155096-36922a00-7780-11eb-9791-250a48f690b0.jpeg)
+
+# Admin screen
 ![WhatsApp Image 2021-02-25 at 3 36 53 PM(1)](https://user-images.githubusercontent.com/63531125/109155106-38f48400-7780-11eb-88c9-5f3cd102bcae.jpeg)
 ![WhatsApp Image 2021-02-25 at 3 36 53 PM(2)](https://user-images.githubusercontent.com/63531125/109155161-4d388100-7780-11eb-83f9-e9794afed2e0.jpeg)
 ![WhatsApp Image 2021-02-25 at 3 36 53 PM(3)](https://user-images.githubusercontent.com/63531125/109155167-4f024480-7780-11eb-926d-20f9d6ade69d.jpeg)
@@ -26,5 +28,9 @@ Teachers can easily update marks of students remotely and contact their respecti
 ![WhatsApp Image 2021-02-25 at 3 42 00 PM(1)](https://user-images.githubusercontent.com/63531125/109155443-98eb2a80-7780-11eb-8746-4bff3e34b1a6.jpeg)
 ![WhatsApp Image 2021-02-25 at 3 42 00 PM(2)](https://user-images.githubusercontent.com/63531125/109155446-9a1c5780-7780-11eb-95af-1f7716a21d1e.jpeg)
 ![WhatsApp Image 2021-02-25 at 3 42 00 PM](https://user-images.githubusercontent.com/63531125/109155448-9b4d8480-7780-11eb-90ab-ab2251d2dd83.jpeg)
+
+# chatting screen 
 ![WhatsApp Image 2021-02-11 at 5 52 25 PM](https://user-images.githubusercontent.com/63531125/109155611-d5b72180-7780-11eb-9e5b-6b22ffad1ad3.jpeg)
+
+# video chat using agora sdk 
 ![WhatsApp Image 2021-02-13 at 2 10 08 PM](https://user-images.githubusercontent.com/63531125/109155621-d6e84e80-7780-11eb-8a16-f8acd8b3cec0.jpeg)
