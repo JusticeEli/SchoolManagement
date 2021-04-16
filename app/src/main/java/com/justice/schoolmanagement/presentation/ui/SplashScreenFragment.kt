@@ -24,7 +24,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.gson.Gson
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentSplashScreenBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.admin.AdminData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
@@ -66,6 +66,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
             startActivityForResult(
                     AuthUI.getInstance()
                             .createSignInIntentBuilder()
+
                             .setAvailableProviders(Arrays.asList(
                                     AuthUI.IdpConfig.GoogleBuilder().build(),
                                     AuthUI.IdpConfig.EmailBuilder().build(),
@@ -168,7 +169,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
                     //teacher has metadata
                     goToDashBoard()
                     //start loading current teacher names
-                    (requireContext().applicationContext as ApplicationClass).loadTeacherNames()
+                    (requireContext().applicationContext as SchoolApplication).loadTeacherNames()
                     if (documentSnapshot.getString("type") == "teacher") {
                         //its a teacher not admin
                         Log.d(TAG, "onEvent: teacher is not admin")

@@ -16,7 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentSubjectsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import java.util.*
@@ -35,14 +35,14 @@ class SubjectsFragment : Fragment(R.layout.fragment_subjects) {
 
     fun loadTeacherNames() {
         showProgress(true)
-        ApplicationClass.teacherNames.clear()
+        SchoolApplication.teacherNames.clear()
         AllData.teacherDataList.clear()
         FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
             //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
             if (task.isSuccessful) {
-                ApplicationClass.teacherNames.clear()
+                SchoolApplication.teacherNames.clear()
                 for (documentSnapshot in task.result!!) {
-                    ApplicationClass.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
+                    SchoolApplication.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
                     AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
                 }
                 setSpinnerValues()

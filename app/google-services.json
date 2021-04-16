@@ -8,17 +8,46 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:933626401522:android:dc84162c791dff4267f66b",
+        "mobilesdk_app_id": "1:933626401522:android:1fb35675a008e4f767f66b",
         "android_client_info": {
-          "package_name": "com.justice.schoolmanagement"
+          "package_name": "com.edward.nyansapo"
         }
       },
       "oauth_client": [
         {
-          "client_id": "933626401522-v6hedecm5s0ohbcvp31n5labbn8k95sp.apps.googleusercontent.com",
+          "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAji43PQZwwLipJIzvx2S6ejzf2ttqkO9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933626401522:android:eccf7bcaf0446bff67f66b",
+        "android_client_info": {
+          "package_name": "com.justice.a2urbansisters"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933626401522-3ek4hsqf936prv4onpepo9vj4tuvi3s4.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.justice.schoolmanagement",
+            "package_name": "com.justice.a2urbansisters",
             "certificate_hash": "a750750b75522391484378f5e5806f12824dc71e"
           }
         },
@@ -29,7 +58,171 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDbazsvH1VvpB0KlEvBq48tnN8m-glcr54"
+          "current_key": "AIzaSyAji43PQZwwLipJIzvx2S6ejzf2ttqkO9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933626401522:android:da4222ad060514d867f66b",
+        "android_client_info": {
+          "package_name": "com.justice.attendance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933626401522-hiduuov1s57h2esehdo55m1pg5nvc2l9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.attendance",
+            "certificate_hash": "720ef619726aea1871536b11d4bcb4f011613cff"
+          }
+        },
+        {
+          "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAji43PQZwwLipJIzvx2S6ejzf2ttqkO9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933626401522:android:1731b680c734940567f66b",
+        "android_client_info": {
+          "package_name": "com.justice.exammaker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933626401522-5384lo6sdt1lupdukkpagmoopp8a7ebm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.exammaker",
+            "certificate_hash": "720ef619726aea1871536b11d4bcb4f011613cff"
+          }
+        },
+        {
+          "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAji43PQZwwLipJIzvx2S6ejzf2ttqkO9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933626401522:android:dc84162c791dff4267f66b",
+        "android_client_info": {
+          "package_name": "com.justice.schoolmanagement"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933626401522-9a4kq0s58qlsa9qu43m5evn80iscdtr0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.schoolmanagement",
+            "certificate_hash": "0a7613716d690080be9f460c8aeb9b5f9809a652"
+          }
+        },
+        {
+          "client_id": "933626401522-elpbs88mcj7dfkha8h8ogt0il0t9lo0q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.schoolmanagement",
+            "certificate_hash": "17d2994ec7c56ca29c3e57d4871552d15d788b20"
+          }
+        },
+        {
+          "client_id": "933626401522-ljhlu9k2a1i8qeeat3od7ej6m0sdts0o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.schoolmanagement",
+            "certificate_hash": "720ef619726aea1871536b11d4bcb4f011613cff"
+          }
+        },
+        {
+          "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAji43PQZwwLipJIzvx2S6ejzf2ttqkO9I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:933626401522:android:74fb48e6dbc821bf67f66b",
+        "android_client_info": {
+          "package_name": "com.justice.tenakatauniversity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "933626401522-3g3j3qumb7c4httlqktfbarr3clthigr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.justice.tenakatauniversity",
+            "certificate_hash": "a750750b75522391484378f5e5806f12824dc71e"
+          }
+        },
+        {
+          "client_id": "933626401522-mbal6ufgfgrbgaq3cgf5a0223k6qfu6l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAji43PQZwwLipJIzvx2S6ejzf2ttqkO9I"
         }
       ],
       "services": {

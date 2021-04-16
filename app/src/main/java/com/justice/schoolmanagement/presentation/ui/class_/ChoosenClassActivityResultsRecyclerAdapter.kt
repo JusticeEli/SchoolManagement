@@ -7,7 +7,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter
 import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemResultsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 
 class ChoosenClassActivityResultsRecyclerAdapter(private val choosenClassFragment: ChoosenClassFragment, options: FirestoreRecyclerOptions<StudentMarks?>) : FirestoreRecyclerAdapter<StudentMarks, ChoosenClassActivityResultsRecyclerAdapter.ViewHolder>(options) {
@@ -29,7 +29,7 @@ class ChoosenClassActivityResultsRecyclerAdapter(private val choosenClassFragmen
             editTxtView.setOnClickListener {
 
 
-                ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+                SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
                 choosenClassFragment.navController.navigate(R.id.action_choosenClassFragment_to_resultsEditFragment)
             }
         }

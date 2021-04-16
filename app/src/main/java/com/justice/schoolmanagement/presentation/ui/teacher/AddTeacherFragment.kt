@@ -103,9 +103,9 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
             addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
             imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-            addBtn.setOnClickListener(View.OnClickListener {
+            binding.submitBtn.setOnClickListener(View.OnClickListener {
                 Log.d(TAG, "setOnClickListeners: add btn pressed")
-                addBtn.isVisible = false
+                binding.submitBtn.isVisible = false
                 getDataFromEdtTxtAndAddItToDatabase()
             })
             contactEdtTxt.addTextChangedListener(object : TextWatcher {
@@ -188,16 +188,16 @@ showProgress(false)
     private fun getDataFromEdtTxtAndAddItToDatabase() {
         if (uri == null) {
             Toasty.info(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
-            addBtn.isVisible = true
+            submit_btn.isVisible = true
             return
         }
         if (fieldsAreEmpty()) {
             Toasty.error(requireContext(), "Please Fill All Fields", Toast.LENGTH_SHORT).show()
-            addBtn.isVisible = true
+            submit_btn.isVisible = true
             return
         }
         if (!contactEdtTxtFormatIsCorrect()) {
-            addBtn.isVisible = true
+            submit_btn.isVisible = true
             return
         }
         binding.apply {

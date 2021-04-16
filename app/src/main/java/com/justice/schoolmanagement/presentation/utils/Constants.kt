@@ -1,7 +1,5 @@
 package com.justice.schoolmanagement.presentation.utils
 
-import com.justice.schoolmanagement.presentation.ui.exam.Answer
-import java.util.*
 
 object Constants {
 
@@ -64,9 +62,7 @@ object Constants {
     val DATE="/dates"
     public val COLLECTION_DATE1 = COLLECTION_ROOT + DOCUMENT_CODE + DATE
 
-    //exam data
-    //teachers answers
-    var teachersAnswers: ArrayList<Answer> = ArrayList<Answer>()
+
     var imagePath: String? = null
 
 

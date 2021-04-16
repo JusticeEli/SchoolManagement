@@ -50,9 +50,14 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+
+    //support for kotlin
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    //cardview
     implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx:22.1.2'
 
     //testing
     testImplementation 'junit:junit:4.12'
@@ -63,7 +68,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.1'
 
     // firebase storage
-    implementation 'com.google.firebase:firebase-storage:17.0.0'
+    implementation 'com.google.firebase:firebase-storage:'
 
 
     //firebase ui
@@ -72,7 +77,7 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-storage:3.3.1'
 
     //firebase messaging
-    implementation 'com.google.firebase:firebase-messaging:21.0.1'
+    implementation 'com.google.firebase:firebase-messaging'
 
 
     //crops images
@@ -89,7 +94,7 @@ dependencies {
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //toasty
-    implementation 'com.github.GrenderG:Toasty:1.4.2'
+    implementation 'com.github.GrenderG:Toasty:1.4.0'
 
     //compresses files
     implementation 'id.zelory:compressor:2.1.0'
@@ -129,7 +134,10 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
 
     //firebase ML vision library
-    implementation 'com.google.firebase:firebase-ml-vision:18.0.1'
+// implementation 'com.google.firebase:firebase-ml-vision:'
+
+    //   implementation 'com.google.firebase:firebase-functions:19.2.0'
+    implementation platform('com.google.firebase:firebase-bom:26.0.0')
 
     //exif interface for rotating image
     implementation "androidx.exifinterface:exifinterface:1.0.0"

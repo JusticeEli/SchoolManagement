@@ -11,7 +11,7 @@ import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemFeesBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import es.dmoral.toasty.Toasty
 import java.text.SimpleDateFormat
 
@@ -27,7 +27,7 @@ class FeesFragmentRecyclerAdapter(private val feesFragment: FeesFragment, option
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         holder.binding.deleteTxtView.setOnClickListener { deleteStudentFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
             feesFragment.navController.navigate(R.id.action_feesFragment_to_feesEditFragment)
         }
 

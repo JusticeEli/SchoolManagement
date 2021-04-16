@@ -23,7 +23,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentAddStudentBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
@@ -96,7 +96,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
     }
 
     private fun setOnClickListeners() {
-        binding.addBtn.setOnClickListener(View.OnClickListener {
+        binding.submitBtn.setOnClickListener(View.OnClickListener {
             if (uri == null) {
                 Toasty.error(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
                 return@OnClickListener
@@ -283,20 +283,20 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
     private fun setValuesForClassTeacherNameSpinner() {
 
 
-        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, ApplicationClass.teacherNames)
+        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, SchoolApplication.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
 
     fun loadTeacherNames() {
         showProgress(true)
-        ApplicationClass.teacherNames.clear()
+        SchoolApplication.teacherNames.clear()
         AllData.teacherDataList.clear()
         FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
             //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
             if (task.isSuccessful) {
-                ApplicationClass.teacherNames.clear()
+                SchoolApplication.teacherNames.clear()
                 for (documentSnapshot in task.result!!) {
-                    ApplicationClass.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
+                    SchoolApplication.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
                     AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
                 }
                 setValuesForClassTeacherNameSpinner()

@@ -16,7 +16,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemParentsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import es.dmoral.toasty.Toasty
 
@@ -43,16 +43,16 @@ class ParentsActivityRecyclerAdapter
 
         holder.binding.deleteTxtView.setOnClickListener { deleteFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
             parentsFragment.navController.navigate(R.id.action_parentsFragment_to_editParentFragment)
         }
         holder.itemView.setOnClickListener(View.OnClickListener {
             if (position == RecyclerView.NO_POSITION) {
                 return@OnClickListener
             }
-            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
 
-            parentsFragment.navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(ApplicationClass.documentSnapshot!!.getString("email")!!))
+            parentsFragment.navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(SchoolApplication.documentSnapshot!!.getString("email")!!))
         })
     }
 

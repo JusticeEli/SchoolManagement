@@ -22,7 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentStudentDetailsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import com.justice.schoolmanagement.presentation.utils.Constants
@@ -39,8 +39,8 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
         binding = FragmentStudentDetailsBinding.bind(view)
 
 
-        studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)
-        studentData!!.id = ApplicationClass.documentSnapshot!!.id
+        studentData = SchoolApplication.documentSnapshot!!.toObject(StudentData::class.java)
+        studentData!!.id = SchoolApplication.documentSnapshot!!.id
 
 
         setDefaultValues()
@@ -51,8 +51,8 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
     override fun onResume() {
         super.onResume()
 
-        studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)
-        studentData!!.id = ApplicationClass.documentSnapshot!!.id
+        studentData = SchoolApplication.documentSnapshot!!.toObject(StudentData::class.java)
+        studentData!!.id = SchoolApplication.documentSnapshot!!.id
         setDefaultValues()
 
     }
@@ -66,7 +66,7 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
         })
         binding.feesTxtView.setOnClickListener{
 
-            ApplicationClass.studentSnapshot=ApplicationClass.documentSnapshot
+            SchoolApplication.studentSnapshot=SchoolApplication.documentSnapshot
             findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToFeesFragment(studentData!!.fullName))
         }
     }
@@ -90,11 +90,11 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
     }
 
     private fun deleteStudentData() {
-        ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
+        SchoolApplication.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                ApplicationClass.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
+                SchoolApplication.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        ApplicationClass.documentSnapshot = task.result
+                        SchoolApplication.documentSnapshot = task.result
                         removeStudentMarksFromDatabase()
                         Toasty.success(requireContext(), "Student data Removed", Toast.LENGTH_SHORT).show()
                     } else {

@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentChatBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
 import com.justice.schoolmanagement.presentation.ui.chat.model.Message
 import com.justice.schoolmanagement.presentation.ui.chat.model.TextMessage
@@ -43,7 +43,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         FirestoreUtil.getCurrentUser {
             currentUser = it!!.toObject(TeacherData::class.java)!!
         }
-        otherUserId = ApplicationClass.documentSnapshot!!.id
+        otherUserId = SchoolApplication.documentSnapshot!!.id
 
         FirestoreUtil.getOrCreateChatChannel(otherUserId) { channelId ->
             currentChannelId = channelId

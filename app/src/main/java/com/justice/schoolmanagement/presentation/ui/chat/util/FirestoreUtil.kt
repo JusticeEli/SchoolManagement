@@ -3,10 +3,7 @@ package com.justice.schoolmanagement.presentation.ui.chat.util
 import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.*
 import com.justice.schoolmanagement.presentation.ui.chat.model.*
 import com.justice.schoolmanagement.presentation.ui.register.CurrentDate
 import com.justice.schoolmanagement.presentation.ui.register.CurrentInfo
@@ -21,15 +18,17 @@ import java.util.*
 object FirestoreUtil {
 
 
-        private const val TAG = "FirestoreUtil"
+    private const val TAG = "FirestoreUtil"
 
 
-    private val firestoreInstance: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
-    private val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val firestoreInstance=FirebaseFirestore.getInstance()
+    private val firebaseAuth= FirebaseAuth.getInstance()
 
     private val currentUserDocRef: DocumentReference
         get() = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
+
     private val chatChannelsCollectionRef = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
+    val collectionReferenceParents = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
 
     fun initCurrentUserIfFirstTime(onComplete: () -> Unit) {
         currentUserDocRef.get().addOnSuccessListener { documentSnapshot ->
@@ -39,8 +38,7 @@ object FirestoreUtil {
                 currentUserDocRef.set(newUser).addOnSuccessListener {
                     onComplete()
                 }
-            }
-            else
+            } else
                 onComplete()
         }
     }
@@ -195,4 +193,14 @@ object FirestoreUtil {
         currentUserDocRef.update(mapOf("registrationTokens" to registrationTokens))
     }
     //endregion FCM
+
+
+    fun getParents(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
+        return firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS).addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+            onComplete(querySnapshot, firebaseFirestoreException)
+        }
+
+    }
+
+
 }

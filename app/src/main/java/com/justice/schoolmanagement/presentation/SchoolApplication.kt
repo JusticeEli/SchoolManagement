@@ -11,7 +11,7 @@ import dagger.hilt.android.HiltAndroidApp
 import java.util.*
 
 @HiltAndroidApp
-class ApplicationClass : Application() {
+class SchoolApplication : Application() {
     //check if current user is admin
 
     private val TAG = "ApplicationClass"
@@ -34,7 +34,7 @@ class ApplicationClass : Application() {
                     AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
                 }
             } else {
-                Toast.makeText(this@ApplicationClass, "Error: " + task.exception!!.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@SchoolApplication, "Error: " + task.exception!!.message, Toast.LENGTH_SHORT).show()
             }
         }
     }

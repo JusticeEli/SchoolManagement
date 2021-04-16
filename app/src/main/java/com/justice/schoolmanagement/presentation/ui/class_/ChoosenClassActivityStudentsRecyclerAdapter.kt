@@ -13,7 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemStudentsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import es.dmoral.toasty.Toasty
 
@@ -32,12 +32,12 @@ class ChoosenClassActivityStudentsRecyclerAdapter(private val choosenClassFragme
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         holder.binding.deleteTxtView.setOnClickListener { deleteStudentFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
 
             choosenClassFragment.navController.navigate(R.id.action_choosenClassFragment_to_editStudentFragment)
         }
         holder.itemView.setOnClickListener {
-            ApplicationClass.documentSnapshot = snapshots.getSnapshot(position)
+            SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
             choosenClassFragment.navController.navigate(R.id.action_choosenClassFragment_to_studentDetailsFragment)
         }
     }

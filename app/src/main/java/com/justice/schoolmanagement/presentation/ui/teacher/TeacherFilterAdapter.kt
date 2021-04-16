@@ -18,7 +18,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemTeachersBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import es.dmoral.toasty.Toasty
@@ -79,11 +79,11 @@ private lateinit var currentSnapshot: DocumentSnapshot
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         holder.binding.deleteTxtView.setOnClickListener { deleteTeacherDataFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-            ApplicationClass.documentSnapshot = getItem(position)
+            SchoolApplication.documentSnapshot = getItem(position)
             teachersFragment.navController.navigate(R.id.action_teachersFragment_to_editTeacherFragment)
         }
         holder.itemView.setOnClickListener {
-            ApplicationClass.documentSnapshot = getItem(position)
+            SchoolApplication.documentSnapshot = getItem(position)
             teachersFragment.navController.navigate(R.id.action_teachersFragment_to_teacherDetailsFragment)
         }
     }

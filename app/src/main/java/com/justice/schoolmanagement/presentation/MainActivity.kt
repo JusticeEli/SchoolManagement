@@ -18,9 +18,10 @@ import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
 import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
 
@@ -105,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
 
         FirestoreUtil.getCurrentUser {
-            ApplicationClass.documentSnapshot=it
+            SchoolApplication.documentSnapshot=it
             navController.navigate(R.id.action_global_teacherDetailsFragment)
 
         }

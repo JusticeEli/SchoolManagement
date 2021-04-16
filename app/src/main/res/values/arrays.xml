@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="job_status">
+        <item>Employed</item>
+        <item>Unemployed</item>
+        <item>Retired</item>
+    </string-array>
+
+</resources>

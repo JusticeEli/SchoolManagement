@@ -17,7 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemStudentsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import es.dmoral.toasty.Toasty
 
@@ -66,11 +66,11 @@ private  val TAG="ParentFilterAdapter"
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         holder.binding.deleteTxtView.setOnClickListener { deleteStudentFromDatabase(position) }
         holder.binding.editTxtView.setOnClickListener {
-            ApplicationClass.documentSnapshot = getItem(position)
+            SchoolApplication.documentSnapshot = getItem(position)
             studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToEditStudentFragment())
         }
         holder.itemView.setOnClickListener {
-            ApplicationClass.documentSnapshot = getItem(position)
+            SchoolApplication.documentSnapshot = getItem(position)
             studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToStudentDetailsFragment())
         }
     }

@@ -23,7 +23,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentEditStudentBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
@@ -49,8 +49,8 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditStudentBinding.bind(view)
 
-        studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)!!
-        studentData!!.id = ApplicationClass.documentSnapshot!!.id
+        studentData = SchoolApplication.documentSnapshot!!.toObject(StudentData::class.java)!!
+        studentData!!.id = SchoolApplication.documentSnapshot!!.id
 
         initProgressBar()
 
@@ -112,7 +112,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
     }
 
     private fun setDefaultValueForClassTeacherNameSpinner() {
-        binding.classTeacherNameSpinner.setSelection(ApplicationClass.teacherNames.indexOf(studentData!!.classTeacherName))
+        binding.classTeacherNameSpinner.setSelection(SchoolApplication.teacherNames.indexOf(studentData!!.classTeacherName))
     }
 
     private fun setDefaultValueForReligionSpinner() {
@@ -271,12 +271,12 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
 
     private fun updateInDatabase() {
         showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(studentData!!).addOnCompleteListener { task ->
+        SchoolApplication.documentSnapshot!!.reference.set(studentData!!).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 showProgress(true)
-                ApplicationClass.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
+                SchoolApplication.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        ApplicationClass.documentSnapshot = task.result
+                        SchoolApplication.documentSnapshot = task.result
                         updateStudentMarks()
                         Toasty.success(requireContext(), "Student Data Updated", Toast.LENGTH_SHORT).show()
                     } else {
@@ -342,20 +342,20 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
     private fun setValuesForClassTeacherNameSpinner() {
 
 
-        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, ApplicationClass.teacherNames)
+        val arrayAdapter4: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, SchoolApplication.teacherNames)
         binding.classTeacherNameSpinner.setAdapter(arrayAdapter4)
     }
 
     fun loadTeacherNames() {
         showProgress(true)
-        ApplicationClass.teacherNames.clear()
+        SchoolApplication.teacherNames.clear()
         AllData.teacherDataList.clear()
         FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).get().addOnCompleteListener { task ->
             //   Toast.makeText(this@ApplicationClass, "Loading Teachers name: ", Toast.LENGTH_SHORT).show()
             if (task.isSuccessful) {
-                ApplicationClass.teacherNames.clear()
+                SchoolApplication.teacherNames.clear()
                 for (documentSnapshot in task.result!!) {
-                    ApplicationClass.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
+                    SchoolApplication.teacherNames.add(documentSnapshot.toObject(TeacherData::class.java).fullName)
                     AllData.teacherDataList.add(documentSnapshot.toObject(TeacherData::class.java))
                 }
                 setValuesForClassTeacherNameSpinner()

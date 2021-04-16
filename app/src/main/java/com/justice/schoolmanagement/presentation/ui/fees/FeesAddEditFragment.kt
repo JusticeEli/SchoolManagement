@@ -13,7 +13,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.firestore.SetOptions
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentFeesAddEditBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_FEES
 import es.dmoral.toasty.Toasty
 
@@ -59,7 +59,7 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
     private fun savePayedAmountAdding(pay: Int) {
         val studentFees = StudentFees(pay)
         showProgress(true)
-        ApplicationClass.studentSnapshot!!.reference.collection(COLLECTION_FEES).add(studentFees).addOnSuccessListener {
+        SchoolApplication.studentSnapshot!!.reference.collection(COLLECTION_FEES).add(studentFees).addOnSuccessListener {
             Toasty.success(requireContext(), "success adding fees").show()
             showProgress(false)
             findNavController().popBackStack()
@@ -69,7 +69,7 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
     private fun savePayedAmountUpdating(pay: Int) {
         val map = mapOf("payedAmount" to pay)
         showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(map, SetOptions.merge()).addOnSuccessListener {
+        SchoolApplication.documentSnapshot!!.reference.set(map, SetOptions.merge()).addOnSuccessListener {
             Toasty.success(requireContext(), "Success adding fees").show()
             showProgress(false)
             findNavController().popBackStack()
@@ -79,11 +79,11 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
     }
 
     private fun setInitialValues() {
-        binding.payedEdtTxt.setText(ApplicationClass.documentSnapshot!!.toObject(StudentFees::class.java)!!.payedAmount.toString())
+        binding.payedEdtTxt.setText(SchoolApplication.documentSnapshot!!.toObject(StudentFees::class.java)!!.payedAmount.toString())
     }
 
     private fun checkIfWeAreUpdatingOrAddingFees() {
-        updating = ApplicationClass.documentSnapshot != null
+        updating = SchoolApplication.documentSnapshot != null
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////

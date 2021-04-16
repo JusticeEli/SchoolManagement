@@ -53,13 +53,12 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             updateLabel(dayOfMonth, monthOfYear + 1, year)
         }
 
-        binding.dateBtn.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                // TODO Auto-generated method stub
-                DatePickerDialog(requireContext(), date, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
-                        myCalendar[Calendar.DAY_OF_MONTH]).show()
-            }
-        })
+        binding.dateBtn.setOnClickListener {
+
+            DatePickerDialog(requireContext(), date, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
+                    myCalendar[Calendar.DAY_OF_MONTH]).show()
+        }
+
     }
 
     private fun updateLabel(dayOfMonth: Int, monthOfYear: Int, year: Int) {

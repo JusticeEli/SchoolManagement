@@ -16,37 +16,59 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.RequestManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentDetailsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
 
     private var parentData: ParentData? = null
-    private var email: String? = null
-    lateinit var binding: FragmentParentDetailsBinding
-    val navArgs: ParentDetailsFragmentArgs by navArgs()
+    private lateinit var binding: FragmentParentDetailsBinding
+    private val viewModel: ParentViewModel by viewModels()
+
+    @Inject
+    lateinit var requestManager: RequestManager
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentParentDetailsBinding.bind(view)
-
-        email = navArgs.email
-
-        parentData = ApplicationClass.documentSnapshot!!.toObject(ParentData::class.java)
-        parentData!!.id = ApplicationClass.documentSnapshot!!.id
+        parentData = viewModel.currentParent.value?.toObject(ParentData::class.java)
+        initProgressBar()
         setDefaultValues()
         setOnClickListeners()
         setImageViewClickListeners()
-        initProgressBar()
+        subScribeToObservers()
+
     }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.parentChannelEvents.collect {
+                when(it){
+                    is ParentsFragment.Event.ParentDelete->{
+                        deleteFromDatabase()
+                    }
+                    is ParentsFragment.Event.ParentEdit->{
+                        findNavController().navigate(R.id.action_parentDetailsFragment_to_editParentFragment)
+
+                    }
+                }
+
+            }
+
+        }
+      }
 
     private fun setImageViewClickListeners() {
         binding.callImageView.setOnClickListener(View.OnClickListener {
@@ -64,10 +86,12 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     }
 
     private fun setOnClickListeners() {
-        binding.deleteTxtView.setOnClickListener(View.OnClickListener { deleteFromDatabase() })
-        binding.editTxtView.setOnClickListener(View.OnClickListener {
-            findNavController().navigate(R.id.action_parentDetailsFragment_to_editParentFragment)
-        })
+        binding.deleteTxtView.setOnClickListener {
+            viewModel.setEvent(ParentsFragment.Event.ParentDelete(viewModel.currentParent.value!!))
+        }
+        binding.editTxtView.setOnClickListener {
+            viewModel.setEvent(ParentsFragment.Event.ParentEdit(viewModel.currentParent.value!!))
+         }
     }
 
     private fun deleteFromDatabase() {
@@ -93,7 +117,7 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     }
 
     private fun deleteParentMetaData() {
-        ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
+        viewModel.currentParent.value!!.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), parentData!!.firstName + " Parent Removed Successfully", Toast.LENGTH_SHORT).show()
             } else {
@@ -120,17 +144,8 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
             jobTypeTxtView.setText(parentData!!.jobType)
 
         }
-        val requestOptions = RequestOptions()
-        requestOptions.placeholder(R.mipmap.place_holder)
-        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData!!.photo).thumbnail(Glide.with(this).load(parentData!!.thumbnail)).into(binding.imageView)
-    }
 
-    override fun onResume() {
-        super.onResume()
-        parentData = ApplicationClass.documentSnapshot!!.toObject(ParentData::class.java)
-        parentData!!.id = ApplicationClass.documentSnapshot!!.id
-
-        setDefaultValues()
+       requestManager.load(parentData!!.photo).thumbnail(requestManager.load(parentData!!.thumbnail)).into(binding.imageView)
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////

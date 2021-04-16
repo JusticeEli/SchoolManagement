@@ -22,7 +22,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentEditTeacherBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
@@ -52,8 +52,8 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
 
 
-        teacherData = ApplicationClass.documentSnapshot!!.toObject(TeacherData::class.java)
-        teacherData?.setId(ApplicationClass.documentSnapshot!!.id)
+        teacherData = SchoolApplication.documentSnapshot!!.toObject(TeacherData::class.java)
+        teacherData?.setId(SchoolApplication.documentSnapshot!!.id)
         setDefaultValues()
         setOnClickListeners()
         setUpSubjectsSpinner()
@@ -265,11 +265,11 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
     private fun putDataInDatabase() {
         showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(teacherData!!).addOnCompleteListener { task ->
+        SchoolApplication.documentSnapshot!!.reference.set(teacherData!!).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toast.makeText(requireContext(), "Teacher Data updated successfully", Toast.LENGTH_SHORT).show()
-                ApplicationClass.documentSnapshot!!.reference.get().addOnSuccessListener { documentSnapshot ->
-                    ApplicationClass.documentSnapshot = documentSnapshot
+                SchoolApplication.documentSnapshot!!.reference.get().addOnSuccessListener { documentSnapshot ->
+                    SchoolApplication.documentSnapshot = documentSnapshot
                     showProgress(false)
                     findNavController().popBackStack()
                 }

@@ -15,7 +15,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentResultsEditBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import es.dmoral.toasty.Toasty
 
@@ -27,7 +27,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentResultsEditBinding.bind(view)
-        studentMarks = ApplicationClass.documentSnapshot!!.toObject(StudentMarks::class.java)
+        studentMarks = SchoolApplication.documentSnapshot!!.toObject(StudentMarks::class.java)
 
         setDefaultValues()
         setOnClickListeners()
@@ -72,7 +72,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     private fun updateInDatabase() {
         showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(studentMarks!!).addOnCompleteListener { task ->
+        SchoolApplication.documentSnapshot!!.reference.set(studentMarks!!).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), "Marks Updated", Toast.LENGTH_SHORT).show()
             } else {

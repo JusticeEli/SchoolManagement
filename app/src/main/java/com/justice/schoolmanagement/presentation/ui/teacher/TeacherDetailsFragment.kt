@@ -23,7 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentTeacherDetailsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
@@ -40,8 +40,8 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentTeacherDetailsBinding.bind(view)
 
-        teacherData = ApplicationClass.documentSnapshot!!.toObject(TeacherData::class.java)
-        teacherData!!.id = ApplicationClass.documentSnapshot!!.id
+        teacherData = SchoolApplication.documentSnapshot!!.toObject(TeacherData::class.java)
+        teacherData!!.id = SchoolApplication.documentSnapshot!!.id
         setDefaultValues()
         setOnClickListeners()
         setImageViewClickListeners()
@@ -78,8 +78,8 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
 
     override fun onResume() {
         super.onResume()
-        teacherData = ApplicationClass.documentSnapshot!!.toObject(TeacherData::class.java)
-        teacherData!!.id = ApplicationClass.documentSnapshot!!.id
+        teacherData = SchoolApplication.documentSnapshot!!.toObject(TeacherData::class.java)
+        teacherData!!.id = SchoolApplication.documentSnapshot!!.id
         setDefaultValues()
     }
 
@@ -102,7 +102,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
     }
 
     private fun deleteTeacherMetadata() {
-        ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
+        SchoolApplication.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Toasty.success(requireContext(), " Teacher deleted", Toast.LENGTH_SHORT).show()
             } else {

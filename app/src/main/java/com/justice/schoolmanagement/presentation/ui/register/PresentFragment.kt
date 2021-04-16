@@ -39,8 +39,6 @@ class PresentFragment(val registerFragment: RegisterFragment) : Fragment(R.layou
         binding = FragmentPresentBinding.bind(view)
 
         setSwipeRefreshListener()
-
-
         initProgressBar()
         binding.recyclerView.setHasFixedSize(true)
         if (FirebaseAuth.getInstance().currentUser != null) {

@@ -22,7 +22,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions
 import com.google.firebase.firestore.*
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentFeesBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_FEES
 import es.dmoral.toasty.Toasty
@@ -52,7 +52,7 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentFeesBinding.bind(view)
         navController = findNavController()
-        studentSnapshot = ApplicationClass.studentSnapshot!!
+        studentSnapshot = SchoolApplication.studentSnapshot!!
         initRecyclerViewAdapter();
         initTotalAmountOfFeesToBePayed()
         setOnClickListeners()
@@ -92,8 +92,8 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
     private fun setOnClickListeners() {
         binding.addFeesBtn.setOnClickListener(View.OnClickListener {
 
-            ApplicationClass.studentSnapshot = studentSnapshot
-            ApplicationClass.documentSnapshot = null
+            SchoolApplication.studentSnapshot = studentSnapshot
+            SchoolApplication.documentSnapshot = null
             findNavController().navigate(R.id.action_feesFragment_to_feesEditFragment)
         })
 

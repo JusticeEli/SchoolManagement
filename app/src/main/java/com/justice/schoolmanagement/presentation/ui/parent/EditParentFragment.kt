@@ -23,7 +23,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentEditParentBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
+import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
@@ -46,7 +46,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditParentBinding.bind(view)
 
-        parentData = ApplicationClass.documentSnapshot!!.toObject(ParentData::class.java)
+        parentData = SchoolApplication.documentSnapshot!!.toObject(ParentData::class.java)
 
         binding.contactEdtTxt.setText("07")
 
@@ -215,7 +215,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
             parentData!!.city = cityEdtTxt.getText().toString().trim { it <= ' ' }
             parentData!!.jobStatus = jobStatusSpinner.getSelectedItem().toString().trim { it <= ' ' }
             parentData!!.age = ageEdtTxt.getText().toString()
-            parentData!!.gender = getSelectedRadioBtn()
+            parentData!!.gender = getSelectedRadioBtn()!!
             parentData!!.jobType = jobTypeEdtTxt.getText().toString().trim { it <= ' ' }
             parentData!!.email = emailEdtTxt.getText().toString().trim { it <= ' ' }
         }
@@ -284,11 +284,11 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
 
     private fun putDataInDatabase() {
         showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(parentData!!).addOnCompleteListener { task ->
+        SchoolApplication.documentSnapshot!!.reference.set(parentData!!).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                ApplicationClass.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
+                SchoolApplication.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        ApplicationClass.documentSnapshot = task.result
+                        SchoolApplication.documentSnapshot = task.result
                         Toasty.success(requireContext(), parentData!!.firstName + " Edited Successfully", Toast.LENGTH_SHORT).show()
                         Handler().postDelayed(object : Runnable {
                             override fun run() {
