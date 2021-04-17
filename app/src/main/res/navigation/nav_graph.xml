@@ -173,7 +173,11 @@
         android:id="@+id/editParentFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.parent.EditParentFragment"
         android:label="Edit"
-        tools:layout="@layout/fragment_edit_parent"/>
+        tools:layout="@layout/fragment_edit_parent">
+        <argument
+            android:name="parent"
+            app:argType="com.justice.schoolmanagement.presentation.ui.parent.model.ParentData" />
+    </fragment>
     <fragment
         android:id="@+id/editStudentFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.student.EditStudentFragment"
@@ -213,8 +217,8 @@
         android:label="Info"
         tools:layout="@layout/fragment_parent_details">
         <argument
-            android:name="email"
-            app:argType="string" />
+            android:name="parentData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.parent.model.ParentData" />
         <action
             android:id="@+id/action_parentDetailsFragment_to_editParentFragment"
             app:destination="@id/editParentFragment" />

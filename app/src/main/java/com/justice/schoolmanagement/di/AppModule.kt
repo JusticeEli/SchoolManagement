@@ -17,8 +17,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository():ParentRepository{
-        return  ParentRepository()
+    fun provideRepository(@ApplicationContext context: Context):ParentRepository{
+        return  ParentRepository(context)
     }
     @Provides
     @Singleton

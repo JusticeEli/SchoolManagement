@@ -11,15 +11,21 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.*
 import android.view.WindowManager
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
+import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentEditParentBinding
@@ -28,38 +34,100 @@ import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import id.zelory.compressor.Compressor
+import kotlinx.android.synthetic.main.fragment_add_parent.*
+import kotlinx.coroutines.flow.collect
 import java.io.File
 import java.io.IOException
 import java.util.*
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
 
+    private val TAG = "EditParentFragment"
+
+    @Inject
+    lateinit var requestManager: RequestManager
     private var parentData: ParentData? = null
     private var uri: Uri? = null
     private var photoChanged = false
     lateinit var progressBar: ProgressBar
     lateinit var binding: FragmentEditParentBinding
-
+    private val viewModel by viewModels<EditParentViewModel>()
+    private val navArgs: EditParentFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditParentBinding.bind(view)
-
-        parentData = SchoolApplication.documentSnapshot!!.toObject(ParentData::class.java)
-
-        binding.contactEdtTxt.setText("07")
-
-        initAdapters()
-        // initNavigationDrawer();
-
-
-        // initNavigationDrawer();
-        setDefaulValues()
-        setOnClickListeners()
         initProgressBar()
+        initAdapters()
+        subScribeToObservers()
+
+        Log.d(TAG, "onViewCreated: parentData:${navArgs.parent}")
+
     }
 
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.getParentToEdit.collect {
+                Log.d(TAG, "subScribeToObservers: status:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        Log.d(TAG, "subScribeToObservers: success loading data")
+                        showProgress(false)
+                        parentData = it.data?.toObject(ParentData::class.java)!!
+
+                        setDefaulValues()
+                        setOnClickListeners()
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+                        Log.d(TAG, "subScribeToObservers: document does not exit")
+                    }
+                }
+
+            }
+
+
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.editParentStatus.collect {
+                Log.d(TAG, "subsribeToObservers: editParentStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                        Log.d(TAG, "subsribeToObservers: LOADING:${it.message}")
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        Log.d(TAG, "subsribeToObservers: Error:${it.exception?.message}")
+                    }
+                    Resource.Status.EMPTY -> {
+                        showToastInfo("Please Fill All Fields")
+                    }
+
+                }
+            }
+        }
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
 
     private fun choosePhoto() {
         // start picker to get image for cropping and then use the image in cropping activity
@@ -86,19 +154,20 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
     }
 
     private fun initAdapters() {
-        val jobStatus = arrayOf("Employed", "Unemployed", "Retired")
+        val jobStatus = requireActivity().resources.getStringArray(R.array.job_status)
         val jobStatusAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobStatus)
         binding.jobStatusSpinner.setAdapter(jobStatusAdapter)
-        val cities = arrayOf("Kisumu", "Kitui", "Lamu", "Machakos", "Marsabit", "Meru", "Migori", "Mombasa", "Nakuru", "Narok", "Trans Nzoia", "Turkana", "Vihiga", "Naivasha", "Eldoret", "Kericho")
+        val cities = requireActivity().resources.getStringArray(R.array.cities)
         val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, cities)
         binding.cityEdtTxt.setAdapter<ArrayAdapter<String>>(cityAdapter)
-        val jobType = arrayOf("medical", "health", "administrative", "secretarial", "sales", "marketing", "finance", "auditing", "accounting", "education", "ngo", "ict", "building", "construction", "procument", "engineering", "media", "computer", "human resource", "law", "research", "manufacturing", "hospitality")
+        val jobType = requireActivity().resources.getStringArray(R.array.jobType)
         val jobTypeAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobType)
         binding.jobTypeEdtTxt.setAdapter<ArrayAdapter<String>>(jobTypeAdapter)
     }
 
 
     private fun setDefaulValues() {
+        Log.d(TAG, "setDefaulValues: parentData:$parentData")
         binding.apply {
 
             firstNameEdtTxt.setText(parentData!!.firstName)
@@ -113,12 +182,11 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
         }
         try {
             uri = Uri.parse(parentData!!.photo)
-            val requestOptions = RequestOptions()
-            requestOptions.placeholder(R.mipmap.place_holder)
-            Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData!!.photo).thumbnail(Glide.with(this).load(parentData!!.thumbnail)).into(binding.imageView)
+            requestManager.load(parentData!!.photo).thumbnail(Glide.with(this).load(parentData!!.thumbnail)).into(binding.imageView)
 
         } catch (e: Exception) {
-
+            e.printStackTrace()
+            showToastInfo("Error: ${e.message}")
         }
 
     }
@@ -158,23 +226,54 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
         return true
     }
 
+    private fun getParentObject(): ParentData {
+        val firstName = firstNameEdtTxt.text.toString()
+        val lastName = lastNameEdtTxt.text.toString()
+        val fullName = "$firstName $lastName"
+
+        val email = emailEdtTxt.text.toString()
+        val city = cityEdtTxt.text.toString()
+        val contact = contactEdtTxt.text.toString()
+        val age = ageEdtTxt.text.toString()
+        val jobType = jobTypeEdtTxt.text.toString()
+        val jobStatus = jobStatusSpinner.getSelectedItem().toString()
+        val gender = getSelectedRadioBtn()!!
+
+
+        val parent = ParentData()
+        parent.firstName = firstName
+        parent.lastName = lastName
+        parent.fullName = "${parent.firstName} ${parent.lastName}"
+        parent.email = email
+        parent.city = city
+        parent.contact = contact
+        parent.age = age
+        parent.jobType = jobType
+        parent.jobStatus = jobStatus
+        parent.gender = gender
+
+        //not uploaded into firebase
+        parent.uri = uri
+
+        return parent
+    }
+
     private fun setOnClickListeners() {
-        binding.imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-        binding.addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
-        binding.submitBtn.setOnClickListener(View.OnClickListener {
+        binding.imageView.setOnClickListener { choosePhoto() }
+        binding.addPhotoBtn.setOnClickListener { choosePhoto() }
+        binding.submitBtn.setOnClickListener {
+            Log.d(TAG, "setOnClickListeners: submitBtn Clicked")
             if (uri == null) {
                 Toasty.error(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
-                return@OnClickListener
+                return@setOnClickListener
             }
-            if (fieldsAreEmpty()) {
-                Toasty.error(requireContext(), "Please Fill All Fields", Toast.LENGTH_SHORT).show()
-                return@OnClickListener
-            }
-            if (!contactEdtTxtFormatIsCorrect()) {
-                return@OnClickListener
-            }
-            getDataFromEdtTxtAndSaveIntoDatabase()
-        })
+
+            val parent = getParentObject()
+            parent.photo = parentData?.photo ?: ""
+            parent.thumbnail = parentData?.thumbnail ?: ""
+            viewModel.setEvent(ParentAddEditViewModel.Event.ParentEditSubmitClicked(parent!!, photoChanged))
+
+        }
         binding.contactEdtTxt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -240,7 +339,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
                     val error = task.exception!!.message
                     Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
                 }
-             }
+            }
 
             /////////////////////////////////////////////
         } else {
@@ -386,5 +485,7 @@ class EditParentFragment : Fragment(R.layout.fragment_edit_parent) {
         return dialog
     }
 
-    //end progressbar
+//end progressbar
+
+
 }

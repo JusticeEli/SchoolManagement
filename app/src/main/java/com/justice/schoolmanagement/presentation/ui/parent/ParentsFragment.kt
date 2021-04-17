@@ -41,10 +41,7 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
     lateinit var requestManager: RequestManager
     lateinit var binding: FragmentParentsBinding
     lateinit var navController: NavController
-
-    //  lateinit var originalList: List<DocumentSnapshot>
     lateinit var searchView: SearchView
-
     lateinit var adapter: ParentsAdapter
 
     private val viewModel: ParentViewModel by viewModels()
@@ -119,11 +116,16 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
                     is Event.ParentDelete -> {
                         deleteFromDatabase(it.parentSnapshot)
                     }
+                    is Event.ParentSwiped -> {
+                        deleteFromDatabase(it.parentSnapshot)
+                    }
                     is Event.ParentClicked -> {
-                        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(it.parentSnapshot!!.getString("email")!!))
+                        val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(parent))
                     }
                     is Event.ParentEdit -> {
-                        navController.navigate(R.id.action_parentsFragment_to_editParentFragment)
+                        val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToEditParentFragment(parent))
                     }
                     is Event.ParentSwiped -> {
                         deleteFromDatabase(it.parentSnapshot)
@@ -271,7 +273,12 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
     }
 
     fun deleteFromDatabase(snapshot: DocumentSnapshot) {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which -> }.setPositiveButton("yes") { dialog, which -> deleteParent(snapshot) }.show()
+        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which ->
+            val position = adapter.currentList.indexOf(snapshot)
+            adapter.notifyItemChanged(position)
+        }.setPositiveButton("yes") { dialog, which ->
+            deleteParent(snapshot)
+        }.show()
     }
 
     private fun deleteParent(snapshot: DocumentSnapshot) {
@@ -318,9 +325,11 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
         data class ParentEdit(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentDelete(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentSwiped(val parentSnapshot: DocumentSnapshot) : Event()
-        data class ParentSubmitClicked(val parent: ParentData) : Event()
         data class ParentQuery(val query: String) : Event()
         object AddParent : Event()
     }
 
+    companion object{
+        const val PARENT_ARGS="parent"
+    }
 }

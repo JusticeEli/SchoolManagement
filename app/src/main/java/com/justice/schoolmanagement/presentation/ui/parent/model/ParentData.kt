@@ -3,6 +3,7 @@ package com.justice.schoolmanagement.presentation.ui.parent.model
 import android.net.Uri
 import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.Exclude
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
@@ -21,5 +22,6 @@ data class ParentData(
         var email: String = "",
         var photo: String = "",
         var thumbnail: String = "",
+        @Exclude
         var uri: Uri? = null
 ) : Parcelable

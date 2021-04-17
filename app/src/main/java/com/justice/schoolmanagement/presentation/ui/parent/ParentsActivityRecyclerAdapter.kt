@@ -52,7 +52,7 @@ class ParentsActivityRecyclerAdapter
             }
             SchoolApplication.documentSnapshot = snapshots.getSnapshot(position)
 
-            parentsFragment.navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(SchoolApplication.documentSnapshot!!.getString("email")!!))
+          //  parentsFragment.navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(SchoolApplication.documentSnapshot!!.getString("email")!!))
         })
     }
 

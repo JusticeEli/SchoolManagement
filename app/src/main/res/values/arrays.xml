@@ -7,4 +7,52 @@
         <item>Retired</item>
     </string-array>
 
+
+    <string-array name="cities">
+        <item>Kisumu</item>
+        <item>Kitui</item>
+        <item>Lamu</item>
+        <item>Machakos</item>
+        <item>Marsabit</item>
+        <item>Meru</item>
+        <item>Migori</item>
+        <item>Mombasa</item>
+        <item>Nakuru</item>
+        <item>Narok</item>
+        <item>Trans Nzoi</item>
+        <item>Turkana</item>
+        <item>Vihiga</item>
+        <item>Naivasha</item>
+        <item>Eldoret</item>
+        <item>Kericho</item>
+    </string-array>
+    <string-array name="jobType">
+        <item>medical</item>
+        <item>business</item>
+        <item>health</item>
+        <item>administrative</item>
+        <item>secretarial</item>
+        <item>sales</item>
+        <item>marketing</item>
+        <item>finance</item>
+        <item>auditing</item>
+        <item>accounting</item>
+        <item>education</item>
+        <item>ngo</item>
+        <item>ict</item>
+        <item>building</item>
+        <item>construction</item>
+        <item>procument</item>
+        <item>engineering</item>
+        <item>media</item>
+        <item>computer</item>
+        <item>human resource</item>
+        <item>law</item>
+        <item>research</item>
+        <item>manufacturing</item>
+        <item>hospitality</item>
+    </string-array>
+
+
+
 </resources>

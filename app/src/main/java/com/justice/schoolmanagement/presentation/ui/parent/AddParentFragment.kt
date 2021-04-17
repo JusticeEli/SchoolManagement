@@ -25,7 +25,6 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.edward.nyansapo.wrappers.Resource
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAddParentBinding
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -41,13 +40,11 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         private const val TAG = "AddParentFragment"
     }
 
-    private var parentData: ParentData? = null
-
     lateinit var progressBar: ProgressBar
     private var uri: Uri? = null
     lateinit var binding: FragmentAddParentBinding
     val navArgs: AddParentFragmentArgs by navArgs()
-    private val viewModel: ParentViewModel by viewModels()
+    private val viewModel: AddParentViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddParentBinding.bind(view)
@@ -133,23 +130,27 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         val jobStatus = requireActivity().resources.getStringArray(R.array.job_status)
         val jobStatusAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobStatus)
         binding.jobStatusSpinner.setAdapter(jobStatusAdapter)
-        val cities = arrayOf("Kisumu", "Kitui", "Lamu", "Machakos", "Marsabit", "Meru", "Migori", "Mombasa", "Nakuru", "Narok", "Trans Nzoia", "Turkana", "Vihiga", "Naivasha", "Eldoret", "Kericho")
+
+
+        val cities = requireActivity().resources.getStringArray(R.array.cities)
         val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, cities)
         binding.cityEdtTxt.setAdapter<ArrayAdapter<String>>(cityAdapter)
-        val jobType = arrayOf("medical", "business", "health", "administrative", "secretarial", "sales", "marketing", "finance", "auditing", "accounting", "education", "ngo", "ict", "building", "construction", "procument", "engineering", "media", "computer", "human resource", "law", "research", "manufacturing", "hospitality")
+        val jobType = requireActivity().resources.getStringArray(R.array.jobType)
         val jobTypeAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobType)
         binding.jobTypeEdtTxt.setAdapter<ArrayAdapter<String>>(jobTypeAdapter)
     }
 
 
-    private fun getSelectedRadioBtn(): String? {
-        when (binding.genderRadioGroup.getCheckedRadioButtonId()) {
-            R.id.maleRadioBtn -> return "Male"
-            R.id.femaleRadioBtn -> return "Female"
-            R.id.otherRadioBtn -> return "Other"
-        }
-        return null
-    }
+    private fun getSelectedRadioBtn(): String =
+            when (binding.genderRadioGroup.getCheckedRadioButtonId()) {
+                R.id.maleRadioBtn ->
+                    "Male"
+                R.id.femaleRadioBtn ->
+                    "Female"
+                else ->
+                    "Other"
+            }
+
 
     private fun showToastError(message: String) {
         Toasty.error(requireContext(), message, Toast.LENGTH_SHORT).show()
@@ -161,18 +162,13 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         binding.imageView.setOnClickListener { choosePhoto() }
         binding.submitBtn.setOnClickListener {
 
-         dummyFxn()
-
-          //  return@setOnClickListener
-
-
 
             if (uri == null) {
                 showToastError("Please choose a photo")
                 return@setOnClickListener
             }
             val parent = getParentObject()
-            viewModel.setEvent(ParentsFragment.Event.ParentSubmitClicked(parent))
+            viewModel.setEvent(ParentAddEditViewModel.Event.ParentAddSubmitClicked(parent))
 
 
         }
@@ -197,28 +193,6 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         })
     }
 
-    private fun dummyFxn() {
-        Log.d(TAG, "dummyFxn: started")
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            dummsusspend()
-        }
-
-
-        Log.d(TAG, "dummyFxn: end")
-    }
-
-    private suspend fun dummsusspend() {
-        Log.d(TAG, "dummsusspend: ")
-        val parent = ParentData("joh me", "", "", "", "joh me", "", "", "", "", "", "joh me", "")
-
-
-        FirestoreUtil.collectionReferenceParents.add(parent).addOnSuccessListener {
-            Log.d(TAG, "dummyFxn: success")
-        }.addOnFailureListener {
-            Log.d(TAG, "dummyFxn: failed")
-        }
-
-    }
 
     private fun getParentObject(): ParentData {
         val firstName = firstNameEdtTxt.text.toString()
@@ -261,7 +235,6 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
             ageEdtTxt.setText("")
             contactEdtTxt.setText("")
         }
-        showProgress(false)
     }
 
 

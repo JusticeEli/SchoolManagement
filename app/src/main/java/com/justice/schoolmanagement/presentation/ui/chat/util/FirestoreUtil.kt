@@ -202,5 +202,8 @@ object FirestoreUtil {
 
     }
 
+    fun getParent(id: String) =
+            firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS).document(id).get()
+
 
 }
