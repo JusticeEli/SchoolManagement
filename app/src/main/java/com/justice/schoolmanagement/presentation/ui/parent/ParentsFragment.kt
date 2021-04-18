@@ -22,7 +22,6 @@ import com.bumptech.glide.RequestManager
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentsBinding
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
@@ -60,7 +59,7 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
 
     private fun subscribeToObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            viewModel.parentsFetchStatus.collect {
+            viewModel.getParents.collect {
                 Log.d(TAG, "subscribeToObservers: parentsStatus:${it.status.name}")
                 when (it.status) {
                     Resource.Status.LOADING -> {
@@ -72,6 +71,7 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
                     }
                     Resource.Status.SUCCESS -> {
                         showProgress(false)
+                        viewModel.setCurrentParentsLiveData(it.data!!.documents)
                         adapter.submitList(it.data?.documents)
                     }
                     Resource.Status.ERROR -> {
@@ -116,6 +116,7 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
                     is Event.ParentDelete -> {
                         deleteFromDatabase(it.parentSnapshot)
                     }
+
                     is Event.ParentSwiped -> {
                         deleteFromDatabase(it.parentSnapshot)
                     }
@@ -127,17 +128,34 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
                         val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
                         navController.navigate(ParentsFragmentDirections.actionParentsFragmentToEditParentFragment(parent))
                     }
-                    is Event.ParentSwiped -> {
-                        deleteFromDatabase(it.parentSnapshot)
-                    }
+
                 }
 
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.deleteParentStatus.collect {
+                Log.d(TAG, "subscribeToObservers: deleteParentStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+
+                    }
+                    Resource.Status.SUCCESS -> {
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showErrorToast("Error: ${it.exception?.message}")
+
+                    }
+                }
             }
         }
     }
 
     private fun goToAddParentFragment() {
-        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToAddParentFragment(null, null))
+        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToAddParentFragment(null))
     }
 
 
@@ -277,23 +295,12 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
             val position = adapter.currentList.indexOf(snapshot)
             adapter.notifyItemChanged(position)
         }.setPositiveButton("yes") { dialog, which ->
-            deleteParent(snapshot)
+
+            viewModel.setEvent(Event.ParentConfirmDelete(snapshot))
         }.show()
     }
 
-    private fun deleteParent(snapshot: DocumentSnapshot) {
-        FirebaseStorage.getInstance().getReferenceFromUrl(snapshot.toObject(ParentData::class.java)!!.photo).delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                showSuccessToast("Photo deleted")
-                deleteParentMetaData(snapshot)
-            } else {
-                val error = task.exception!!.message
-                showErrorToast("Error: $error")
-            }
-        }
 
-
-    }
 
     private fun showSuccessToast(message: String) {
         Toasty.success(requireContext(), message).show()
@@ -308,28 +315,19 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
 
     }
 
-    private fun deleteParentMetaData(snapshot: DocumentSnapshot) {
-        snapshot.reference.delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                showSuccessToast("Deletion Success")
-            } else {
-                val error = task.exception!!.message
-                showErrorToast("Error: $error")
-            }
-        }
-    }
 
 
     sealed class Event {
         data class ParentClicked(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentEdit(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentDelete(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentConfirmDelete(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentSwiped(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentQuery(val query: String) : Event()
         object AddParent : Event()
     }
 
     companion object{
-        const val PARENT_ARGS="parent"
+        const val PARENT_ARGS = "parentData"
     }
 }

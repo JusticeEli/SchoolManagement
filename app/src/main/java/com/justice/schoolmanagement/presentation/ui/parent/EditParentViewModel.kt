@@ -3,10 +3,9 @@ package com.justice.schoolmanagement.presentation.ui.parent
 import android.util.Log
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.edward.nyansapo.wrappers.Resource
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
@@ -17,10 +16,10 @@ import java.util.*
 class EditParentViewModel @ViewModelInject constructor(private val repository: ParentRepository, @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
     private val TAG = "EditParentViewModel"
 
-    fun setEvent(event: ParentAddEditViewModel.Event) {
+    fun setEvent(event: EditParentViewModel.Event) {
         viewModelScope.launch {
             when (event) {
-                is ParentAddEditViewModel.Event.ParentEditSubmitClicked -> {
+                is EditParentViewModel.Event.ParentEditSubmitClicked -> {
                     if (fieldsAreEmpty(event.parent)) {
                         _editParentStatus.send(Resource.empty())
                     } else if (!contactEdtTxtFormatIsCorrect(event.parent)) {
@@ -41,7 +40,11 @@ class EditParentViewModel @ViewModelInject constructor(private val repository: P
     val getParentToEdit = repository.getParent(savedStateHandle.get<ParentData>(ParentsFragment.PARENT_ARGS)?.id!!)
 
 
-
+    private val _currentSnapshot = MutableLiveData<DocumentSnapshot>()
+    val currentSnapshot get() = _currentSnapshot as LiveData<DocumentSnapshot>
+    fun setCurrentSnapshot(snapshot: DocumentSnapshot) {
+        _currentSnapshot.value = snapshot
+    }
 
 
     private val _editParentStatus = Channel<Resource<ParentData>>()
@@ -140,7 +143,7 @@ class EditParentViewModel @ViewModelInject constructor(private val repository: P
 
         parentData.uri = null //must be there since firebase does not know how to handle URI object
 
-        repository.putDataIntoDatabase(parentData).collect {
+        repository.updateDataInDatabase(parentData,currentSnapshot.value!!).collect {
             Log.d(TAG, "putDataIntoDataBase: status is: ${it.status}")
             when (it.status) {
                 Resource.Status.LOADING -> {

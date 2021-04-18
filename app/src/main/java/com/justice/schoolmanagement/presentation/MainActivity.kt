@@ -16,7 +16,7 @@ import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
@@ -32,8 +32,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-
         setSupportActionBar(binding.toolbar)
 
         val navHostFragment =
@@ -105,7 +103,7 @@ class MainActivity : AppCompatActivity() {
     private fun showMyAccountDetails() {
 
 
-        FirestoreUtil.getCurrentUser {
+        FirebaseUtil.getCurrentUser {
             SchoolApplication.documentSnapshot=it
             navController.navigate(R.id.action_global_teacherDetailsFragment)
 

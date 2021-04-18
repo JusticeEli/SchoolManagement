@@ -148,17 +148,9 @@
         android:label="Add Parent"
         tools:layout="@layout/fragment_add_parent">
         <argument
-            android:name="parentName"
-            app:argType="string"
+            android:name="student"
+            app:argType="com.justice.schoolmanagement.presentation.ui.student.models.StudentData"
             app:nullable="true" />
-        <argument
-            android:name="parentEmail"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="flag"
-            android:defaultValue="false"
-            app:argType="boolean" />
     </fragment>
     <fragment
         android:id="@+id/addStudentFragment"
@@ -182,15 +174,19 @@
         android:id="@+id/editStudentFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.student.EditStudentFragment"
         android:label="Edit"
-        tools:layout="@layout/fragment_edit_student"/>
+        tools:layout="@layout/fragment_edit_student">
+        <argument
+            android:name="studentData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.student.models.StudentData" />
+    </fragment>
     <fragment
         android:id="@+id/editTeacherFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.teacher.EditTeacherFragment"
         android:label="Edit"
         tools:layout="@layout/fragment_edit_teacher">
         <argument
-            android:name="teacherURL"
-            app:argType="string" />
+            android:name="teacherData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData" />
     </fragment>
     <fragment
         android:id="@+id/resultsEditFragment"
@@ -210,6 +206,9 @@
         <action
             android:id="@+id/action_teacherDetailsFragment_to_chatFragment"
             app:destination="@id/chatFragment" />
+        <argument
+            android:name="teacherData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData" />
     </fragment>
     <fragment
         android:id="@+id/parentDetailsFragment"
@@ -235,6 +234,9 @@
         <action
             android:id="@+id/action_studentDetailsFragment_to_feesFragment"
             app:destination="@id/feesFragment" />
+        <argument
+            android:name="studentData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.student.models.StudentData" />
     </fragment>
     <fragment
         android:id="@+id/blogFragment"
@@ -299,8 +301,8 @@
             android:id="@+id/action_feesFragment_to_feesEditFragment"
             app:destination="@id/feesEditFragment" />
         <argument
-            android:name="name"
-            app:argType="string" />
+            android:name="student"
+            app:argType="com.justice.schoolmanagement.presentation.ui.student.models.StudentData" />
     </fragment>
     <fragment
         android:id="@+id/feesEditFragment"

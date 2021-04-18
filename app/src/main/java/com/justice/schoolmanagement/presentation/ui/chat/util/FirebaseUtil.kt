@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
+import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.presentation.ui.chat.model.*
 import com.justice.schoolmanagement.presentation.ui.register.CurrentDate
 import com.justice.schoolmanagement.presentation.ui.register.CurrentInfo
@@ -15,20 +16,31 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-object FirestoreUtil {
+object FirebaseUtil {
 
 
     private const val TAG = "FirestoreUtil"
 
 
-    private val firestoreInstance=FirebaseFirestore.getInstance()
-    private val firebaseAuth= FirebaseAuth.getInstance()
+    private val firebaseFirestore = FirebaseFirestore.getInstance()
+    private val firebaseAuth = FirebaseAuth.getInstance()
+    val firebaseStorage = FirebaseStorage.getInstance()
 
     private val currentUserDocRef: DocumentReference
-        get() = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
+        get() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
 
-    private val chatChannelsCollectionRef = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
-    val collectionReferenceParents = firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
+    private val chatChannelsCollectionRef = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
+    val collectionReferenceParents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
+    val collectionReferenceStudents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS)
+    val collectionReferenceTeachers = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
+    val collectionReferenceStudentsMarks = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS)
+    val storageReferenceStudentImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_IMAGES)
+    val storageReferenceStudentImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_THUMBNAIL_IMAGES)
+    val storageReferenceParentsImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_IMAGES)
+    val storageReferenceParentsImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES)
+    val storageReferenceTeachersImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES)
+    val storageReferenceTeachersImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
+
 
     fun initCurrentUserIfFirstTime(onComplete: () -> Unit) {
         currentUserDocRef.get().addOnSuccessListener { documentSnapshot ->
@@ -53,7 +65,7 @@ object FirestoreUtil {
     }
 
     fun getCurrentUser(onComplete: (DocumentSnapshot?) -> Unit) {
-        firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid).get()
+        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid).get()
                 .addOnSuccessListener {
                     onComplete(it)
                 }
@@ -82,7 +94,7 @@ object FirestoreUtil {
                             .document(otherUserId)
                             .set(mapOf("channelId" to newChannel.id))
 
-                    firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(otherUserId)
+                    firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(otherUserId)
                             .collection(COLLECTION_ENGAGED_CHAT_CHANNELS)
                             .document(currentUserId)
                             .set(mapOf("channelId" to newChannel.id))
@@ -182,7 +194,7 @@ object FirestoreUtil {
     }
 
     //region FCM
-    fun getFCMRegistrationTokens(onComplete: (tokens: MutableList<String>) -> Unit) {
+    fun getFCMRegistrationTokens(onComplete: (tokens: MutableList<String>?) -> Unit) {
         currentUserDocRef.get().addOnSuccessListener {
             val user = it.toObject(TeacherData::class.java)!!
             onComplete(user.registrationTokens)
@@ -196,14 +208,35 @@ object FirestoreUtil {
 
 
     fun getParents(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
-        return firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS).addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+        return collectionReferenceParents.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             onComplete(querySnapshot, firebaseFirestoreException)
         }
 
     }
 
-    fun getParent(id: String) =
-            firestoreInstance.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS).document(id).get()
+
+
+    fun getStudents(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
+        return collectionReferenceStudents.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+            onComplete(querySnapshot, firebaseFirestoreException)
+        }
+
+    }
+
+    fun getTeachers(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
+        return collectionReferenceTeachers.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+            onComplete(querySnapshot, firebaseFirestoreException)
+        }
+
+    }
+
+    fun getstudentMarks(id: String, onSuccess: (DocumentSnapshot) -> Unit, onFailure: (java.lang.Exception) -> Unit) {
+        collectionReferenceStudentsMarks.document(id).get().addOnSuccessListener {
+            onSuccess(it)
+        }.addOnFailureListener {
+            onFailure(it)
+        }
+    }
 
 
 }

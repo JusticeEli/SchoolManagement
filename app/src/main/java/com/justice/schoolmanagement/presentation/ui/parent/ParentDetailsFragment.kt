@@ -14,7 +14,6 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -25,7 +24,6 @@ import com.bumptech.glide.RequestManager
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentDetailsBinding
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
@@ -62,10 +60,8 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     }
 
     private fun subScribeToObservers() {
-
-
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            viewModel.currentParentFlow.collect {
+            viewModel.getParent.collect {
                 when (it.status) {
                     Resource.Status.LOADING -> {
                         showProgress(true)
@@ -104,14 +100,13 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
                         findNavController().navigate(ParentDetailsFragmentDirections.actionParentDetailsFragmentToEditParentFragment(parent))
                     }
                     is Event.ParentCall -> {
-
                         startCall(it.number)
-
                     }
                     is Event.ParentEmail -> {
                         startEmailing(it.email)
 
                     }
+
                 }
 
             }
@@ -186,40 +181,13 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     }
 
     private fun deleteFromDatabase(snapshot: DocumentSnapshot) {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteParentPhoto(snapshot) }.show()
+        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which ->
+            viewModel.setEvent(Event.ParentDeleteConfirmed(snapshot))
+        }.show()
     }
 
-    private fun deleteParentPhoto(snapshot: DocumentSnapshot) {
 
-        showProgress(true)
-        /**
-         * ACTIVITY EXITING BEFORE DELETION OF PHOTO IS COMPLETE MAY CAUSE CRASH OF THE PROGRAM//////////
-         *
-         */
-        FirebaseStorage.getInstance().getReferenceFromUrl(parentData!!.photo).delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
-                deleteParentMetaData(snapshot)
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
 
-    private fun deleteParentMetaData(snapshot: DocumentSnapshot) {
-        snapshot.reference.delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), parentData!!.firstName + " Parent Removed Successfully", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-            showProgress(false)
-            findNavController().popBackStack()
-
-        }
-    }
 
 
     private fun setDefaultValues() {
@@ -310,6 +278,7 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
 
     sealed class Event {
         data class ParentDelete(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentDeleteConfirmed(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentEdit(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentCall(val number: String) : Event()
         data class ParentEmail(val email: String) : Event()

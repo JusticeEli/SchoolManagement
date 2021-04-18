@@ -7,7 +7,6 @@
         <item>Retired</item>
     </string-array>
 
-
     <string-array name="cities">
         <item>Kisumu</item>
         <item>Kitui</item>
@@ -26,6 +25,7 @@
         <item>Eldoret</item>
         <item>Kericho</item>
     </string-array>
+
     <string-array name="jobType">
         <item>medical</item>
         <item>business</item>
@@ -53,6 +53,33 @@
         <item>hospitality</item>
     </string-array>
 
+    <string-array name="classGrade">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+
+    <string-array name="nationality">
+        <item>Kenyan</item>
+        <item>Foreigner</item>
+    </string-array>
+
+    <string-array name="religion">
+        <item>Christian</item>
+        <item>Muslim</item>
+    </string-array>
+    <string-array name="subjects">
+        <item>Math</item>
+        <item>Science</item>
+        <item>English</item>
+        <item>Kiswahili</item>
+        <item>sst_cre</item>
+    </string-array>
 
 
 </resources>

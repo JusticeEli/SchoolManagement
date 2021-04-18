@@ -25,7 +25,7 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAttendanceBinding
 import com.justice.schoolmanagement.presentation.ui.attendance.model.AttendanceFragmentAdapter
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CheckInOut
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
 import java.util.*
@@ -131,7 +131,7 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance) {
 
     private fun initRecyclerView() {
 
-        FirestoreUtil.getCurrentDateFormatted { date ->
+        FirebaseUtil.getCurrentDateFormatted { date ->
             binding.currentDateTxtView.text = date
             val query: Query = documentReferenceCurrentLocation.collection(date!!)
             val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<CheckInOut>().setQuery(query, CheckInOut::class.java).setLifecycleOwner(viewLifecycleOwner).build()

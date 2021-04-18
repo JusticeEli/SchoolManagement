@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui.parent
+package com.justice.schoolmanagement.presentation.ui.teacher
 
 import android.util.Log
 import androidx.hilt.Assisted
@@ -9,18 +9,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
-import com.justice.schoolmanagement.presentation.ui.parent.ParentsFragment.Companion.PARENT_ARGS
-import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
+import com.justice.schoolmanagement.presentation.ui.teacher.TeachersFragment.Companion.TEACHER_ARGS
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class ParentDetailsViewModel @ViewModelInject constructor(private val repository: ParentRepository ,@Assisted private val savedStateHandle:SavedStateHandle) : ViewModel() {
+class TeacherDetailViewModel @ViewModelInject constructor(private val repository: TeacherRepository, @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
-    private val TAG = "ParentDetailsViewModel"
-    private val _parentDetailsEvent = Channel<ParentDetailsFragment.Event>()
-    val parentDetailsEvent get() = _parentDetailsEvent.receiveAsFlow()
+    private val TAG = "TeacherDetailViewModel"
+    private val _teacherDetailsEvent = Channel<TeacherDetailsFragment.Event>()
+    val teacherDetailsEvent get() = _teacherDetailsEvent.receiveAsFlow()
     private val _deleteStatus = Channel<Resource<DocumentSnapshot>>()
     val deleteStatus get() = _deleteStatus.receiveAsFlow()
 
@@ -32,26 +32,26 @@ class ParentDetailsViewModel @ViewModelInject constructor(private val repository
     }
 
 
-    val getParent = repository.getParent(savedStateHandle.get<ParentData>(PARENT_ARGS)?.id!!)
-    fun setEvent(event: ParentDetailsFragment.Event) {
+    val getTeacher = repository.getTeacher(savedStateHandle.get<TeacherData>(TEACHER_ARGS)?.id!!)
+    fun setEvent(event: TeacherDetailsFragment.Event) {
         Log.d(TAG, "setEvent: ")
         viewModelScope.launch {
 
             when (event) {
-                is ParentDetailsFragment.Event.ParentDelete -> {
-                    _parentDetailsEvent.send(ParentDetailsFragment.Event.ParentDelete(event.parentSnapshot))
+                is TeacherDetailsFragment.Event.TeacherDelete -> {
+                    _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherDelete(event.snapshot))
                 }
-                is ParentDetailsFragment.Event.ParentDeleteConfirmed -> {
-                    deleteParentPhoto(event.parentSnapshot)
+                is TeacherDetailsFragment.Event.TeacherDeleteConfirmed -> {
+                    deleteParentPhoto(event.snapshot)
                 }
-                is ParentDetailsFragment.Event.ParentEdit -> {
-                    _parentDetailsEvent.send(ParentDetailsFragment.Event.ParentEdit(event.parentSnapshot))
+                is TeacherDetailsFragment.Event.TeacherEdit -> {
+                    _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherEdit(event.snapshot))
                 }
-                is ParentDetailsFragment.Event.ParentCall -> {
-                    _parentDetailsEvent.send(ParentDetailsFragment.Event.ParentCall(event.number))
+                is TeacherDetailsFragment.Event.TeacherCall -> {
+                    _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherCall(event.number))
                 }
-                is ParentDetailsFragment.Event.ParentEmail -> {
-                    _parentDetailsEvent.send(ParentDetailsFragment.Event.ParentEmail(event.email))
+                is TeacherDetailsFragment.Event.TeacherEmail -> {
+                    _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherEmail(event.email))
                 }
             }
 
@@ -62,7 +62,7 @@ class ParentDetailsViewModel @ViewModelInject constructor(private val repository
 
     private suspend fun deleteParentPhoto(parentSnapshot: DocumentSnapshot) {
         Log.d(TAG, "deleteParentPhoto: ")
-        repository.deleteParentPhoto(parentSnapshot).collect {
+        repository.deleteTeacherPhoto(parentSnapshot).collect {
             Log.d(TAG, "setEvent: status of photo deletion:${it.status.name}")
             when (it.status) {
                 Resource.Status.SUCCESS -> {
@@ -79,7 +79,7 @@ class ParentDetailsViewModel @ViewModelInject constructor(private val repository
 
     private suspend fun deleteParentMetaData(parentSnapshot: DocumentSnapshot) {
         Log.d(TAG, "deleteParentMetaData: ")
-        repository.deleteParentMetadata(parentSnapshot).collect {
+        repository.deleteTeacherMetadata(parentSnapshot).collect {
             Log.d(TAG, "deleteParentMetaData: status:${it.status.name}")
             when (it.status) {
                 Resource.Status.LOADING -> {

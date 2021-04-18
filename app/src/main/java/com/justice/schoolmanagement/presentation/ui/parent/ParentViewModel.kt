@@ -3,9 +3,7 @@ package com.justice.schoolmanagement.presentation.ui.parent
 import android.util.Log
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
@@ -13,7 +11,6 @@ import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -24,19 +21,12 @@ class ParentViewModel @ViewModelInject constructor(private val repository: Paren
     val parentChannelEvents get() = _parentChannelEvents.receiveAsFlow()
 
     //parents status
-    val parentsFetchStatus = flow<Resource<QuerySnapshot>> {
-        Log.d(TAG, "started fetching programs: ")
-        emit(Resource.loading("started the process"))
+    val getParents =repository.getParents()
 
-        try {
-            repository.getParents().collect {
-                parentsList.value = it
-                emit(it)
-            }
-        } catch (e: Exception) {
-            emit(Resource.error(e))
-            Log.e("ERROR:", e.message)
-        }
+    private val _parentsListLiveData = MutableLiveData<List<DocumentSnapshot>>()
+    val parentsListLiveData get() = _parentsListLiveData as LiveData<List<DocumentSnapshot>>
+    fun setCurrentParentsLiveData(documentSnapshots: List<DocumentSnapshot>) {
+        _parentsListLiveData.value = documentSnapshots
     }
 
     fun setEvent(event: ParentsFragment.Event) {
@@ -60,6 +50,9 @@ class ParentViewModel @ViewModelInject constructor(private val repository: Paren
                 is ParentsFragment.Event.ParentDelete -> {
                     _parentChannelEvents.send(ParentsFragment.Event.ParentDelete(event.parentSnapshot))
                 }
+                is ParentsFragment.Event.ParentConfirmDelete -> {
+                    deleteParent(event.parentSnapshot)
+                }
                 is ParentsFragment.Event.ParentSwiped -> {
                     _parentChannelEvents.send(ParentsFragment.Event.ParentSwiped(event.parentSnapshot))
                 }
@@ -68,6 +61,39 @@ class ParentViewModel @ViewModelInject constructor(private val repository: Paren
 
     }
 
+    private val _deleteParentStatus = Channel<Resource<DocumentSnapshot>>()
+    val deleteParentStatus = _deleteParentStatus.receiveAsFlow()
+
+    private suspend fun deleteParent(snapshot: DocumentSnapshot) {
+
+        repository.deleteParent(snapshot).collect {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    deleteParentMetaData(snapshot)
+
+                }
+                Resource.Status.ERROR -> {
+                    _deleteParentStatus.send(it)
+                }
+            }
+        }
+
+
+    }
+
+    private suspend fun deleteParentMetaData(snapshot: DocumentSnapshot) {
+        repository.deleteParentMetadata(snapshot).collect {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    _deleteParentStatus.send(it)
+                }
+                Resource.Status.ERROR -> {
+                    _deleteParentStatus.send(it)
+                }
+            }
+        }
+
+    }
 
     val parentsList = MutableStateFlow(Resource.empty<QuerySnapshot>())
     private suspend fun startQuery(query: String) {

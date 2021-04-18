@@ -4,6 +4,8 @@ import android.content.Context
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.justice.schoolmanagement.presentation.ui.parent.ParentRepository
+import com.justice.schoolmanagement.presentation.ui.student.StudentsRepository
+import com.justice.schoolmanagement.presentation.ui.teacher.TeacherRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,12 +19,25 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRepository(@ApplicationContext context: Context):ParentRepository{
-        return  ParentRepository(context)
+    fun provideRepository(@ApplicationContext context: Context): ParentRepository {
+        return ParentRepository(context)
     }
+
     @Provides
     @Singleton
-    fun provideRequestManager(@ApplicationContext context:Context):RequestManager{
+    fun provideStudentRepo(@ApplicationContext context: Context): StudentsRepository {
+        return StudentsRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTeacherRepo(@ApplicationContext context: Context): TeacherRepository {
+        return TeacherRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRequestManager(@ApplicationContext context: Context): RequestManager {
         return Glide.with(context)
     }
 }

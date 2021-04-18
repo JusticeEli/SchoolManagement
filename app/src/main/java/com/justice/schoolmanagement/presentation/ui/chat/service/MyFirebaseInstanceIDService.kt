@@ -3,7 +3,7 @@ package com.resocoder.firemessage.service
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.firebase.iid.FirebaseInstanceIdService
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 
 
 class MyFirebaseInstanceIDService : FirebaseInstanceIdService() {
@@ -19,12 +19,12 @@ class MyFirebaseInstanceIDService : FirebaseInstanceIdService() {
         fun addTokenToFirestore(newRegistrationToken: String?) {
             if (newRegistrationToken == null) throw NullPointerException("FCM token is null.")
 
-            FirestoreUtil.getFCMRegistrationTokens { tokens ->
-                if (tokens.contains(newRegistrationToken))
+            FirebaseUtil.getFCMRegistrationTokens { tokens ->
+                if (tokens!!.contains(newRegistrationToken))
                     return@getFCMRegistrationTokens
 
                 tokens.add(newRegistrationToken)
-                FirestoreUtil.setFCMRegistrationTokens(tokens)
+                FirebaseUtil.setFCMRegistrationTokens(tokens)
             }
         }
     }

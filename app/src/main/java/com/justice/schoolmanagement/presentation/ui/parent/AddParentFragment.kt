@@ -36,9 +36,9 @@ import java.util.*
 
 @AndroidEntryPoint
 class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
-    companion object {
-        private const val TAG = "AddParentFragment"
-    }
+
+    private val TAG = "AddParentFragment"
+
 
     lateinit var progressBar: ProgressBar
     private var uri: Uri? = null
@@ -113,13 +113,12 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
 
     //if executed when we are adding student then we need to add a parent
     private fun setSkipBtn() {
-        val flag: Boolean = navArgs.flag
-
-        if (flag) {
+        val student = navArgs.student
+        if (student != null) {
             binding.apply {
                 skipLinearLayout.setVisibility(View.VISIBLE)
-                firstNameEdtTxt.setText(navArgs.parentName)
-                emailEdtTxt.setText(navArgs.parentEmail)
+                firstNameEdtTxt.setText(student.parentName)
+                emailEdtTxt.setText(student.email)
 
             }
         }
@@ -168,7 +167,7 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
                 return@setOnClickListener
             }
             val parent = getParentObject()
-            viewModel.setEvent(ParentAddEditViewModel.Event.ParentAddSubmitClicked(parent))
+            viewModel.setEvent(AddParentViewModel.Event.ParentAddSubmitClicked(parent))
 
 
         }

@@ -20,10 +20,10 @@ class AddParentViewModel @ViewModelInject constructor(private val repository: Pa
     private val _addParentStatus = Channel<Resource<ParentData>>()
     val addParentStatus get() = _addParentStatus.receiveAsFlow()
 
-    fun setEvent(event: ParentAddEditViewModel.Event) {
+    fun setEvent(event: AddParentViewModel.Event) {
         viewModelScope.launch {
             when (event) {
-                is ParentAddEditViewModel.Event.ParentAddSubmitClicked -> {
+                is AddParentViewModel.Event.ParentAddSubmitClicked -> {
                     if (fieldsAreEmpty(event.parent)) {
                         _addParentStatus.send(Resource.empty())
                     } else if (!contactEdtTxtFormatIsCorrect(event.parent)) {
@@ -31,7 +31,7 @@ class AddParentViewModel @ViewModelInject constructor(private val repository: Pa
                         /*NO OP*/
                     } else {
                         _addParentStatus.send(Resource.loading("started the uploading parent"))
-                        getDataFromEdtTxtAndSaveInDatabase(event.parent)
+                        trimDataAndSaveIntoDatabase(event.parent)
                     }
                 }
 
@@ -51,7 +51,7 @@ class AddParentViewModel @ViewModelInject constructor(private val repository: Pa
 
     }
 
-    private suspend fun getDataFromEdtTxtAndSaveInDatabase(parentData: ParentData) {
+    private suspend fun trimDataAndSaveIntoDatabase(parentData: ParentData) {
         Log.d(TAG, "getDataFromEdtTxtAndSaveInDatabase: parentData:$parentData")
         parentData.firstName = parentData.firstName.trim()
         parentData.lastName = parentData.lastName.trim()

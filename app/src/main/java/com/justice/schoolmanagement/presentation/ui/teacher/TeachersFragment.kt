@@ -11,40 +11,155 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentTeachersBinding
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.onQueryTextChanged
+import dagger.hilt.android.AndroidEntryPoint
+import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class TeachersFragment : Fragment(R.layout.fragment_teachers) {
-    lateinit var originalList: List<DocumentSnapshot>
-    lateinit var searchView: SearchView
 
-    private var teachersActivityRecyclerAdapter: TeachersActivityRecyclerAdapter? = null
-    lateinit var teacherFilterAdapter: TeacherFilterAdapter
+    private val TAG = "TeachersFragment"
 
+    private lateinit var searchView: SearchView
 
-    lateinit var binding: FragmentTeachersBinding
-    private val firebaseFirestore = FirebaseFirestore.getInstance()
-    lateinit var navController: NavController
+    private lateinit var adapter: TeacherAdapter
 
+    private lateinit var binding: FragmentTeachersBinding
+    private lateinit var navController: NavController
+
+    @Inject
+    lateinit var requestManager: RequestManager
+    private val viewModel: TeachersViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated: ")
         binding = FragmentTeachersBinding.bind(view)
         navController = findNavController()
-        setUpRecyclerViewAdapter();
-        setSwipeListenerForItems()
         setHasOptionsMenu(true)
         initProgressBar()
+        setUpRecyclerViewAdapter()
+        setSwipeListenerForItems()
+        subscribeToObservers()
+
+    }
+
+    private fun subscribeToObservers() {
+        Log.d(TAG, "subscribeToObservers: ")
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.getTeachers.collect {
+                Log.d(TAG, "subscribeToObservers: teachersFetchStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        viewModel.setCurrentTeacherListLiveData(it.data!!.documents)
+                        adapter.submitList(it.data?.documents)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showErrorToast(it.exception?.message ?: "Error Occurred")
+
+                    }
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.teacherQueryStatus.collect {
+                Log.d(TAG, "subscribeToObservers: teacherQueryStatus:${it.status.name}")
+
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        //   showProgress(true)
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        adapter.submitList(it.data)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showErrorToast(it.exception?.message ?: "Error Occurred")
+
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.teacherChannelEvents.collect {
+                when (it) {
+
+                    is Event.TeacherDelete -> {
+                        deleteFromDatabase(it.snapshot)
+                    }
+                    is Event.TeacherClicked -> {
+                        val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
+                        navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToTeacherDetailsFragment(teacherData))
+                    }
+                    is Event.TeacherEdit -> {
+                        val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
+                        navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToEditTeacherFragment(teacherData))
+                    }
+                    is Event.TeacherSwiped -> {
+                        deleteFromDatabase(it.snapshot)
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.deleteTeacherStatus.collect {
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+
+                    }
+                    Resource.Status.SUCCESS -> {
+
+                    }
+                    Resource.Status.ERROR -> {
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showErrorToast(message: String) {
+        Toasty.error(requireContext(), message).show()
+    }
+
+    fun deleteFromDatabase(snapshot: DocumentSnapshot) {
+        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which ->
+            val position = adapter.currentList.indexOf(snapshot)
+            adapter.notifyItemChanged(position)
+        }.setPositiveButton("yes") { dialog, which ->
+            viewModel.setEvent(Event.TeacherConfirmDelete(snapshot))
+        }.show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -52,63 +167,32 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
         val searchItem = menu.findItem(R.id.searchItem)
         searchView = searchItem.actionView as SearchView
 
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                return false
-            }
+        searchView.onQueryTextChanged { query ->
+            Log.d(TAG, "onCreateOptionsMenu: query:$query")
+            viewModel.setEvent(Event.TeacherQuery(query))
 
-            override fun onQueryTextChange(s: String): Boolean {
-
-                Log.d(TAG, "onQueryTextChange: Text: ${s}")
-
-                if (s.isNullOrEmpty()) {
-                    startUsingRealTimeAdapter()
-                    Log.d(TAG, "onQueryTextChange: startUsingRealTimeAdapter")
-
-                } else {
-                    startUsingParentFilter(s.trim())
-                    Log.d(TAG, "onQueryTextChange:  startUsingParentFilter ")
-
-                }
-                return true
-
-            }
-        })
-
-
-
+        }
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    private fun startUsingRealTimeAdapter() {
-        binding.recyclerView.adapter = teachersActivityRecyclerAdapter
-    }
-
-    private fun startUsingParentFilter(string: String) {
-        originalList = mutableListOf<DocumentSnapshot>()
-        (originalList as MutableList<DocumentSnapshot>)?.clear()
-        teachersActivityRecyclerAdapter?.snapshots?.forEachIndexed { index, _ ->
-            (originalList as MutableList<DocumentSnapshot>).add(teachersActivityRecyclerAdapter!!.snapshots.getSnapshot(index))
-        }
-        //     teacherFilterAdapter.submitList(originalList)
-        binding.recyclerView.adapter = teacherFilterAdapter
-
-        teacherFilterAdapter.getFilter().filter(string)
-
-    }
 
     private fun setUpRecyclerViewAdapter() {
-        teacherFilterAdapter = TeacherFilterAdapter(this)
-
-        val query: Query = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
-        val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<TeacherData>().setQuery(query) { snapshot ->
-            val teacherData = snapshot.toObject(TeacherData::class.java)
-            teacherData!!.id = snapshot.id
-            teacherData
-        }.setLifecycleOwner(viewLifecycleOwner).build()
-        teachersActivityRecyclerAdapter = TeachersActivityRecyclerAdapter(this, firestoreRecyclerOptions)
+        adapter = TeacherAdapter(requestManager, onEditClicked = { onEditClicked(it) }, onTeacherClicked = { onTeacherClicked(it) }, onTeacherDelete = { onTeacherDelete(it) })
         binding.recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
-        binding.recyclerView.setAdapter(teachersActivityRecyclerAdapter)
+        binding.recyclerView.adapter = adapter
+    }
+
+    private fun onTeacherDelete(it: DocumentSnapshot) {
+        viewModel.setEvent(Event.TeacherDelete(it))
+    }
+
+    private fun onTeacherClicked(it: DocumentSnapshot) {
+        viewModel.setEvent(Event.TeacherClicked(it))
+    }
+
+    private fun onEditClicked(it: DocumentSnapshot) {
+        viewModel.setEvent(Event.TeacherEdit(it))
+
     }
 
     private fun setSwipeListenerForItems() {
@@ -118,7 +202,8 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                teachersActivityRecyclerAdapter!!.deleteTeacherDataFromDatabase(viewHolder.adapterPosition)
+                val snapshot = adapter.currentList[viewHolder.bindingAdapterPosition]
+                viewModel.setEvent(Event.TeacherSwiped(snapshot))
             }
         }).attachToRecyclerView(binding.recyclerView)
     }
@@ -192,7 +277,16 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
     }
 
     //end progressbar
+    sealed class Event {
+        data class TeacherClicked(val snapshot: DocumentSnapshot) : Event()
+        data class TeacherEdit(val snapshot: DocumentSnapshot) : Event()
+        data class TeacherDelete(val snapshot: DocumentSnapshot) : Event()
+        data class TeacherConfirmDelete(val snapshot: DocumentSnapshot) : Event()
+        data class TeacherSwiped(val snapshot: DocumentSnapshot) : Event()
+        data class TeacherQuery(val query: String) : Event()
+    }
+
     companion object {
-        private const val TAG = "TeachersFragment"
+        const val TEACHER_ARGS = "teacherData"
     }
 }

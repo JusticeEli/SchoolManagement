@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui.parent
+package com.justice.schoolmanagement.presentation.ui.teacher
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,34 +7,34 @@ import android.util.Log
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import id.zelory.compressor.Compressor
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import java.io.File
 import java.io.IOException
 import java.util.*
 import javax.inject.Inject
 
-class ParentRepository @Inject constructor(private val context: Context) {
 
-    private val TAG = "ParentRepository"
+class TeacherRepository @Inject constructor(private val context: Context) {
 
 
-    fun getParents(): Flow<Resource<QuerySnapshot>> = callbackFlow {
+    private val TAG = "TeacherRepository"
 
-        val listenerRegistration = FirebaseUtil.getParents { snapshot, exception ->
+
+    fun getTeachers() = callbackFlow<Resource<QuerySnapshot>> {
+
+        val listenerRegistration = FirebaseUtil.getTeachers { snapshot, exception ->
 
             if (exception != null) {
                 offer(Resource.error<Nothing>(exception))
 
-                cancel(message = "Error fetching posts",
-                        cause = exception)
-            } else if (!snapshot!!.isEmpty()) {
+            } else if (!snapshot!!.isEmpty) {
                 offer(Resource.success(snapshot))
             } else {
                 offer(Resource.empty<Nothing>())
@@ -46,7 +46,9 @@ class ParentRepository @Inject constructor(private val context: Context) {
     }
 
     fun putPhotoIntoDatabase(photoName: String, uri: Uri) = callbackFlow<Resource<String>> {
-        val ref = FirebaseUtil.storageReferenceParentsImages.child(photoName)
+
+        val id = FirebaseUtil.getUid()
+        val ref = FirebaseUtil.storageReferenceTeachersImages.child("$id")
         val uploadTask = ref.putFile(uri)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -61,8 +63,8 @@ class ParentRepository @Inject constructor(private val context: Context) {
 
         }.addOnFailureListener {
             Log.d(TAG, "putPhotoIntoDatabase: failed")
-            val error = it!!.message
-            offer(Resource.error(java.lang.Exception("Error: $error")))
+            val error = it.message
+            offer(Resource.error(Exception("Error: $error")))
 
         }
         awaitClose {
@@ -84,8 +86,8 @@ class ParentRepository @Inject constructor(private val context: Context) {
         }
         thumbnail = Uri.fromFile(compressedImgFile)
 
-        val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseUtil.storageReferenceParentsImagesThumbnail.child(photoName)
+        val id = FirebaseUtil.getUid()
+        val ref = FirebaseUtil.storageReferenceTeachersImagesThumbnail.child("$id")
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -106,13 +108,14 @@ class ParentRepository @Inject constructor(private val context: Context) {
         }
     }
 
-    fun putDataIntoDatabase(parentData: ParentData) = callbackFlow<Resource<ParentData>> {
-
-        FirebaseUtil.collectionReferenceParents.add(parentData)
+    fun putDataIntoDatabase(teacherData: TeacherData) = callbackFlow<Resource<TeacherData>> {
+        val id = FirebaseUtil.getUid()
+        FirebaseUtil.collectionReferenceTeachers.document(id)
+                .set(teacherData, SetOptions.merge())
                 .addOnSuccessListener {
                     Log.d(TAG, "putDataIntoDataBase: success")
 
-                    offer(Resource.success(parentData))
+                    offer(Resource.success(teacherData))
 
                 }.addOnFailureListener {
                     Log.d(TAG, "putDataIntoDataBase: failed")
@@ -125,13 +128,14 @@ class ParentRepository @Inject constructor(private val context: Context) {
         awaitClose { }
     }
 
-    fun updateDataInDatabase(parentData: ParentData, snapshot: DocumentSnapshot) = callbackFlow<Resource<ParentData>> {
-
-        snapshot.reference.set(parentData)
+    fun updateDataInDatabase(teacherData: TeacherData, snapshot: DocumentSnapshot) = callbackFlow<Resource<TeacherData>> {
+        Log.d(TAG, "updateDataInDatabase: teacherData:$teacherData")
+        snapshot.reference
+                .set(teacherData, SetOptions.merge())
                 .addOnSuccessListener {
                     Log.d(TAG, "putDataIntoDataBase: success")
 
-                    offer(Resource.success(parentData))
+                    offer(Resource.success(teacherData))
 
                 }.addOnFailureListener {
                     Log.d(TAG, "putDataIntoDataBase: failed")
@@ -144,15 +148,15 @@ class ParentRepository @Inject constructor(private val context: Context) {
         awaitClose { }
     }
 
-    fun getParent(id: String) = callbackFlow<Resource<DocumentSnapshot>> {
+    fun getTeacher(id: String) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        FirebaseUtil.collectionReferenceParents.document(id).addSnapshotListener { value, error ->
+        FirebaseUtil.collectionReferenceTeachers.document(id).addSnapshotListener { value, error ->
             if (error != null) {
                 offer(Resource.error(error))
 
             } else {
                 if (value?.exists()!!) {
-                    offer(Resource.success(value!!))
+                    offer(Resource.success(value))
                 } else {
                     offer(Resource.empty())
                 }
@@ -164,10 +168,10 @@ class ParentRepository @Inject constructor(private val context: Context) {
         }
     }
 
-    fun deleteParentPhoto(parentSnapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
-        val photo = parentSnapshot.getString("photo")
+    fun deleteTeacherPhoto(snapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
+        val photo = snapshot.getString("photo")
         FirebaseStorage.getInstance().getReferenceFromUrl(photo!!).delete().addOnSuccessListener {
-            offer(Resource.success(parentSnapshot))
+            offer(Resource.success(snapshot))
 
         }.addOnFailureListener {
             offer(Resource.error(it))
@@ -179,10 +183,10 @@ class ParentRepository @Inject constructor(private val context: Context) {
         awaitClose { }
     }
 
-    fun deleteParentMetadata(parentSnapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
+    fun deleteTeacherMetadata(snapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        parentSnapshot.reference.delete().addOnSuccessListener {
-            offer(Resource.success(parentSnapshot))
+        snapshot.reference.delete().addOnSuccessListener {
+            offer(Resource.success(snapshot))
         }.addOnFailureListener {
             offer(Resource.error(it))
         }
@@ -190,7 +194,7 @@ class ParentRepository @Inject constructor(private val context: Context) {
         awaitClose { }
     }
 
-    fun deleteParent(snapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
+    fun deleteTeacher(snapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
         val parent = snapshot.toObject(ParentData::class.java)!!
         FirebaseUtil.firebaseStorage.getReferenceFromUrl(parent.photo).delete().addOnSuccessListener {
             offer(Resource.success(snapshot))

@@ -16,7 +16,7 @@ import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
 import com.justice.schoolmanagement.presentation.ui.chat.model.Message
 import com.justice.schoolmanagement.presentation.ui.chat.model.TextMessage
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.chat.util.StorageUtil
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.theartofdev.edmodo.cropper.CropImage
@@ -40,16 +40,16 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChatBinding.bind(view)
         initRecyclerView()
-        FirestoreUtil.getCurrentUser {
+        FirebaseUtil.getCurrentUser {
             currentUser = it!!.toObject(TeacherData::class.java)!!
         }
         otherUserId = SchoolApplication.documentSnapshot!!.id
 
-        FirestoreUtil.getOrCreateChatChannel(otherUserId) { channelId ->
+        FirebaseUtil.getOrCreateChatChannel(otherUserId) { channelId ->
             currentChannelId = channelId
 
             messagesListenerRegistration =
-                    FirestoreUtil.addChatMessagesListener(channelId, requireContext(), this::updateRecyclerView)
+                    FirebaseUtil.addChatMessagesListener(channelId, requireContext(), this::updateRecyclerView)
             binding.apply {
                 imageViewSend.setOnClickListener {
                     val messageToSend =
@@ -57,7 +57,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                                     FirebaseAuth.getInstance().currentUser!!.uid,
                                     otherUserId, currentUser.fullName)
                     editTextMessage.setText("")
-                    FirestoreUtil.sendMessage(messageToSend, channelId)
+                    FirebaseUtil.sendMessage(messageToSend, channelId)
                 }
 
                 fabSendImage.setOnClickListener {
@@ -130,7 +130,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                         ImageMessage(imagePath, Calendar.getInstance().time,
                                 FirebaseAuth.getInstance().currentUser!!.uid,
                                 otherUserId, currentUser.fullName)
-                FirestoreUtil.sendMessage(messageToSend, currentChannelId)
+                FirebaseUtil.sendMessage(messageToSend, currentChannelId)
             }
 
     }

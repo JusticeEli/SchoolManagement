@@ -36,7 +36,7 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentCheckInCheckOutBinding
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CheckInOut
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CurrentPosition
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirestoreUtil
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import es.dmoral.toasty.Toasty
@@ -135,12 +135,12 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
             stopLocationUpdates()
 
 
-            FirestoreUtil.getCurrentUser { currentUser ->
+            FirebaseUtil.getCurrentUser { currentUser ->
 
-                FirestoreUtil.getCurrentDate { date ->
+                FirebaseUtil.getCurrentDate { date ->
                     val checkOut = mapOf("checkOut" to true, "checkOutTime" to date)
 
-                    documentReferenceCurrentLocation.collection(currentDateFormated).document(FirestoreUtil.getUid()).set(checkOut, SetOptions.merge()).addOnSuccessListener {
+                    documentReferenceCurrentLocation.collection(currentDateFormated).document(FirebaseUtil.getUid()).set(checkOut, SetOptions.merge()).addOnSuccessListener {
 
                         Toasty.success(requireContext(), "Success You have checked out").show()
                         //  binding.checkOutBtn.isVisible = false
@@ -224,13 +224,13 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
             Log.d(TAG, "checkInBtnClicked: distance is: ${location.distanceTo(locationAdmin)}  metres")
 
-            FirestoreUtil.getCurrentUser { currentUser ->
+            FirebaseUtil.getCurrentUser { currentUser ->
                 val teacherData = currentUser!!.toObject(TeacherData::class.java)
 
 
                 val checkIn = CheckInOut(teacherData!!.photo, teacherData.fullName, true)
 
-                documentReferenceCurrentLocation.collection(currentDateFormated).document(FirestoreUtil.getUid()).set(checkIn).addOnSuccessListener {
+                documentReferenceCurrentLocation.collection(currentDateFormated).document(FirebaseUtil.getUid()).set(checkIn).addOnSuccessListener {
 
                     Toasty.success(requireContext(), "Success You have checked in").show()
                     binding.checkInBtn.isVisible = false
@@ -338,7 +338,7 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
     private fun checkIfAdminHasSetCurrentPosition() {
         Log.d(TAG, "checkIfAdminHasSetCurrentPosition: ")
         showProgress(true)
-        FirestoreUtil.getAdminCurrentLocation {
+        FirebaseUtil.getAdminCurrentLocation {
             if (it == null) {
                 Log.d(TAG, "checkIfAdminHasSetCurrentPosition: document snapshot is null")
                 Toasty.error(requireContext(), "Error: Admin has not set Current position and radius").show()
@@ -357,10 +357,10 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
     private fun check_if_i_have_already_checked_in() {
 
-        FirestoreUtil.getCurrentDateFormatted { date ->
+        FirebaseUtil.getCurrentDateFormatted { date ->
 
             currentDateFormated = date!!
-            documentReferenceCurrentLocation.collection(date).document(FirestoreUtil.getUid()).get().addOnSuccessListener {
+            documentReferenceCurrentLocation.collection(date).document(FirebaseUtil.getUid()).get().addOnSuccessListener {
 
                 if (it.exists()) {
                     userHasAlreadyCheckedIn()
