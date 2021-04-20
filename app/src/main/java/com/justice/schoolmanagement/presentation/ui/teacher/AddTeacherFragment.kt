@@ -65,6 +65,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                     Resource.Status.SUCCESS -> {
                         showProgress(false)
                         showToastInfo("Success Saving data")
+                        requireActivity().recreate()
 
                     }
                     Resource.Status.ERROR -> {
@@ -125,7 +126,7 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
     }
 
     private fun showToastInfo(message: String) {
-        Toasty.error(requireContext(), message).show()
+        Toasty.info(requireContext(), message).show()
     }
 
     private fun setOnClickListeners() {

@@ -197,6 +197,8 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
     }
 
     private fun goToDashBoardScreen() {
+        Log.d(TAG, "goToDashBoardScreen: institution code:${Constants.DOCUMENT_CODE}")
+
         val intent = Intent(requireContext(), MainActivity::class.java)
         startActivity(intent)
         requireActivity().finish()

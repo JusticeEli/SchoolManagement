@@ -17,7 +17,6 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -98,7 +97,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
                     }
                     Resource.Status.ERROR -> {
                         showProgress(false)
-                        findNavController().popBackStack()
+                      //  findNavController().popBackStack()
                         Log.d(TAG, "subScribeToObservers: Error:${it.exception?.message}")
 
                     }

@@ -25,6 +25,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentTeachersBinding
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
+import com.justice.schoolmanagement.presentation.utils.Constants
 import com.justice.schoolmanagement.utils.onQueryTextChanged
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
@@ -76,6 +77,9 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
                         showProgress(false)
                         viewModel.setCurrentTeacherListLiveData(it.data!!.documents)
                         adapter.submitList(it.data?.documents)
+                        Log.d(TAG, "subscribeToObservers: size:${it.data.size()}")
+                        val path = Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS
+                        Log.d(TAG, "subscribeToObservers: path:$path")
                     }
                     Resource.Status.ERROR -> {
                         showProgress(false)

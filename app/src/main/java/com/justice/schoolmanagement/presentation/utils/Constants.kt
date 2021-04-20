@@ -7,7 +7,6 @@ object Constants {
     public var isAdmin = true
 
     //Instution
-    @Volatile
     var DOCUMENT_CODE = "institution"
 
     //root

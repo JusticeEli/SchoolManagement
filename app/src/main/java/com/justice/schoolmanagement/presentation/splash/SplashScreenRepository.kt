@@ -46,7 +46,7 @@ class SplashScreenRepository(private val context: Context) {
 
     fun checkIfUserIsSetup() = callbackFlow<Resource<DocumentSnapshot>> {
         Log.d(TAG, "checkIfUserIsSetup: ")
-        FirebaseUtil.collectionReferenceTeachers.document(FirebaseUtil.getUid()).get().addOnSuccessListener {
+        FirebaseUtil.collectionReferenceTeachers().document(FirebaseUtil.getUid()).get().addOnSuccessListener {
             offer(Resource.success(it))
 
         }.addOnFailureListener {

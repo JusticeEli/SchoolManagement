@@ -48,7 +48,7 @@ class TeacherRepository @Inject constructor(private val context: Context) {
     fun putPhotoIntoDatabase(photoName: String, uri: Uri) = callbackFlow<Resource<String>> {
 
         val id = FirebaseUtil.getUid()
-        val ref = FirebaseUtil.storageReferenceTeachersImages.child("$id")
+        val ref = FirebaseUtil.storageReferenceTeachersImages().child("$id")
         val uploadTask = ref.putFile(uri)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -65,7 +65,6 @@ class TeacherRepository @Inject constructor(private val context: Context) {
             Log.d(TAG, "putPhotoIntoDatabase: failed")
             val error = it.message
             offer(Resource.error(Exception("Error: $error")))
-
         }
         awaitClose {
 
@@ -87,7 +86,7 @@ class TeacherRepository @Inject constructor(private val context: Context) {
         thumbnail = Uri.fromFile(compressedImgFile)
 
         val id = FirebaseUtil.getUid()
-        val ref = FirebaseUtil.storageReferenceTeachersImagesThumbnail.child("$id")
+        val ref = FirebaseUtil.storageReferenceTeachersImagesThumbnail().child("$id")
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -110,7 +109,7 @@ class TeacherRepository @Inject constructor(private val context: Context) {
 
     fun putDataIntoDatabase(teacherData: TeacherData) = callbackFlow<Resource<TeacherData>> {
         val id = FirebaseUtil.getUid()
-        FirebaseUtil.collectionReferenceTeachers.document(id)
+        FirebaseUtil.collectionReferenceTeachers().document(id)
                 .set(teacherData, SetOptions.merge())
                 .addOnSuccessListener {
                     Log.d(TAG, "putDataIntoDataBase: success")
@@ -150,7 +149,7 @@ class TeacherRepository @Inject constructor(private val context: Context) {
 
     fun getTeacher(id: String) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        FirebaseUtil.collectionReferenceTeachers.document(id).addSnapshotListener { value, error ->
+        FirebaseUtil.collectionReferenceTeachers().document(id).addSnapshotListener { value, error ->
             if (error != null) {
                 offer(Resource.error(error))
 

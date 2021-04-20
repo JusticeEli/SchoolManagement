@@ -29,22 +29,41 @@ object FirebaseUtil {
     private val currentUserDocRef: DocumentReference
         get() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
 
-    private val chatChannelsCollectionRef = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
-
+    // private val chatChannelsCollectionRef = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
+    private fun chatChannelsCollectionRef() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
 
 
     val collectionReferenceAdmin = firebaseFirestore.collection(Constants.COLLECTION_ROOT)
 
-    val collectionReferenceParents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
-    val collectionReferenceStudents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS)
-    val collectionReferenceTeachers = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
-    val collectionReferenceStudentsMarks = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS)
-    val storageReferenceStudentImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_IMAGES)
-    val storageReferenceStudentImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_THUMBNAIL_IMAGES)
-    val storageReferenceParentsImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_IMAGES)
-    val storageReferenceParentsImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES)
-    val storageReferenceTeachersImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES)
-    val storageReferenceTeachersImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
+    //  val collectionReferenceParents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
+    fun collectionReferenceParents() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
+
+    //  val collectionReferenceStudents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS)
+    fun collectionReferenceStudents() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS)
+
+    // val collectionReferenceTeachers = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
+    fun collectionReferenceTeachers() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
+
+    //  val collectionReferenceStudentsMarks = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS)
+    fun collectionReferenceStudentsMarks() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS)
+
+    // val storageReferenceStudentImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_IMAGES)
+    fun storageReferenceStudentImages() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_IMAGES)
+
+    //val storageReferenceStudentImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_THUMBNAIL_IMAGES)
+    fun storageReferenceStudentImagesThumbnail() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_THUMBNAIL_IMAGES)
+
+    //  val storageReferenceParentsImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_IMAGES)
+    fun storageReferenceParentsImages() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_IMAGES)
+
+    //  val storageReferenceParentsImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES)
+    fun storageReferenceParentsImagesThumbnail() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES)
+
+    // val storageReferenceTeachersImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES)
+    fun storageReferenceTeachersImages() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES)
+
+    //  val storageReferenceTeachersImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
+    fun storageReferenceTeachersImagesThumbnail() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
     val isUserLoggedIn: Boolean
         get() {
             return firebaseAuth.currentUser != null
@@ -95,7 +114,7 @@ object FirebaseUtil {
 
                     val currentUserId = FirebaseAuth.getInstance().currentUser!!.uid
 
-                    val newChannel = chatChannelsCollectionRef.document()
+                    val newChannel = chatChannelsCollectionRef().document()
                     newChannel.set(ChatChannel(mutableListOf(currentUserId, otherUserId)))
 
                     currentUserDocRef
@@ -114,7 +133,7 @@ object FirebaseUtil {
 
     fun addChatMessagesListener(channelId: String, context: Context,
                                 onListen: (List<Message>) -> Unit): ListenerRegistration {
-        return chatChannelsCollectionRef.document(channelId).collection(COLLECTION_MESSAGES)
+        return chatChannelsCollectionRef().document(channelId).collection(COLLECTION_MESSAGES)
                 .orderBy("time")
                 .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
                     if (firebaseFirestoreException != null) {
@@ -197,7 +216,7 @@ object FirebaseUtil {
 
     }
     fun sendMessage(message: Message, channelId: String) {
-        chatChannelsCollectionRef.document(channelId)
+        chatChannelsCollectionRef().document(channelId)
                 .collection("messages")
                 .add(message)
     }
@@ -217,7 +236,7 @@ object FirebaseUtil {
 
 
     fun getParents(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
-        return collectionReferenceParents.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+        return collectionReferenceParents().addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             onComplete(querySnapshot, firebaseFirestoreException)
         }
 
@@ -226,21 +245,21 @@ object FirebaseUtil {
 
 
     fun getStudents(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
-        return collectionReferenceStudents.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+        return collectionReferenceStudents().addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             onComplete(querySnapshot, firebaseFirestoreException)
         }
 
     }
 
     fun getTeachers(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {
-        return collectionReferenceTeachers.addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+        return collectionReferenceTeachers().addSnapshotListener { querySnapshot, firebaseFirestoreException ->
             onComplete(querySnapshot, firebaseFirestoreException)
         }
 
     }
 
     fun getstudentMarks(id: String, onSuccess: (DocumentSnapshot) -> Unit, onFailure: (java.lang.Exception) -> Unit) {
-        collectionReferenceStudentsMarks.document(id).get().addOnSuccessListener {
+        collectionReferenceStudentsMarks().document(id).get().addOnSuccessListener {
             onSuccess(it)
         }.addOnFailureListener {
             onFailure(it)

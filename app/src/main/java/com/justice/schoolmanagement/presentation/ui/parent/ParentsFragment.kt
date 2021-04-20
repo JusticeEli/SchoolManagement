@@ -122,6 +122,7 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
                     }
                     is Event.ParentClicked -> {
                         val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        Log.d(TAG, "subscribeToObservers: ")
                         navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(parent))
                     }
                     is Event.ParentEdit -> {
@@ -328,6 +329,6 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
     }
 
     companion object{
-        const val PARENT_ARGS = "parentData"
+        const val PARENT_ARGS = "parent"
     }
 }

@@ -46,7 +46,7 @@ class ParentRepository @Inject constructor(private val context: Context) {
     }
 
     fun putPhotoIntoDatabase(photoName: String, uri: Uri) = callbackFlow<Resource<String>> {
-        val ref = FirebaseUtil.storageReferenceParentsImages.child(photoName)
+        val ref = FirebaseUtil.storageReferenceParentsImages().child(photoName)
         val uploadTask = ref.putFile(uri)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -85,7 +85,7 @@ class ParentRepository @Inject constructor(private val context: Context) {
         thumbnail = Uri.fromFile(compressedImgFile)
 
         val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseUtil.storageReferenceParentsImagesThumbnail.child(photoName)
+        val ref = FirebaseUtil.storageReferenceParentsImagesThumbnail().child(photoName)
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -108,7 +108,7 @@ class ParentRepository @Inject constructor(private val context: Context) {
 
     fun putDataIntoDatabase(parentData: ParentData) = callbackFlow<Resource<ParentData>> {
 
-        FirebaseUtil.collectionReferenceParents.add(parentData)
+        FirebaseUtil.collectionReferenceParents().add(parentData)
                 .addOnSuccessListener {
                     Log.d(TAG, "putDataIntoDataBase: success")
 
@@ -146,17 +146,22 @@ class ParentRepository @Inject constructor(private val context: Context) {
 
     fun getParent(id: String) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        FirebaseUtil.collectionReferenceParents.document(id).addSnapshotListener { value, error ->
-            if (error != null) {
-                offer(Resource.error(error))
+        FirebaseUtil.collectionReferenceParents().document(id).addSnapshotListener { value, error ->
+            try {
+                if (error != null) {
+                    offer(Resource.error(error))
 
-            } else {
-                if (value?.exists()!!) {
-                    offer(Resource.success(value!!))
                 } else {
-                    offer(Resource.empty())
+                    if (value?.exists()!!) {
+                        offer(Resource.success(value!!))
+                    } else {
+                        offer(Resource.empty())
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+
         }
 
         awaitClose {
@@ -165,13 +170,19 @@ class ParentRepository @Inject constructor(private val context: Context) {
     }
 
     fun deleteParentPhoto(parentSnapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
-        val photo = parentSnapshot.getString("photo")
-        FirebaseStorage.getInstance().getReferenceFromUrl(photo!!).delete().addOnSuccessListener {
-            offer(Resource.success(parentSnapshot))
 
-        }.addOnFailureListener {
-            offer(Resource.error(it))
+        try {
+            val photo = parentSnapshot.getString("photo")
+            FirebaseStorage.getInstance().getReferenceFromUrl(photo!!).delete().addOnSuccessListener {
+                offer(Resource.success(parentSnapshot))
+
+            }.addOnFailureListener {
+                offer(Resource.error(it))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
 
 
 
@@ -180,12 +191,16 @@ class ParentRepository @Inject constructor(private val context: Context) {
     }
 
     fun deleteParentMetadata(parentSnapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
-
-        parentSnapshot.reference.delete().addOnSuccessListener {
-            offer(Resource.success(parentSnapshot))
-        }.addOnFailureListener {
-            offer(Resource.error(it))
+        try {
+            parentSnapshot.reference.delete().addOnSuccessListener {
+                offer(Resource.success(parentSnapshot))
+            }.addOnFailureListener {
+                offer(Resource.error(it))
+            }
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
         }
+
 
         awaitClose { }
     }

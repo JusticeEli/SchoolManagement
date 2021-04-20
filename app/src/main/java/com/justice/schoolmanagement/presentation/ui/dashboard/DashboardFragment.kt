@@ -98,6 +98,9 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickLis
 
 
     override fun onClick(v: View?) {
+
+
+
         when (v?.id) {
             R.id.teachersBtn -> viewModel.setEvent(Event.TeacherClicked)
             R.id.parentsBtn -> viewModel.setEvent(Event.ParentClicked)

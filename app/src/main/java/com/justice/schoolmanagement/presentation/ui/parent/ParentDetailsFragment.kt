@@ -29,6 +29,7 @@ import com.justice.schoolmanagement.databinding.FragmentParentDetailsBinding
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
@@ -46,6 +47,8 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     @Inject
     lateinit var requestManager: RequestManager
 
+    @Inject
+    lateinit var applicationScope: CoroutineScope
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "onViewCreated: ")
@@ -60,6 +63,84 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     }
 
     private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed() {
+            viewModel.getParent.collect {
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        viewModel.setCurrentSnapshot(it.data!!)
+                        parentData = it.data?.toObject(ParentData::class.java)!!
+                        setDefaultValues()
+                        setOnClickListeners()
+                        setImageViewClickListeners()
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+                        Log.d(TAG, "subScribeToObservers: document does not exit")
+                    }
+                }
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.parentDetailsEvent.collect {
+                when (it) {
+                    is Event.ParentDelete -> {
+                        deleteFromDatabase(it.parentSnapshot)
+                    }
+                    is Event.ParentEdit -> {
+                        val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        findNavController().navigate(ParentDetailsFragmentDirections.actionParentDetailsFragmentToEditParentFragment(parent))
+                    }
+                    is Event.ParentCall -> {
+                        startCall(it.number)
+                    }
+                    is Event.ParentEmail -> {
+                        startEmailing(it.email)
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+
+
+            viewModel.deleteStatus.collect {
+
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo(it.exception?.message!!)
+
+                    }
+
+                }
+
+            }
+        }
+    }
+    /* private fun subScribeToObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewModel.getParent.collect {
                 when (it.status) {
@@ -125,8 +206,6 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
                     }
                     Resource.Status.SUCCESS -> {
                         showProgress(false)
-                        findNavController().popBackStack()
-
                     }
                     Resource.Status.ERROR -> {
                         showProgress(false)
@@ -138,7 +217,7 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
 
             }
         }
-    }
+    }*/
 
     private fun startEmailing(email: String) {
         val intent = Intent(Intent.ACTION_SEND)

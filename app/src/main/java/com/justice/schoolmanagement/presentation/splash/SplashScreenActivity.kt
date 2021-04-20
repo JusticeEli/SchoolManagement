@@ -148,6 +148,7 @@ class SplashScreenActivity : AppCompatActivity() {
     }
 
     private fun goToDashBoardScreen() {
+        Log.d(TAG, "goToDashBoardScreen: institution code:${Constants.DOCUMENT_CODE}")
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()

@@ -64,7 +64,7 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
     }
 
     fun deleteStudentMarks(snapshot: DocumentSnapshot) = callbackFlow<Resource<DocumentSnapshot>> {
-        FirebaseUtil.collectionReferenceStudentsMarks.document(snapshot.id).delete().addOnSuccessListener {
+        FirebaseUtil.collectionReferenceStudentsMarks().document(snapshot.id).delete().addOnSuccessListener {
             offer(Resource.success(snapshot))
         }.addOnFailureListener {
             offer(Resource.error(it))
@@ -91,7 +91,7 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
     }
 
     fun putPhotoIntoDatabase(photoName: String, uri: Uri) = callbackFlow<Resource<String>> {
-        val ref = FirebaseUtil.storageReferenceStudentImages.child(photoName)
+        val ref = FirebaseUtil.storageReferenceStudentImages().child(photoName)
         val uploadTask = ref.putFile(uri)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -130,7 +130,7 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
         thumbnail = Uri.fromFile(compressedImgFile)
 
         val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseUtil.storageReferenceStudentImagesThumbnail.child(photoName)
+        val ref = FirebaseUtil.storageReferenceStudentImagesThumbnail().child(photoName)
         val uploadTask = ref.putFile(thumbnail)
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
@@ -153,7 +153,7 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
 
     fun putDataIntoDatabase(studentData: StudentData) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        FirebaseUtil.collectionReferenceStudents.add(studentData)
+        FirebaseUtil.collectionReferenceStudents().add(studentData)
                 .addOnSuccessListener {
                     Log.d(TAG, "putDataIntoDataBase: success")
                     it.get().addOnSuccessListener {
@@ -191,7 +191,7 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
 
     fun addStudentMarks(snapshot: DocumentSnapshot, studentMarks: StudentMarks) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        FirebaseUtil.collectionReferenceStudentsMarks.document(snapshot.id).set(studentMarks).addOnSuccessListener {
+        FirebaseUtil.collectionReferenceStudentsMarks().document(snapshot.id).set(studentMarks).addOnSuccessListener {
             offer(Resource.success(snapshot))
         }.addOnFailureListener {
             offer(Resource.error(it))
@@ -205,7 +205,7 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
     fun getCurrentStudent(id: String) = callbackFlow<Resource<DocumentSnapshot>> {
         Log.d(TAG, "getCurrentStudent:id:$id ")
 
-        val listenerRegistration = FirebaseUtil.collectionReferenceStudents.document(id).addSnapshotListener { value, error ->
+        val listenerRegistration = FirebaseUtil.collectionReferenceStudents().document(id).addSnapshotListener { value, error ->
             if (error != null) {
                 offer(Resource.error(error))
             } else if (!value!!.exists()) {
