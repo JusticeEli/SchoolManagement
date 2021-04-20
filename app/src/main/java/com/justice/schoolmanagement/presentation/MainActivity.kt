@@ -15,7 +15,8 @@ import androidx.navigation.ui.NavigationUI.navigateUp
 import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
-import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
+import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity.Companion.SHARED_PREF
+import com.justice.schoolmanagement.presentation.splash.adminData
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
 import dagger.hilt.android.AndroidEntryPoint
@@ -122,8 +123,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getRidOfSharedPreferenceData() {
-        val sharedPreferences = getSharedPreferences("shared_pref", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString(SplashScreenFragment.KEY_ADMIN_DATA, null).commit()
+        val sharedPreferences = getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE)
+        sharedPreferences.adminData=null
 
     }
 

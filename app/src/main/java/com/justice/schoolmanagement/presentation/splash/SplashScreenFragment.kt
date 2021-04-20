@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui
+package com.justice.schoolmanagement.presentation.splash
 
 import android.app.Activity
 import android.content.Context
@@ -37,7 +37,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
 
     }
 
-    lateinit var sharedPreferences: SharedPreferences
+    lateinit var sharedPref: SharedPreferences
 
     lateinit var progressBar: ProgressBar
     lateinit var event: ListenerRegistration
@@ -46,7 +46,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSplashScreenBinding.bind(view)
-        sharedPreferences = requireContext().getSharedPreferences("shared_pref", Context.MODE_PRIVATE)
+        sharedPref = requireContext().getSharedPreferences("shared_pref", Context.MODE_PRIVATE)
         checkIfUserIsLoggedIn()
         initProgressBar()
     }
@@ -109,7 +109,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     }
 
     private fun goToDashBoard() {
-        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
+        val stringData = sharedPref.getString(KEY_ADMIN_DATA, null)
         if (stringData == null) {
 
             if (findNavController().currentDestination?.id == R.id.splashScreenFragment) {
@@ -181,7 +181,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
     }
 
     private fun checkIfInstitutionCodeExits() {
-        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
+        val stringData = sharedPref.getString(KEY_ADMIN_DATA, null)
         if (stringData == null) {
             findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
         } else {
@@ -194,7 +194,7 @@ class SplashScreenFragment : Fragment(R.layout.fragment_splash_screen) {
 
     private fun goToTeacherFragmentOrAdminFragment() {
 
-        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
+        val stringData = sharedPref.getString(KEY_ADMIN_DATA, null)
         if (stringData == null) {
             findNavController().navigate(R.id.action_splashScreenFragment_to_adminFragment)
         } else {

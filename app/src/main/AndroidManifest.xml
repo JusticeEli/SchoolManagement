@@ -4,21 +4,15 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-
-
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-
 
     <application
         android:name=".presentation.SchoolApplication"
@@ -28,34 +22,34 @@
         android:roundIcon="@mipmap/school_icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".presentation.splash.DummyActivity">
 
-        <activity
-            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat" />
-
-        <activity
-            android:name=".presentation.MainActivity"
-            android:theme="@style/NoActionBar"
-            android:windowSoftInputMode="adjustPan"
-            android:launchMode="singleTop">
+        </activity>
+        <activity android:name=".presentation.splash.SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/Base.Theme.AppCompat" />
+        <activity
+            android:name=".presentation.MainActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/NoActionBar"
+            android:windowSoftInputMode="adjustPan">
 
-
+        </activity>
         <activity
             android:name=".presentation.ui.video_chat.VideoChatViewActivity"
             android:screenOrientation="sensorPortrait"
-            android:theme="@style/FullScreenVideoTheme"></activity>
-
-
-        <!--FCM-->
+            android:theme="@style/FullScreenVideoTheme" /> <!-- FCM -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_fire_emoji" />
+
         <service android:name="com.resocoder.firemessage.service.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -66,7 +60,6 @@
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
     </application>
 
 </manifest>

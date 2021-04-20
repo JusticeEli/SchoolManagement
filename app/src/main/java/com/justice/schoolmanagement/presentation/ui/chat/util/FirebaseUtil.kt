@@ -23,13 +23,18 @@ object FirebaseUtil {
 
 
     private val firebaseFirestore = FirebaseFirestore.getInstance()
-    private val firebaseAuth = FirebaseAuth.getInstance()
+    val firebaseAuth = FirebaseAuth.getInstance()
     val firebaseStorage = FirebaseStorage.getInstance()
 
     private val currentUserDocRef: DocumentReference
         get() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
 
     private val chatChannelsCollectionRef = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
+
+
+
+    val collectionReferenceAdmin = firebaseFirestore.collection(Constants.COLLECTION_ROOT)
+
     val collectionReferenceParents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
     val collectionReferenceStudents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS)
     val collectionReferenceTeachers = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
@@ -40,6 +45,10 @@ object FirebaseUtil {
     val storageReferenceParentsImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES)
     val storageReferenceTeachersImages = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES)
     val storageReferenceTeachersImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
+    val isUserLoggedIn: Boolean
+        get() {
+            return firebaseAuth.currentUser != null
+        }
 
 
     fun initCurrentUserIfFirstTime(onComplete: () -> Unit) {
@@ -237,6 +246,9 @@ object FirebaseUtil {
             onFailure(it)
         }
     }
+
+    fun getAdminData(institutionCode: String) =
+            firebaseFirestore.collection(Constants.COLLECTION_ROOT).document(institutionCode).get()
 
 
 }

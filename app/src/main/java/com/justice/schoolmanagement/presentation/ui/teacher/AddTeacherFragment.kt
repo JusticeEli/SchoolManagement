@@ -14,19 +14,21 @@ import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.RequestManager
-import com.bumptech.glide.request.RequestOptions
+import com.example.edward.nyansapo.wrappers.Resource
 import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAddTeacherBinding
+import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity
+import com.justice.schoolmanagement.presentation.splash.adminData
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_add_parent.*
+import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -47,7 +49,32 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         initProgressBar()
         setDefaultValues()
         setOnClickListeners()
-        setUpSubjectsSpinner();
+        setUpSubjectsSpinner()
+        subScribeToObservers()
+    }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.addTeacherStatus.collect {
+                Log.d(TAG, "subScribeToObservers: addTeacherStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        showToastInfo("Success Saving data")
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                }
+            }
+        }
     }
 
 
@@ -76,15 +103,24 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         Log.d(TAG, "onOptionsItemSelected: item selected")
         if (item.itemId == R.id.logoutMenu) {
             Log.d(TAG, "onOptionsItemSelected: logout pressed")
-            AuthUI.getInstance()
-                    .signOut(requireContext())
-                    .addOnSuccessListener {
-                        Log.d(TAG, "onOptionsItemSelected: signed out")
-                        findNavController().popBackStack()
-                    }
-
+            logout()
         }
         return true
+
+    }
+
+    private fun logout() {
+        AuthUI.getInstance().signOut(requireContext()).addOnSuccessListener {
+
+            Log.d(TAG, "onNavigationItemSelected: logout success")
+            getRidOfSharedPreferenceData()
+            requireActivity().finish()
+        }
+    }
+
+    private fun getRidOfSharedPreferenceData() {
+        val sharedPreferences = requireActivity().getSharedPreferences(SplashScreenActivity.SHARED_PREF, Context.MODE_PRIVATE)
+        sharedPreferences.adminData = null
 
     }
 
@@ -183,9 +219,8 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                 val error = result.error
             }
         }
-        val requestOptions = RequestOptions()
-        requestOptions.centerCrop()
-        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(uri).into(binding.imageView)
+
+        requestManager.load(uri).into(binding.imageView)
     }
 
     private fun resetEdtTxt() {

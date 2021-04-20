@@ -7,7 +7,8 @@ object Constants {
     public var isAdmin = true
 
     //Instution
-    public var DOCUMENT_CODE = "institution"
+    @Volatile
+    var DOCUMENT_CODE = "institution"
 
     //root
     public val COLLECTION_ROOT = "Institutions/"

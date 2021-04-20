@@ -3,6 +3,8 @@ package com.justice.schoolmanagement.di
 import android.content.Context
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
+import com.justice.schoolmanagement.presentation.splash.SplashScreenRepository
+import com.justice.schoolmanagement.presentation.ui.admin.AdminRepository
 import com.justice.schoolmanagement.presentation.ui.parent.ParentRepository
 import com.justice.schoolmanagement.presentation.ui.student.StudentsRepository
 import com.justice.schoolmanagement.presentation.ui.teacher.TeacherRepository
@@ -33,6 +35,18 @@ object AppModule {
     @Singleton
     fun provideTeacherRepo(@ApplicationContext context: Context): TeacherRepository {
         return TeacherRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAdminRepo(@ApplicationContext context: Context): AdminRepository {
+        return AdminRepository(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSplashScreenRepo(@ApplicationContext context: Context): SplashScreenRepository {
+        return SplashScreenRepository(context)
     }
 
     @Provides
