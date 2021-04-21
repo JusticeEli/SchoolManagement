@@ -32,8 +32,11 @@ object FirebaseUtil {
     // private val chatChannelsCollectionRef = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
     private fun chatChannelsCollectionRef() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
 
+     fun collectionReferenceDate() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE)
+
 
     val collectionReferenceAdmin = firebaseFirestore.collection(Constants.COLLECTION_ROOT)
+    fun collectionReferenceBlogs() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS)
 
     //  val collectionReferenceParents = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
     fun collectionReferenceParents() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
@@ -64,6 +67,11 @@ object FirebaseUtil {
 
     //  val storageReferenceTeachersImagesThumbnail = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
     fun storageReferenceTeachersImagesThumbnail() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES)
+
+
+    fun storageReferenceBlogsImages() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS_IMAGES)
+
+
     val isUserLoggedIn: Boolean
         get() {
             return firebaseAuth.currentUser != null
@@ -175,7 +183,7 @@ object FirebaseUtil {
     }
 
      fun getCurrentDateFormatted(onComplete: (String?) -> Unit) {
-        val currentInfo = CurrentInfo("16", "all", true)
+        val currentInfo = CurrentInfo("16", "all", 3)
 
         FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
 
@@ -200,7 +208,7 @@ object FirebaseUtil {
 
     }
     fun getCurrentDate(onComplete: (Date?) -> Unit) {
-        val currentInfo = CurrentInfo("16", "all", true)
+        val currentInfo = CurrentInfo("16", "all", 4)
 
         FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
 

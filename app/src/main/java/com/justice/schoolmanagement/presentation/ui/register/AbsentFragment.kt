@@ -28,7 +28,7 @@ class AbsentFragment(val registerFragment: RegisterFragment) : Fragment(R.layout
     }
 
     private val firebaseFirestore = FirebaseFirestore.getInstance()
-    lateinit var registerAdapter: RegisterAdapter
+    lateinit var registerAdapter: RegisterAdapter2
     lateinit var binding: FragmentPresentBinding
 
 
@@ -101,10 +101,10 @@ class AbsentFragment(val registerFragment: RegisterFragment) : Fragment(R.layout
         }
         val firestoreRecyclerOptions: FirestoreRecyclerOptions<StudentRegistrationData> = FirestoreRecyclerOptions.Builder<StudentRegistrationData>().setQuery(query, StudentRegistrationData::class.java).setLifecycleOwner(viewLifecycleOwner).build()
 
-        registerAdapter = RegisterAdapter(this, firestoreRecyclerOptions)
+        registerAdapter = RegisterAdapter2(this, firestoreRecyclerOptions)
         binding.recyclerView.layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.adapter = registerAdapter
-        registerAdapter = RegisterAdapter(this, firestoreRecyclerOptions)
+        registerAdapter = RegisterAdapter2(this, firestoreRecyclerOptions)
         binding.recyclerView.layoutManager = LinearLayoutManager(activity)
         binding.recyclerView.adapter = registerAdapter
         registerAdapter.snapshots.addChangeEventListener(object : ChangeEventListener {

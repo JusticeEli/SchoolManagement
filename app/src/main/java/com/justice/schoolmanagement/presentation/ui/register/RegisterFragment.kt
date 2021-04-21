@@ -8,60 +8,200 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayoutMediator
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
+import com.google.android.material.tabs.TabLayout
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentRegisterBinding
 import com.justice.schoolmanagement.presentation.utils.Constants
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class RegisterFragment : Fragment(R.layout.fragment_register) {
 
     companion object {
-        private const val TAG = "RegisterFragment"
         lateinit var currentInfo: CurrentInfo
 
     }
+
+    private val TAG = "RegisterFragment"
 
     val firebaseFirestore = FirebaseFirestore.getInstance()
     var listenerRegistration: ListenerRegistration? = null
     private var viewPager: ViewPager2? = null
     lateinit var currentDateServer: Date
     lateinit var binding: FragmentRegisterBinding
+    private val viewModel: RegisterViewModel by viewModels()
+    @Inject
+    lateinit var requestManager: RequestManager
+    private lateinit var adapter: RegisterAdapter
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentRegisterBinding.bind(view)
         setValuesForSpinner()
-        getCurrentDateAndInitCurrentInfo()
+        setOnClickListeners()
+        setUpTabLayout()
+        setUpRecyclerView()
+        subScribeToObservers()
 
     }
 
-    private fun setOnClickListeners() {
+    private fun setUpRecyclerView() {
+        adapter= RegisterAdapter(requestManager,checkBoxClicked = { snapshot,present->onCheckBoxClicked(snapshot,present)})
+                .. }
 
-        val myCalendar = Calendar.getInstance()
-        myCalendar.time = currentDateServer
+    private fun onCheckBoxClicked(snapshot: DocumentSnapshot, present: Boolean) {
+       viewModel.setEvent(Event.CheckBoxClicked(snapshot, present))
+    }
+
+
+
+
+
+    private fun setUpTabLayout() {
+        val tab1 = binding.tabs.newTab()
+        tab1.text = "All"
+        val tab2 = binding.tabs.newTab()
+        tab1.text = "Present"
+        val tab3 = binding.tabs.newTab()
+        tab1.text = "Absent"
+
+        binding.tabs.addTab(tab1)
+        binding.tabs.addTab(tab2)
+        binding.tabs.addTab(tab3)
+
+        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                viewModel.setEvent(Event.TabSelected(tab!!.position))
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+            }
+        })
+    }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.getCurrentDate.collect {
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        receivedCurrentDate(it.data!!)
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.registerEvents.collect {
+                when (it) {
+                    is Event.DateClicked -> {
+                        dateClicked()
+                    }
+                    is Event.SpecificDateChoosen -> {
+                        specificDateChoosen(it.date)
+                    }
+                    is Event.FutureDateChoosen -> {
+                        futureDateChoosen()
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.fetchDataStatus.collect {
+                when(it.status){
+                    Resource.Status.LOADING->{
+
+                    }
+                    Resource.Status.SUCCESS -> {
+
+                        ada
+
+                    }
+                    Resource.Status.ERROR -> {
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun futureDateChoosen() {
+        showToastInfo("Please Dont choose future dates")
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    private fun specificDateChoosen(date: Date) {
+        updateLabel(date)
+    }
+
+    private fun dateClicked() {
         val date = OnDateSetListener { view, year, monthOfYear, dayOfMonth -> // TODO Auto-generated method stub
-            myCalendar[Calendar.YEAR] = year
-            myCalendar[Calendar.MONTH] = monthOfYear
-            myCalendar[Calendar.DAY_OF_MONTH] = dayOfMonth
-            //month usually starts from 0
+
+            val calenderChoosen = Calendar.getInstance()
+            calenderChoosen[Calendar.YEAR] = year
+            calenderChoosen[Calendar.MONTH] = monthOfYear
+            calenderChoosen[Calendar.DAY_OF_MONTH] = dayOfMonth
+            viewModel.setEvent(Event.SpecificDateChoosen(calenderChoosen.time))
             updateLabel(dayOfMonth, monthOfYear + 1, year)
         }
 
-        binding.dateBtn.setOnClickListener {
 
-            DatePickerDialog(requireContext(), date, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
-                    myCalendar[Calendar.DAY_OF_MONTH]).show()
+        val myCalendar = Calendar.getInstance()
+        DatePickerDialog(requireContext(), date, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
+                myCalendar[Calendar.DAY_OF_MONTH]).show()
+    }
+
+    private fun receivedCurrentDate(date: Date) {
+        val dateFormatted = SimpleDateFormat("dd/MM/yyyy").format(date)
+        Log.d(TAG, "receivedCurrentDate: currentdate:$dateFormatted")
+        binding.currentDateTxtView.text = dateFormatted
+
+        val currentInfo=CurrentInfo()
+        currentInfo.currentDate = dateFormatted.replace("/", "_")
+        currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+
+        viewModel.setEvent(Event.FetchData(currentInfo))
+        setUpViewPager(null)
+    }
+
+    private fun setOnClickListeners() {
+        binding.dateBtn.setOnClickListener {
+            viewModel.setEvent(Event.DateClicked)
         }
+    }
+
+    private fun updateLabel(date: Date) {
+
+        binding.currentDateTxtView.text = date.formatDate
+        currentInfo.currentDate = date.formatDate.replace("/", "_")
+        currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+        setUpViewPager(null)
 
     }
 
-    private fun updateLabel(dayOfMonth: Int, monthOfYear: Int, year: Int) {
+    private fun updateLabel2(dayOfMonth: Int, monthOfYear: Int, year: Int) {
         val data = "$dayOfMonth" + "/" + "${monthOfYear}" + "/" + "$year"
         Log.d(TAG, "updateLabel: ${data}")
 //check if we have choosen a future date and reject it if its future date
@@ -128,29 +268,12 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
     }
 
-    fun setUpViewPager(position:Int?) {
-        viewPager = binding.viewPager
-        viewPager!!.adapter = ViewPagerAdapter(activity, this) //Attach the adapter with our ViewPagerAdapter passing the host activity
 
-
-     if (position!=null){
-         viewPager!!.postDelayed({ viewPager!!.currentItem = position }, 10)
-
-     }
-
-       TabLayoutMediator(binding.tabs, viewPager!!
-        ) { tab, position ->
-            tab.text = (viewPager!!.adapter as ViewPagerAdapter?)!!.mFragmentNames[position] //Sets tabs names as mentioned in ViewPagerAdapter fragmentNames array, this can be implemented in many different ways.
-        }.attach()
-
-        //  binding.tabs.addOnTabSelectedListener()
-
-    }
 
     //checking when to call spinner onItemSelected
     var check = 0
     private fun setValuesForSpinner() {
-        val classGrade = arrayOf("all", "1", "2", "3", "4", "5", "6", "7", "8")
+        val classGrade = requireActivity().resources.getStringArray(R.array.classGradeR)
         val arrayAdapter1: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, classGrade)
         binding.classGradeSpinner.setAdapter(arrayAdapter1)
 
@@ -271,4 +394,18 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         binding.tabs.getTabAt(2)?.orCreateBadge?.number = size
     }
 
+    sealed class Event {
+        data class ClassSelected(val classGrade: String) : Event()
+        data class TabSelected(val tab: Int) : Event()
+        data class SpecificDateChoosen(val date: Date) : Event()
+        data class FetchCurrentRegister(val string: String) : Event()
+        data class FetchData(val currentInfo: CurrentInfo) : Event()
+        data class CheckBoxClicked(val snapshot: DocumentSnapshot,val present: Boolean) : Event()
+        object DateClicked : Event()
+        object FutureDateChoosen : Event()
+
+
+
 }
+
+val Date.formatDate get() = SimpleDateFormat("dd/MM/yyyy").format(this)

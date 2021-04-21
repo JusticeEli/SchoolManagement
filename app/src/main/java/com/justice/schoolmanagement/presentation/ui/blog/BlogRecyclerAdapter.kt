@@ -1,22 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.blog
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.*
-import com.google.firebase.firestore.EventListener
-import com.justice.schoolmanagement.R
-import com.justice.schoolmanagement.databinding.ItemBlogBinding
-import com.justice.schoolmanagement.presentation.ui.blog.model.Blog
-import com.justice.schoolmanagement.presentation.utils.Constants
-import java.text.SimpleDateFormat
-import java.util.*
+/*
 
 class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: FirestoreRecyclerOptions<Blog?>) : FirestoreRecyclerAdapter<Blog, BlogRecyclerAdapter.ViewHolder>(options) {
     override fun onBindViewHolder(holder: ViewHolder, position: Int, model: Blog) {
@@ -91,4 +75,4 @@ class BlogRecyclerAdapter(private val blogFragment: BlogFragment, options: Fires
 
 
     }
-}
+}*/

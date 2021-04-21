@@ -60,7 +60,7 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
     private fun subscribeToObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewModel.getParents.collect {
-                Log.d(TAG, "subscribeToObservers: parentsStatus:${it.status.name}")
+                Log.d(TAG, "subscribeToObservers: getParents:${it.status.name}")
                 when (it.status) {
                     Resource.Status.LOADING -> {
                         showProgress(true)

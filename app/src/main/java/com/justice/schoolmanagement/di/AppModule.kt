@@ -5,6 +5,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.justice.schoolmanagement.presentation.splash.SplashScreenRepository
 import com.justice.schoolmanagement.presentation.ui.admin.AdminRepository
+import com.justice.schoolmanagement.presentation.ui.blog.BlogRepository
 import com.justice.schoolmanagement.presentation.ui.parent.ParentRepository
 import com.justice.schoolmanagement.presentation.ui.student.StudentsRepository
 import com.justice.schoolmanagement.presentation.ui.teacher.TeacherRepository
@@ -31,6 +32,11 @@ object AppModule {
     @Singleton
     fun provideRepository(@ApplicationContext context: Context): ParentRepository {
         return ParentRepository(context)
+    }
+    @Provides
+    @Singleton
+    fun provideBlogRepo(@ApplicationContext context: Context): BlogRepository {
+        return BlogRepository()
     }
 
     @Provides

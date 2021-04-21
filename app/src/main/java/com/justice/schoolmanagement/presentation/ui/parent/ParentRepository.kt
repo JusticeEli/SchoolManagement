@@ -26,6 +26,7 @@ class ParentRepository @Inject constructor(private val context: Context) {
 
 
     fun getParents(): Flow<Resource<QuerySnapshot>> = callbackFlow {
+        offer(Resource.loading<QuerySnapshot>(""))
 
         val listenerRegistration = FirebaseUtil.getParents { snapshot, exception ->
 
