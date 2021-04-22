@@ -149,6 +149,10 @@ dependencies {
     //agora video voice chat
     implementation 'io.agora.rtc:full-sdk:3.0.0'
 
+
+    //load data from firebase synchronously
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.1.1"
+
 }
 kapt {
     correctErrorTypes true

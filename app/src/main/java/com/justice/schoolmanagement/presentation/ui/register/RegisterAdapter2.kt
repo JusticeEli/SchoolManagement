@@ -1,3 +1,4 @@
+/*
 package com.justice.schoolmanagement.presentation.ui.register
 
 import android.graphics.Color
@@ -53,14 +54,16 @@ class RegisterAdapter2(private val studentsFragment: Fragment, options: Firestor
 
     private fun setOnClickListeners(holder: ViewHolder, position: Int) {
         //  holder.binding.deleteTxtView.setOnClickListener { deleteStudentFromDatabase(position) }
-        /*   holder.binding.editTxtView.setOnClickListener {
+        */
+/*   holder.binding.editTxtView.setOnClickListener {
              //   ApplicationClass.documentSnapshot = snapshots.getSnapshot(position).toObject(StudentRegistrationData::class.java)?.documentSnapshot
            //    studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToEditStudentFragment())
            }
            holder.itemView.setOnClickListener {
           //     ApplicationClass.documentSnapshot = snapshots.getSnapshot(position).toObject(StudentRegistrationData::class.java)?.documentSnapshot
       //        studentsFragment.navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToStudentDetailsFragment())
-           }*/
+           }*//*
+
     }
 
     fun deleteStudentFromDatabase(position: Int) {
@@ -131,4 +134,4 @@ class RegisterAdapter2(private val studentsFragment: Fragment, options: Firestor
     }
 
 
-}
+}*/

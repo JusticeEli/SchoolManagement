@@ -12,6 +12,7 @@ import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_ENGAGED_CHAT_CHANNELS
 import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_MESSAGES
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -197,10 +198,10 @@ object FirebaseUtil {
                 Log.d(TAG, "getCurrentDateAndInitCurrentInfo: retrieving current date from database ${date}")
 
                 //this symbols act weird with database
-                currentInfo.currentDate = date.replace("/", "_")
-                currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+                currentInfo.currentDateString = date.replace("/", "_")
+                currentInfo.currentDateString = currentInfo.currentDateString.replace("0", "")
 
-                onComplete(currentInfo.currentDate)
+                onComplete(currentInfo.currentDateString)
 
             }
         }
@@ -208,7 +209,6 @@ object FirebaseUtil {
 
     }
     fun getCurrentDate(onComplete: (Date?) -> Unit) {
-        val currentInfo = CurrentInfo("16", "all", 4)
 
         FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
 
@@ -221,8 +221,17 @@ object FirebaseUtil {
         }
 
 
-
     }
+
+    suspend fun getCurrentDate2(): Date? {
+
+        FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).await()
+
+        val date = FirebaseFirestore.getInstance().collection("dummy").document("date").get().await().toObject(CurrentDate::class.java)?.date
+
+        return date
+    }
+
     fun sendMessage(message: Message, channelId: String) {
         chatChannelsCollectionRef().document(channelId)
                 .collection("messages")

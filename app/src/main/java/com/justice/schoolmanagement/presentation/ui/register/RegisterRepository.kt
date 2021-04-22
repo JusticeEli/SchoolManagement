@@ -1,17 +1,23 @@
 package com.justice.schoolmanagement.presentation.ui.register
 
+import android.util.Log
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.util.*
 
 
 class RegisterRepository {
+
+    private val TAG = "RegisterRepository"
+
     fun getCurrentDate() = callbackFlow<Resource<Date>> {
         offer(Resource.loading(""))
         FirebaseUtil.getCurrentDate {
@@ -26,9 +32,19 @@ class RegisterRepository {
         awaitClose { }
     }
 
+    suspend fun getCurrentDate2(): Date {
+        val date = FirebaseUtil.getCurrentDate2()
+        if (date == null) {
+            return Calendar.getInstance().time
+        } else {
+            return date
+        }
+
+    }
+
     fun startFetchingData(currentInfo: CurrentInfo) = callbackFlow<Resource<DocumentSnapshot>> {
 
-        FirebaseUtil.collectionReferenceDate().document(currentInfo.currentDate).get().addOnSuccessListener {
+        FirebaseUtil.collectionReferenceDate().document(currentInfo.currentDateString).get().addOnSuccessListener {
             if (it.exists()) {
                 offer(Resource.success(it))
             } else {
@@ -43,7 +59,7 @@ class RegisterRepository {
 
     fun documentExist(currentInfo: CurrentInfo, snapshot: DocumentSnapshot) = callbackFlow<Resource<List<DocumentSnapshot>>> {
         val query: Query
-        if (RegisterFragment.currentInfo.currentClassGrade.equals("all")) {
+        if (currentInfo.currentClassGrade.equals("all")) {
             query = snapshot.reference.collection(Constants.STUDENTS)
         } else {
             query = snapshot.reference.collection(Constants.STUDENTS).whereEqualTo(CURRENT_CLASS_GRADE, currentInfo.currentClassGrade)
@@ -64,6 +80,51 @@ class RegisterRepository {
         val map = mapOf<String, Boolean>(PRESENT to present)
         snapshot.reference.set(map, SetOptions.merge()).addOnSuccessListener {
             offer(Resource.success(snapshot))
+        }.addOnFailureListener {
+            offer(Resource.error(it))
+        }
+
+        awaitClose { }
+    }
+
+    fun documentDoesNotExist(currentInfo: CurrentInfo) = callbackFlow<Resource<List<DocumentSnapshot>>> {
+
+        FirebaseUtil.collectionReferenceDate().document(currentInfo.currentDateString).set(currentInfo).await()
+        FirebaseUtil.collectionReferenceStudents().get().await().forEach { queryDocumentSnapshot ->
+            val studentData = queryDocumentSnapshot.toObject(StudentData::class.java)
+            val studentRegistrationData = StudentRegistrationData(queryDocumentSnapshot.id, true, studentData.classGrade.toString(), studentData)
+            FirebaseUtil.collectionReferenceDate().document(currentInfo.currentDateString).collection(Constants.STUDENTS).add(studentRegistrationData).await()
+        }
+
+        FirebaseUtil.collectionReferenceDate().document(currentInfo.currentDateString).collection(Constants.STUDENTS).get().addOnSuccessListener {
+
+        }.addOnFailureListener {
+            offer(Resource.error(it))
+        }
+
+        awaitClose { }
+    }
+
+
+    fun documentDoesNotExist2(currentInfo: CurrentInfo) = callbackFlow<Resource<List<DocumentSnapshot>>> {
+
+        FirebaseUtil.collectionReferenceStudents().get().addOnSuccessListener {
+            it?.forEach { queryDocumentSnapshot ->
+
+                val studentData = queryDocumentSnapshot.toObject(StudentData::class.java)
+
+                val studentRegistrationData = StudentRegistrationData(queryDocumentSnapshot.id, true, studentData.classGrade.toString(), studentData)
+
+                FirebaseUtil.collectionReferenceDate().document(currentInfo.currentDateString).collection(Constants.STUDENTS).add(studentRegistrationData)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "documentDoesNotExist: success adding student")
+                        }.addOnFailureListener {
+                            Log.d(TAG, "documentDoesNotExist: failed adding student")
+                        }
+
+
+            }
+
         }.addOnFailureListener {
             offer(Resource.error(it))
         }

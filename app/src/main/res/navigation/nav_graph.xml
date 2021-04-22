@@ -307,7 +307,11 @@
     <fragment
         android:id="@+id/feesEditFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.fees.FeesAddEditFragment"
-        android:label="Pay" />
+        android:label="Pay" >
+        <argument
+            android:name="studentFees"
+            app:argType="com.justice.schoolmanagement.presentation.ui.fees.StudentFees" />
+    </fragment>
     <fragment
         android:id="@+id/chatFragment"
         android:name="com.justice.schoolmanagement.presentation.ui.chat.ChatFragment"

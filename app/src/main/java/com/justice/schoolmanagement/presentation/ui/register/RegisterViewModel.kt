@@ -15,25 +15,28 @@ import java.util.*
 class RegisterViewModel @ViewModelInject constructor(private val repository: RegisterRepository) : ViewModel() {
 
     private val TAG = "RegisterViewModel"
-   
+
+
+
+
     val getCurrentDate = repository.getCurrentDate()
     private val _registerEvents = Channel<RegisterFragment.Event>()
     val registerEvents = _registerEvents.receiveAsFlow()
     fun setEvent(event: RegisterFragment.Event) {
         viewModelScope.launch {
             when (event) {
-                is RegisterFragment.Event.TabSelected -> {
-
-                }
                 is RegisterFragment.Event.DateClicked -> {
                     _registerEvents.send(RegisterFragment.Event.DateClicked)
 
                 }
-                is RegisterFragment.Event.SpecificDateChoosen -> {
-                    checkIfWeHaveChoosenCorrectDate(event.date)
+                is RegisterFragment.Event.CorrectDateChoosen -> {
+                    checkIfWeHaveChoosenCorrectDate(event.currentInfo)
                 }
                 is RegisterFragment.Event.ClassSelected -> {
-
+                    _registerEvents.send(RegisterFragment.Event.ClassSelected(event.classGrade))
+                }
+                is RegisterFragment.Event.TabSelected -> {
+                    _registerEvents.send(RegisterFragment.Event.TabSelected(event.tab))
                 }
                 is RegisterFragment.Event.FetchData -> {
 
@@ -66,6 +69,8 @@ class RegisterViewModel @ViewModelInject constructor(private val repository: Reg
     }
 
     private suspend fun startFetchingData(currentInfo: CurrentInfo) {
+
+
         repository.startFetchingData(currentInfo).collect {
             Log.d(TAG, "startFetchingData: ${it.status.name}")
             when (it.status) {
@@ -77,6 +82,7 @@ class RegisterViewModel @ViewModelInject constructor(private val repository: Reg
                 }
                 Resource.Status.EMPTY -> {
                     //document does not exist
+                    documentDoesNotExist(currentInfo)
 
                 }
                 Resource.Status.ERROR -> {
@@ -85,6 +91,23 @@ class RegisterViewModel @ViewModelInject constructor(private val repository: Reg
             }
         }
 
+    }
+
+    private suspend fun documentDoesNotExist(currentInfo: CurrentInfo) {
+        repository.documentDoesNotExist(currentInfo).collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+
+                }
+                Resource.Status.SUCCESS -> {
+                    _fetchDataStatus.send(it)
+
+                }
+                Resource.Status.ERROR -> {
+                    _fetchDataStatus.send(it)
+                }
+            }
+        }
     }
 
     private suspend fun documentExists(currentInfo: CurrentInfo, snapshot: DocumentSnapshot) {
@@ -105,25 +128,25 @@ class RegisterViewModel @ViewModelInject constructor(private val repository: Reg
         }
     }
 
-    private suspend fun checkIfWeHaveChoosenCorrectDate(choosenDate: Date) {
+    private suspend fun checkIfWeHaveChoosenCorrectDate(currentInfo: CurrentInfo) {
         //check if we have choosen a future date and reject it if its future date
 ///checks if we are on same day
+        val choosenDate = currentInfo.dateChoosen!!
+        val currentDateServer = repository.getCurrentDate2()
+        val cal1 = Calendar.getInstance()
+        val cal2 = Calendar.getInstance()
+        cal1.time = choosenDate
+        cal2.time = currentDateServer
 
-        repository.getCurrentDate().collect {
-            val currentDateServer = it.data!!
-            val cal1 = Calendar.getInstance()
-            val cal2 = Calendar.getInstance()
-            cal1.time = choosenDate
-            cal2.time = currentDateServer
+        val sameDay = cal1[Calendar.DAY_OF_YEAR] == cal2[Calendar.DAY_OF_YEAR] &&
+                cal1[Calendar.YEAR] == cal2[Calendar.YEAR]
 
-            val sameDay = cal1[Calendar.DAY_OF_YEAR] == cal2[Calendar.DAY_OF_YEAR] &&
-                    cal1[Calendar.YEAR] == cal2[Calendar.YEAR]
+        if (choosenDate.after(currentDateServer)) {
+            _registerEvents.send(RegisterFragment.Event.FutureDateChoosen)
 
-            if (choosenDate.after(currentDateServer)) {
-                _registerEvents.send(RegisterFragment.Event.FutureDateChoosen)
-            } else {
-                _registerEvents.send(RegisterFragment.Event.SpecificDateChoosen(choosenDate))
-            }
+        } else {
+            _registerEvents.send(RegisterFragment.Event.CorrectDateChoosen(currentInfo))
+
         }
 
 

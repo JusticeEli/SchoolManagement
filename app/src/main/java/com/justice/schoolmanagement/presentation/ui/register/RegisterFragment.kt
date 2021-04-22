@@ -10,16 +10,13 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.widget.ViewPager2
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.RequestManager
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentRegisterBinding
-import com.justice.schoolmanagement.presentation.utils.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
@@ -30,17 +27,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class RegisterFragment : Fragment(R.layout.fragment_register) {
 
-    companion object {
-        lateinit var currentInfo: CurrentInfo
-
-    }
 
     private val TAG = "RegisterFragment"
 
-    val firebaseFirestore = FirebaseFirestore.getInstance()
-    var listenerRegistration: ListenerRegistration? = null
-    private var viewPager: ViewPager2? = null
-    lateinit var currentDateServer: Date
+
     lateinit var binding: FragmentRegisterBinding
     private val viewModel: RegisterViewModel by viewModels()
     @Inject
@@ -58,8 +48,13 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
     }
 
     private fun setUpRecyclerView() {
-        adapter= RegisterAdapter(requestManager,checkBoxClicked = { snapshot,present->onCheckBoxClicked(snapshot,present)})
-                .. }
+        adapter = RegisterAdapter(requestManager, checkBoxClicked = { snapshot, present -> onCheckBoxClicked(snapshot, present) })
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = adapter
+        }
+
+    }
 
     private fun onCheckBoxClicked(snapshot: DocumentSnapshot, present: Boolean) {
        viewModel.setEvent(Event.CheckBoxClicked(snapshot, present))
@@ -115,11 +110,17 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                     is Event.DateClicked -> {
                         dateClicked()
                     }
-                    is Event.SpecificDateChoosen -> {
-                        specificDateChoosen(it.date)
+                    is Event.CorrectDateChoosen -> {
+                        correctDateChoosen(it.currentInfo)
                     }
                     is Event.FutureDateChoosen -> {
                         futureDateChoosen()
+                    }
+                    is Event.ClassSelected -> {
+                        classGradeSelected(it.classGrade)
+                    }
+                    is Event.TabSelected -> {
+                        tabSelected(it.tab)
                     }
                 }
             }
@@ -127,13 +128,13 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewModel.fetchDataStatus.collect {
-                when(it.status){
-                    Resource.Status.LOADING->{
+                Log.d(TAG, "subScribeToObservers:fetchDataStatus ${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
 
                     }
                     Resource.Status.SUCCESS -> {
-
-                        ada
+                        adapter.submitList(it.data)
 
                     }
                     Resource.Status.ERROR -> {
@@ -144,6 +145,21 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
     }
 
+    private fun tabSelected(curentTab: Int) {
+        val classGrade = binding.classGradeSpinner.selectedItem.toString()
+        val currentDateString = binding.currentDateTxtView.text.toString().cleanString
+        val currentInfo = CurrentInfo(currentDateString, classGrade, curentTab, null)
+        viewModel.setEvent(Event.FetchData(currentInfo))
+    }
+
+    private fun classGradeSelected(classGrade: String) {
+        val currentDateString = binding.currentDateTxtView.text.toString().cleanString
+        val currentTab = binding.tabs.selectedTabPosition
+        val currentInfo = CurrentInfo(currentDateString, classGrade, currentTab, null)
+        viewModel.setEvent(Event.FetchData(currentInfo))
+
+    }
+
     private fun futureDateChoosen() {
         showToastInfo("Please Dont choose future dates")
     }
@@ -152,8 +168,10 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         Toasty.info(requireContext(), message).show()
     }
 
-    private fun specificDateChoosen(date: Date) {
-        updateLabel(date)
+    private fun correctDateChoosen(currentInfo: CurrentInfo) {
+        updateLabel(currentInfo.dateChoosen!!)
+        viewModel.setEvent(Event.FetchData(currentInfo))
+
     }
 
     private fun dateClicked() {
@@ -163,8 +181,13 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
             calenderChoosen[Calendar.YEAR] = year
             calenderChoosen[Calendar.MONTH] = monthOfYear
             calenderChoosen[Calendar.DAY_OF_MONTH] = dayOfMonth
-            viewModel.setEvent(Event.SpecificDateChoosen(calenderChoosen.time))
-            updateLabel(dayOfMonth, monthOfYear + 1, year)
+
+            val currentClassGrade = binding.classGradeSpinner.selectedItem.toString()
+            val currentTab = binding.tabs.selectedTabPosition
+            val currentInfo = CurrentInfo(calenderChoosen.time.formatDate.cleanString, currentClassGrade, currentTab, calenderChoosen.time)
+
+            Log.d(TAG, "dateClicked: currentInfo:$currentInfo")
+            viewModel.setEvent(Event.CorrectDateChoosen(currentInfo))
         }
 
 
@@ -178,12 +201,11 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         Log.d(TAG, "receivedCurrentDate: currentdate:$dateFormatted")
         binding.currentDateTxtView.text = dateFormatted
 
-        val currentInfo=CurrentInfo()
-        currentInfo.currentDate = dateFormatted.replace("/", "_")
-        currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
+        val currentInfo = CurrentInfo()
+        currentInfo.currentDateString = dateFormatted.replace("/", "_")
+        currentInfo.currentDateString = currentInfo.currentDateString.replace("0", "")
 
         viewModel.setEvent(Event.FetchData(currentInfo))
-        setUpViewPager(null)
     }
 
     private fun setOnClickListeners() {
@@ -193,79 +215,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
     }
 
     private fun updateLabel(date: Date) {
-
         binding.currentDateTxtView.text = date.formatDate
-        currentInfo.currentDate = date.formatDate.replace("/", "_")
-        currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
-        setUpViewPager(null)
-
-    }
-
-    private fun updateLabel2(dayOfMonth: Int, monthOfYear: Int, year: Int) {
-        val data = "$dayOfMonth" + "/" + "${monthOfYear}" + "/" + "$year"
-        Log.d(TAG, "updateLabel: ${data}")
-//check if we have choosen a future date and reject it if its future date
-
-        val myCalendar = Calendar.getInstance()
-        myCalendar.set(Calendar.YEAR, year);
-        myCalendar.set(Calendar.MONTH, monthOfYear - 1);
-        myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        val choosenDate = myCalendar.time
-
-///checks if we are on same day
-        val cal1 = Calendar.getInstance()
-        val cal2 = Calendar.getInstance()
-        cal1.time = choosenDate
-        cal2.time = currentDateServer
-
-        val sameDay = cal1[Calendar.DAY_OF_YEAR] == cal2[Calendar.DAY_OF_YEAR] &&
-                cal1[Calendar.YEAR] == cal2[Calendar.YEAR]
-
-        if (sameDay) {
-            //nothing to do hear
-        } else if (choosenDate.after(currentDateServer)) {
-
-            myCalendar.get(Calendar.YEAR)
-
-            Toasty.error(requireContext(), "Please Don't Choose  Future date only past  can be choosen").show()
-            return
-        }
-
-        binding.currentDateTxtView.text = data
-        currentInfo.currentDate = data.replace("/", "_")
-        currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
-        setUpViewPager(null)
-
-    }
-
-
-    private fun getCurrentDateAndInitCurrentInfo() {
-        currentInfo = CurrentInfo("16", "all", true)
-
-        FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
-            Log.d(TAG, "getCurrentDateAndInitCurrentInfo: date sent to database")
-
-
-            FirebaseFirestore.getInstance().collection("dummy").document("date").get().addOnSuccessListener {
-
-                currentDateServer = it.toObject(CurrentDate::class.java)?.date!!
-
-                setOnClickListeners()
-                val date = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).format(it.toObject(CurrentDate::class.java)?.date)
-                binding.currentDateTxtView.text = date
-
-
-                Log.d(TAG, "getCurrentDateAndInitCurrentInfo: retrieving current date from database ${date}")
-
-                //this symbols act weird with database
-                currentInfo.currentDate = date.replace("/", "_")
-                currentInfo.currentDate = currentInfo.currentDate.replace("0", "")
-                setUpViewPager(null)
-                //   updateBadgeListener()
-            }
-        }
-
-
     }
 
 
@@ -280,16 +230,10 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         binding.classGradeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
 
-                val newClass = binding.classGradeSpinner.selectedItem as String
-                currentInfo.currentClass = newClass.trim()
-
                 if (++check > 1) {
-
-                    Log.d(TAG, "onItemSelected: spinner value changed: $newClass")
-                    // updateBadgeListener()
-                    //  refreshList()
-                    setUpViewPager(viewPager?.currentItem)
-                    // updateBadgeListener()
+                    val classGrade = binding.classGradeSpinner.selectedItem.toString()
+                    Log.d(TAG, "onItemSelected: spinner value changed: ${classGrade}")
+                    viewModel.setEvent(Event.ClassSelected(classGrade))
 
                 }
 
@@ -302,13 +246,13 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
     }
 
-    private fun updateBadgeListener() {
+   /* private fun updateBadgeListener() {
         Log.d(TAG, "updateBadgeListener: started")
         if (listenerRegistration != null) {
             //    listenerRegistration?.remove()
         }
 
-        listenerRegistration = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).collection(Constants.STUDENTS).addSnapshotListener { _, _ ->
+        listenerRegistration = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDateString).collection(Constants.STUDENTS).addSnapshotListener { _, _ ->
             Log.d(TAG, "updateBadgeListener: data changed ")
             val adapter = (viewPager?.adapter as ViewPagerAdapter?)
 
@@ -383,7 +327,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
     fun sendAllFragmentSize(size: Int) {
         binding.tabs.getTabAt(0)?.orCreateBadge?.number = size
-    }
+    }*/
 
     fun sendPresentFragmentSize(size: Int) {
         binding.tabs.getTabAt(1)?.orCreateBadge?.number = size
@@ -397,15 +341,21 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
     sealed class Event {
         data class ClassSelected(val classGrade: String) : Event()
         data class TabSelected(val tab: Int) : Event()
-        data class SpecificDateChoosen(val date: Date) : Event()
+        data class CorrectDateChoosen(val currentInfo: CurrentInfo) : Event()
         data class FetchCurrentRegister(val string: String) : Event()
         data class FetchData(val currentInfo: CurrentInfo) : Event()
-        data class CheckBoxClicked(val snapshot: DocumentSnapshot,val present: Boolean) : Event()
+        data class CheckBoxClicked(val snapshot: DocumentSnapshot, val present: Boolean) : Event()
         object DateClicked : Event()
         object FutureDateChoosen : Event()
 
 
+    }
+
+    val Date.formatDate get() = SimpleDateFormat("dd/MM/yyyy").format(this)
+
+    val String.cleanString
+        get() =
+            this.replace("/", "_").replace("0", "")
 
 }
 
-val Date.formatDate get() = SimpleDateFormat("dd/MM/yyyy").format(this)

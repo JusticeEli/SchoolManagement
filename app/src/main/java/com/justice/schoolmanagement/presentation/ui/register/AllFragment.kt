@@ -1,3 +1,4 @@
+/*
 package com.justice.schoolmanagement.presentation.ui.register
 
 import android.os.Bundle
@@ -24,6 +25,8 @@ import com.justice.schoolmanagement.presentation.ui.register.RegisterFragment.Co
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.utils.Constants
 import kotlinx.android.synthetic.main.fragment_present.*
+
+
 
 
 class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fragment_present) {
@@ -54,7 +57,10 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
         }
     }
 
-/*
+
+
+
+
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume: called")
@@ -63,7 +69,10 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
         }
 
     }
-*/
+
+
+
+
 
     private fun setSwipeRefreshListener() {
         binding.swipeRefreshLayout.setOnRefreshListener {
@@ -79,12 +88,12 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
         }
 
         binding.swipeRefreshLayout.post(Runnable { binding.swipeRefreshLayout.setRefreshing(true) })
-        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDate).get().addOnSuccessListener { documentsnapshot ->
+        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(RegisterFragment.currentInfo.currentDateString).get().addOnSuccessListener { documentsnapshot ->
             if (documentsnapshot.exists()) {
                 Log.d(TAG, "setUpFirestore: document exists")
                 docucumentExist(documentsnapshot)
             } else {
-                val map = mapOf<String, String>("currentDate" to currentInfo.currentDate)
+                val map = mapOf<String, String>("currentDate" to currentInfo.currentDateString)
                 documentsnapshot.reference.set(map).addOnSuccessListener {
 
 
@@ -103,12 +112,19 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
 
     private fun docucumentExist(documentsnapshot: DocumentSnapshot?) {
         ///delete
-        /*    documentsnapshot?.reference?.collection(Constants.COLLECTION_STUDENTS)!!.whereEqualTo("currentClass", currentInfo.currentClass).get().addOnSuccessListener {
+
+
+
+
+    documentsnapshot?.reference?.collection(Constants.COLLECTION_STUDENTS)!!.whereEqualTo("currentClass", currentInfo.currentClass).get().addOnSuccessListener {
                 it.forEach {
                     it.reference.delete().addOnSuccessListener { }
                 }
             }
-    */
+
+
+
+
         ///delete
         val query: Query
         if (currentInfo.currentClass.equals("all")) {
@@ -167,7 +183,7 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
 
                     val studentRegistrationData = StudentRegistrationData(queryDocumentSnapshot.id, true, studentData.classGrade.toString(), studentData)
 
-                    firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDate).collection(Constants.STUDENTS).add(studentRegistrationData).addOnCompleteListener {
+                    firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDateString).collection(Constants.STUDENTS).add(studentRegistrationData).addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.d(TAG, "startFetchingData: success adding student registration data")
 
@@ -202,3 +218,5 @@ class AllFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fr
 
 
 }
+
+*/

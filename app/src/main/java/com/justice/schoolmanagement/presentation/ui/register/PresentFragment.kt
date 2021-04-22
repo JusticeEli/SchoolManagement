@@ -1,3 +1,4 @@
+/*
 package com.justice.schoolmanagement.presentation.ui.register
 
 import android.os.Bundle
@@ -54,12 +55,12 @@ class PresentFragment(val registerFragment: RegisterFragment) : Fragment(R.layou
             return
         }
 
-        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDate).get().addOnSuccessListener { documentsnapshot ->
+        firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDateString).get().addOnSuccessListener { documentsnapshot ->
             if (documentsnapshot.exists()) {
                 docucumentExist(documentsnapshot)
                 Log.d(TAG, "setUpFirestore: document exists")
             } else {
-                val map = mapOf<String, String>("currentDate" to currentInfo.currentDate)
+                val map = mapOf<String, String>("currentDate" to currentInfo.currentDateString)
                 documentsnapshot.reference.set(map).addOnSuccessListener {
                           startFetchingData(documentsnapshot)
 
@@ -82,12 +83,14 @@ class PresentFragment(val registerFragment: RegisterFragment) : Fragment(R.layou
 
     private fun docucumentExist(documentsnapshot: DocumentSnapshot?) {
         ///delete
-        /*    documentsnapshot?.reference?.collection(Constants.COLLECTION_STUDENTS)!!.whereEqualTo("currentClass", currentInfo.currentClass).get().addOnSuccessListener {
+        */
+/*    documentsnapshot?.reference?.collection(Constants.COLLECTION_STUDENTS)!!.whereEqualTo("currentClass", currentInfo.currentClass).get().addOnSuccessListener {
                 it.forEach {
                     it.reference.delete().addOnSuccessListener { }
                 }
             }
-    */
+    *//*
+
         ///delete
 
         if (view==null){
@@ -139,7 +142,7 @@ class PresentFragment(val registerFragment: RegisterFragment) : Fragment(R.layou
 
                     val studentRegistrationData = StudentRegistrationData(queryDocumentSnapshot.id, true, studentData.classGrade.toString(), studentData)
 
-                    firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDate).collection(Constants.STUDENTS).add(studentRegistrationData).addOnCompleteListener {
+                    firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE).document(currentInfo.currentDateString).collection(Constants.STUDENTS).add(studentRegistrationData).addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.d(TAG, "startFetchingData: success adding student registration data")
 
@@ -172,4 +175,4 @@ class PresentFragment(val registerFragment: RegisterFragment) : Fragment(R.layou
         progressBar.isVisible = false
     }
 
-}
+}*/

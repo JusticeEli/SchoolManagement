@@ -6,7 +6,9 @@ import com.bumptech.glide.RequestManager
 import com.justice.schoolmanagement.presentation.splash.SplashScreenRepository
 import com.justice.schoolmanagement.presentation.ui.admin.AdminRepository
 import com.justice.schoolmanagement.presentation.ui.blog.BlogRepository
+import com.justice.schoolmanagement.presentation.ui.fees.FeesRepository
 import com.justice.schoolmanagement.presentation.ui.parent.ParentRepository
+import com.justice.schoolmanagement.presentation.ui.register.RegisterRepository
 import com.justice.schoolmanagement.presentation.ui.student.StudentsRepository
 import com.justice.schoolmanagement.presentation.ui.teacher.TeacherRepository
 import dagger.Module
@@ -33,6 +35,19 @@ object AppModule {
     fun provideRepository(@ApplicationContext context: Context): ParentRepository {
         return ParentRepository(context)
     }
+
+    @Provides
+    @Singleton
+    fun FeesRepo(@ApplicationContext context: Context): FeesRepository {
+        return FeesRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRegisterRepo(@ApplicationContext context: Context): RegisterRepository {
+        return RegisterRepository()
+    }
+
     @Provides
     @Singleton
     fun provideBlogRepo(@ApplicationContext context: Context): BlogRepository {
