@@ -5,6 +5,7 @@ import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
 import kotlinx.android.parcel.Parcelize
 
+const val CLASS_GRADE="classGrade"
 @Parcelize
 data class StudentData(
         @DocumentId

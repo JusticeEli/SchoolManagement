@@ -64,4 +64,41 @@ class FeesRepository {
 
         }
     }
+
+    fun startFetchingFees(studentId: String, feesId: String) = callbackFlow<Resource<DocumentSnapshot>> {
+        offer(Resource.loading(""))
+        FirebaseUtil.collectionReferenceStudents().document(studentId).get().await().reference.collection(Constants.COLLECTION_FEES).document(feesId).get().addOnSuccessListener {
+            offer(Resource.success(it))
+        }.addOnFailureListener {
+            offer(Resource.error(it))
+        }
+
+        awaitClose { }
+    }
+
+    fun startUpdating(snapshot: DocumentSnapshot, studentFees: StudentFees) = callbackFlow<Resource<StudentFees>> {
+        val map = mapOf("payedAmount" to studentFees.payedAmount)
+        offer(Resource.loading(""))
+        snapshot.reference.set(map, SetOptions.merge()).addOnSuccessListener {
+            offer(Resource.success(studentFees))
+        }.addOnFailureListener {
+            offer(Resource.error(it))
+        }
+
+
+        awaitClose { }
+    }
+
+    fun startAdding(snapshot: DocumentSnapshot, studentFees: StudentFees) = callbackFlow<Resource<StudentFees>> {
+        offer(Resource.loading(""))
+        snapshot.reference.collection(Constants.COLLECTION_FEES).add(studentFees).addOnSuccessListener {
+            offer(Resource.success(studentFees))
+        }.addOnFailureListener {
+            offer(Resource.error(it))
+        }
+
+        awaitClose {
+
+        }
+    }
 }

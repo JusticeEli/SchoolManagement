@@ -193,7 +193,8 @@
         android:name="com.justice.schoolmanagement.presentation.ui.results.ResultsEditFragment"
         android:label="Results"
         tools:layout="@layout/fragment_results_edit">
-        <argument android:name="resultsURL" />
+        <argument android:name="studentMarks"
+            app:argType="com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks" />
     </fragment>
     <fragment
         android:id="@+id/teacherDetailsFragment"
@@ -260,8 +261,8 @@
             android:id="@+id/action_choosenClassFragment_to_studentDetailsFragment"
             app:destination="@id/studentDetailsFragment" />
         <argument
-            android:name="classNumber"
-            app:argType="integer" />
+            android:name="classGrade"
+            app:argType="string" />
         <action
             android:id="@+id/action_choosenClassFragment_to_editStudentFragment"
             app:destination="@id/editStudentFragment" />
@@ -311,6 +312,9 @@
         <argument
             android:name="studentFees"
             app:argType="com.justice.schoolmanagement.presentation.ui.fees.StudentFees" />
+        <argument
+            android:name="studentData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.student.models.StudentData" />
     </fragment>
     <fragment
         android:id="@+id/chatFragment"

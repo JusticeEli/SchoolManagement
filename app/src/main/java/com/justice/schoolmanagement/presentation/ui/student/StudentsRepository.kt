@@ -8,6 +8,7 @@ import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.presentation.ui.student.models.CLASS_GRADE
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,6 +28,22 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
     fun getStudents() = callbackFlow<Resource<QuerySnapshot>> {
         offer(Resource.loading(""))
         val listenerRegistration = FirebaseUtil.getStudents { querySnapshot, exception ->
+            if (exception != null) {
+                offer(Resource.error(exception))
+            } else if (querySnapshot?.isEmpty!!) {
+                offer(Resource.empty())
+            } else {
+                offer(Resource.success(querySnapshot))
+            }
+        }
+
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+ fun getStudentsByClass(classGrade:String) = callbackFlow<Resource<QuerySnapshot>> {
+        offer(Resource.loading(""))
+        val listenerRegistration = FirebaseUtil.collectionReferenceStudents().whereEqualTo(CLASS_GRADE,classGrade) .addSnapshotListener { querySnapshot, exception ->
             if (exception != null) {
                 offer(Resource.error(exception))
             } else if (querySnapshot?.isEmpty!!) {

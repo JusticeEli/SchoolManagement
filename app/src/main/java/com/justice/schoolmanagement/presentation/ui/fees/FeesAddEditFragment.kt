@@ -4,87 +4,147 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.view.*
+import android.util.Log
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.google.firebase.firestore.SetOptions
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
+import com.example.edward.nyansapo.wrappers.Resource
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentFeesAddEditBinding
-import com.justice.schoolmanagement.presentation.SchoolApplication
-import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_FEES
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
 
+@AndroidEntryPoint
 class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
-    lateinit var binding: FragmentFeesAddEditBinding
-    var updating: Boolean = false
 
+    private val TAG = "FeesAddEditFragment"
+
+    lateinit var binding: FragmentFeesAddEditBinding
+    private val viewModel: FeesAddEditViewModel by viewModels()
+    private val navArgs: FeesAddEditFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentFeesAddEditBinding.bind(view)
         initProgressBar()
-        checkIfWeAreUpdatingOrAddingFees()
-        if (updating) {
-            setInitialValues()
-        }
-        setOnClickListeners()
+        Log.d(TAG, "onViewCreated: fees:${navArgs.studentFees}")
 
+        setOnClickListeners()
+        viewModel.setEvent(Event.CheckUpdating())
+
+        subScribeToObservers()
+
+    }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.addEditEvents.collect {
+                when (it) {
+                    is Event.CheckUpdating -> {
+                        startUpdate(it.updating)
+                    }
+                }
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.getStudent.collect {
+                Log.d(TAG, "subScribeToObservers: getStudent:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.SUCCESS -> {
+                        viewModel.setCurrentStudent(it.data!!)
+
+                    }
+                    Resource.Status.ERROR -> {
+
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.studentFeesStatus.collect {
+                Log.d(TAG, "subScribeToObservers: studentFeesStatus :${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        viewModel.setCurrentFees(it.data!!)
+                        setInitialValues(it.data!!)
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.addEditFeesStatus.collect {
+                Log.d(TAG, "subScribeToObservers: addEditFeesStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    private fun startUpdate(updating: Boolean) {
+        viewModel.setIsUpdating(updating)
+
+        if (updating) {
+            viewModel.setEvent(Event.FetchFees)
+        }
     }
 
     private fun setOnClickListeners() {
         binding.saveBtn.setOnClickListener {
-
-            val pay = binding.payedEdtTxt.text.toString().trim()
-            if (pay.isNullOrEmpty()) {
-
-                Toasty.error(requireContext(), "Please fill  the payed amount").show()
-
-                return@setOnClickListener
-            }
-
-            if (updating) {
-                savePayedAmountUpdating(pay.toInt())
-
-            } else {
-                savePayedAmountAdding(pay.toInt())
-
-            }
-
-
+            val feesObject = getFeesObject()
+            viewModel.setEvent(Event.AddEditFees(feesObject))
         }
     }
 
-    private fun savePayedAmountAdding(pay: Int) {
-        val studentFees = StudentFees(pay)
-        showProgress(true)
-        SchoolApplication.studentSnapshot!!.reference.collection(COLLECTION_FEES).add(studentFees).addOnSuccessListener {
-            Toasty.success(requireContext(), "success adding fees").show()
-            showProgress(false)
-            findNavController().popBackStack()
-        }
+    private fun getFeesObject(): StudentFees {
+        val studentFees = StudentFees()
+        studentFees.payedAmount = binding.payedEdtTxt.text.toString()
+        return studentFees
     }
 
-    private fun savePayedAmountUpdating(pay: Int) {
-        val map = mapOf("payedAmount" to pay)
-        showProgress(true)
-        SchoolApplication.documentSnapshot!!.reference.set(map, SetOptions.merge()).addOnSuccessListener {
-            Toasty.success(requireContext(), "Success adding fees").show()
-            showProgress(false)
-            findNavController().popBackStack()
 
-        }
-
+    private fun setInitialValues(snapshot: DocumentSnapshot) {
+        val studentFees = snapshot.toObject(StudentFees::class.java)!!
+        binding.payedEdtTxt.setText(studentFees.payedAmount)
     }
 
-    private fun setInitialValues() {
-        binding.payedEdtTxt.setText(SchoolApplication.documentSnapshot!!.toObject(StudentFees::class.java)!!.payedAmount.toString())
-    }
-
-    private fun checkIfWeAreUpdatingOrAddingFees() {
-        updating = SchoolApplication.documentSnapshot != null
-    }
 
     /////////////////////PROGRESS_BAR////////////////////////////
     lateinit var dialog: AlertDialog
@@ -154,4 +214,11 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
     }
 
     //end progressbar
+
+    sealed class Event {
+        data class CheckUpdating(val updating: Boolean = false) : Event()
+        object FetchFees : Event()
+        data class AddEditFees(val studentFees: StudentFees) : Event()
+
+    }
 }

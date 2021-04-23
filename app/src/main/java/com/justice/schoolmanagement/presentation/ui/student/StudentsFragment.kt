@@ -207,6 +207,15 @@ class StudentsFragment : Fragment(R.layout.fragment_students) {
         }
     }
 
+    fun deleteStudentFromDatabase(snapshot: DocumentSnapshot) {
+        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which ->
+            val position = adapter.currentList.indexOf(snapshot)
+            adapter.notifyItemChanged(position)
+        }.setPositiveButton("yes") { dialog, which ->
+            viewModel.setEvent(Event.StudentDeleteConfirmed(snapshot))
+        }.show()
+    }
+
     private fun setSwipeListenerForItems() {
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -220,14 +229,6 @@ class StudentsFragment : Fragment(R.layout.fragment_students) {
         }).attachToRecyclerView(binding.recyclerView)
     }
 
-    fun deleteStudentFromDatabase(snapshot: DocumentSnapshot) {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which ->
-            val position = adapter.currentList.indexOf(snapshot)
-            adapter.notifyItemChanged(position)
-        }.setPositiveButton("yes") { dialog, which ->
-            viewModel.setEvent(Event.StudentDeleteConfirmed(snapshot))
-        }.show()
-    }
 
 
     /////////////////////PROGRESS_BAR////////////////////////////
