@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +29,9 @@ import kotlinx.coroutines.flow.collect
 @AndroidEntryPoint
 class ResultsFragment : Fragment(R.layout.fragment_results) {
 
-    private lateinit var adapter: ResultsAdapter
+    private val TAG = "ResultsFragment"
+
+    private lateinit var resultsAdapter: ResultsAdapter
 
     lateinit var binding: FragmentResultsBinding
     private val viewModel: ResultsViewModel by viewModels()
@@ -38,45 +41,53 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
         initProgressBar()
         setUpRecyclerView()
 
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            subScribeToObservers()
+        subScribeToObservers()
 
-        }
+
     }
 
-    private suspend fun subScribeToObservers() {
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
 
-        viewModel.getAllMarks.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    showProgress(true)
+                viewModel.getAllMarks.collect {
+                    Log.d(TAG, "subScribeToObservers:getAllMarks:${it.status.name} ")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
 
-                }
-                Resource.Status.SUCCESS -> {
-                    showProgress(false)
-                    adapter.submitList(it.data)
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            Log.d(TAG, "subScribeToObservers: size:${it.data?.size}")
+                            resultsAdapter.submitList(it.data)
 
-                }
-                Resource.Status.EMPTY -> {
-                    showProgress(false)
-                    showToastInfo("Database is Empty")
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
+                            showToastInfo("Database is Empty")
 
-                }
-                Resource.Status.ERROR -> {
-                    showProgress(false)
-                    showToastInfo("Error: ${it.exception?.message}")
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            showToastInfo("Error: ${it.exception?.message}")
 
-                }
-            }
-        }
-
-        viewModel.resultEvents.collect {
-            when (it) {
-                is Event.EditClicked -> {
-                    goToEditScreen(it.snapshot)
+                        }
+                    }
                 }
             }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.resultEvents.collect {
+                when (it) {
+                    is Event.EditClicked -> {
+                        goToEditScreen(it.snapshot)
+                    }
+                }
+            }
+
         }
+
     }
 
     private fun goToEditScreen(snapshot: DocumentSnapshot) {
@@ -89,12 +100,10 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
     }
 
     private fun setUpRecyclerView() {
-        adapter = ResultsAdapter { onEditClicked(it) }
+        resultsAdapter = ResultsAdapter { onEditClicked(it) }
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = adapter
-
-
+            adapter = resultsAdapter
         }
     }
 

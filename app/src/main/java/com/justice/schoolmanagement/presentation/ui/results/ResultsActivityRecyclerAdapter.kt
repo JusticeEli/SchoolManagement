@@ -17,7 +17,7 @@ class ResultsActivityRecyclerAdapter(private val resultsFragment: ResultsFragmen
         //////////////////////////////////
         holder.binding.apply {
             positionTxtView.text = "" + model.position
-            nameTxtView.text = "" + model.name
+            nameTxtView.text = "" + model.fullName
             mathTxtView.text = "" + model.math
             scienceTxtView.text = "" + model.science
             englishTxtView.text = "" + model.english

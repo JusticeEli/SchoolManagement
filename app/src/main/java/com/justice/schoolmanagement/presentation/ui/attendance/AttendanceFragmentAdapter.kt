@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui.attendance.model
+package com.justice.schoolmanagement.presentation.ui.attendance
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,7 +16,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemAttendanceBinding
-import com.justice.schoolmanagement.presentation.ui.attendance.AttendanceFragment
+import com.justice.schoolmanagement.presentation.ui.attendance.model.CheckInOut
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import es.dmoral.toasty.Toasty
 import java.text.SimpleDateFormat

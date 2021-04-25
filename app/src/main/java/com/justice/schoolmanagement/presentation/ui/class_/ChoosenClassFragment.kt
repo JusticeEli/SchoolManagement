@@ -51,7 +51,7 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChoosenClassBinding.bind(view)
-        Log.d(TAG, "onViewCreated: classGrade:${navArgs.classNumber}")
+        Log.d(TAG, "onViewCreated: classGrade:${navArgs.classGrade}")
         navController = findNavController()
         initRecyclerViews()
 
@@ -63,68 +63,11 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
         }
 
     }
-
-    private fun initRecyclerViews() {
-        initResultsAdapter()
-        initStudentAdapter()
-    }
-
-    private suspend fun subScribeToObserversResults() {
-
-        viewModel.getAllMarks.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    showProgress(true)
-
-                }
-                Resource.Status.SUCCESS -> {
-                    showProgress(false)
-                    resultsAdapter.submitList(it.data)
-
-                }
-                Resource.Status.EMPTY -> {
-                    showProgress(false)
-                    showToastInfo("Database is Empty")
-
-                }
-                Resource.Status.ERROR -> {
-                    showProgress(false)
-                    showToastInfo("Error: ${it.exception?.message}")
-
-                }
-            }
-        }
-
-        viewModel.resultEvents.collect {
-            when (it) {
-                is ResultsFragment.Event.EditClicked -> {
-                    goToEditScreen(it.snapshot)
-                }
-            }
-        }
-    }
-
-    private fun goToEditScreen(snapshot: DocumentSnapshot) {
-        val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
-        findNavController().navigate(ResultsFragmentDirections.actionResultsFragmentToResultsEditFragment(studentMarks))
-    }
-
-
-    private fun initResultsAdapter() {
-        resultsAdapter = ResultsAdapter { onEditClickedResults(it) }
-        binding.resultsRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = adapter
-        }
-    }
-
-    private fun onEditClickedResults(it: DocumentSnapshot) {
-        viewModel.setEventResults(Event.EditClicked(it))
-    }
-
     private suspend fun subScribeToObserversStudents() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewModel.getStudents.collect {
+                Log.d(TAG, "subScribeToObserversStudents:getStudents:${it.status.name} ")
+
                 when (it.status) {
                     Resource.Status.LOADING -> {
                         showProgress(true)
@@ -194,6 +137,70 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
 
     }
 
+    private suspend fun subScribeToObserversResults() {
+
+        viewModel.getAllMarks.collect {
+            Log.d(TAG, "subScribeToObserversResults: getAllMarks:${it.status.name}")
+            when (it.status) {
+                Resource.Status.LOADING -> {
+                    showProgress(true)
+
+                }
+                Resource.Status.SUCCESS -> {
+                    showProgress(false)
+                    Log.d(TAG, "subScribeToObserversResults:getAllMarks: size:${it.data?.size}")
+                    resultsAdapter.submitList(it.data)
+
+                }
+                Resource.Status.EMPTY -> {
+                    showProgress(false)
+                    showToastInfo("Database is Empty")
+
+                }
+                Resource.Status.ERROR -> {
+                    showProgress(false)
+                    showToastInfo("Error: ${it.exception?.message}")
+                    Log.d(TAG, "subScribeToObserversResults:Error: ${it.exception?.message} ")
+                    it.exception?.printStackTrace()
+
+                }
+            }
+        }
+
+        viewModel.resultEvents.collect {
+            when (it) {
+                is ResultsFragment.Event.EditClicked -> {
+                    goToEditScreen(it.snapshot)
+                }
+            }
+        }
+    }
+
+    private fun initRecyclerViews() {
+        initResultsAdapter()
+        initStudentAdapter()
+    }
+
+
+    private fun goToEditScreen(snapshot: DocumentSnapshot) {
+        val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
+        findNavController().navigate(ResultsFragmentDirections.actionResultsFragmentToResultsEditFragment(studentMarks))
+    }
+
+
+    private fun initResultsAdapter() {
+        resultsAdapter = ResultsAdapter { onEditClickedResults(it) }
+        binding.resultsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = resultsAdapter
+        }
+    }
+
+    private fun onEditClickedResults(it: DocumentSnapshot) {
+        viewModel.setEventResults(Event.EditClicked(it))
+    }
+
+
     private fun showToastInfo(message: String) {
         Toasty.info(requireContext(), message).show()
     }
@@ -230,7 +237,7 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
     }
 
     private fun setDefaultValues() {
-        headerTxtView.setText("Class ${navArgs.classNumber}")
+        headerTxtView.setText("Class ${navArgs.classGrade}")
     }
 
 
@@ -250,11 +257,11 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
 
     /////////////////////PROGRESS_BAR////////////////////////////
     fun showProgress(show: Boolean) {
-        if (show) {
+       /* if (show) {
             Toasty.info(requireContext(), "loading...").show()
         } else {
             Toasty.info(requireContext(), "finished loading").show()
-        }
+        }*/
     }
 
 

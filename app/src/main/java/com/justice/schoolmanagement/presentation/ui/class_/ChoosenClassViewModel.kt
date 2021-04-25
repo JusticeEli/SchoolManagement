@@ -22,6 +22,9 @@ class ChoosenClassViewModel @ViewModelInject constructor(private val studentRepo
                                                          private val repository: ResultsRepository,
                                                          @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
 
+
+    private val TAG = "ChoosenClassViewModel"
+
     //student section
     val getStudents = studentRepo.getStudentsByClass(savedStateHandle.get<String>(CLASS_GRADE)!!)
     private val _studentsEvents = Channel<StudentsFragment.Event>()

@@ -212,14 +212,14 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
     private fun setDefaultValueClassGradeSpinner(studentData: StudentData) {
         binding.apply {
             when (studentData!!.classGrade) {
-                1 -> classGradeSpinner.setSelection(0)
-                2 -> classGradeSpinner.setSelection(1)
-                3 -> classGradeSpinner.setSelection(2)
-                4 -> classGradeSpinner.setSelection(3)
-                5 -> classGradeSpinner.setSelection(4)
-                6 -> classGradeSpinner.setSelection(5)
-                7 -> classGradeSpinner.setSelection(6)
-                8 -> classGradeSpinner.setSelection(7)
+               "1 " -> classGradeSpinner.setSelection(0)
+               "2 " -> classGradeSpinner.setSelection(1)
+               "3 " -> classGradeSpinner.setSelection(2)
+               "4 " -> classGradeSpinner.setSelection(3)
+               "5 " -> classGradeSpinner.setSelection(4)
+               "6 " -> classGradeSpinner.setSelection(5)
+               "7 " -> classGradeSpinner.setSelection(6)
+               "8 " -> classGradeSpinner.setSelection(7)
             }
         }
 
@@ -245,7 +245,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
             val firstName = firstNameEdtTxt.text.toString()
             val lastName = lastNameEdtTxt.text.toString()
             val fullName = "${firstName} ${lastName}"
-            val classGrade = (classGradeSpinner.getSelectedItem().toString().toInt())
+            val classGrade = (classGradeSpinner.getSelectedItem().toString())
             val nationality = nationalitySpinner.getSelectedItem().toString()
             val religion = religionSpinner.getSelectedItem().toString()
             val email = emailEdtTxt.text.toString()

@@ -30,6 +30,7 @@ import com.justice.schoolmanagement.utils.onQueryTextChanged
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -56,7 +57,8 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
         initProgressBar()
         setUpRecyclerViewAdapter()
         setSwipeListenerForItems()
-        subscribeToObservers()
+        subscribeToObservers2()
+
 
     }
 
@@ -151,6 +153,112 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
                 }
             }
         }
+    }
+
+    private fun subscribeToObservers2() {
+        Log.d(TAG, "subscribeToObservers: ")
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            launch {
+                viewModel.getTeachers.collect {
+                    Log.d(TAG, "subscribeToObservers: teachersFetchStatus:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
+
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            viewModel.setCurrentTeacherListLiveData(it.data!!.documents)
+                            adapter.submitList(it.data?.documents)
+                            Log.d(TAG, "subscribeToObservers: size:${it.data.size()}")
+                            val path = Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS
+                            Log.d(TAG, "subscribeToObservers: path:$path")
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            showErrorToast(it.exception?.message ?: "Error Occurred")
+
+                        }
+                    }
+                }
+
+            }
+
+            launch {
+                viewModel.teacherQueryStatus.collect {
+                    Log.d(TAG, "subscribeToObservers: teacherQueryStatus:${it.status.name}")
+
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            //   showProgress(true)
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
+
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            adapter.submitList(it.data)
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            showErrorToast(it.exception?.message ?: "Error Occurred")
+
+                        }
+
+                    }
+                }
+
+            }
+
+            launch {
+                viewModel.teacherChannelEvents.collect {
+                    when (it) {
+
+                        is Event.TeacherDelete -> {
+                            deleteFromDatabase(it.snapshot)
+                        }
+                        is Event.TeacherClicked -> {
+                            val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
+                            navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToTeacherDetailsFragment(teacherData))
+                        }
+                        is Event.TeacherEdit -> {
+                            val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
+                            navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToEditTeacherFragment(teacherData))
+                        }
+                        is Event.TeacherSwiped -> {
+                            deleteFromDatabase(it.snapshot)
+
+                        }
+                    }
+                }
+
+            }
+            launch {
+
+                viewModel.deleteTeacherStatus.collect {
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+
+                        }
+                        Resource.Status.SUCCESS -> {
+
+                        }
+                        Resource.Status.ERROR -> {
+
+                        }
+                    }
+
+                }
+            }
+
+
+        }
+
+
     }
 
     private fun showErrorToast(message: String) {

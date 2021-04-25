@@ -165,7 +165,7 @@ class AddStudentFragment : Fragment(R.layout.fragment_add_student) {
             val firstName = firstNameEdtTxt.text.toString()
             val lastName = lastNameEdtTxt.text.toString()
             val fullName = "${firstName} ${lastName}"
-            val classGrade = (classGradeSpinner.getSelectedItem().toString().toInt())
+            val classGrade = (classGradeSpinner.getSelectedItem().toString())
             val nationality = nationalitySpinner.getSelectedItem().toString()
             val religion = religionSpinner.getSelectedItem().toString()
             val email = emailEdtTxt.text.toString()

@@ -26,7 +26,10 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -37,15 +40,15 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentSetLocationBinding
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CurrentPosition
 import com.justice.schoolmanagement.presentation.utils.Constants
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
 
-
+@AndroidEntryPoint
 class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocationListener.LocationListenerCallbacks {
-    companion object {
 
-        val RC_LOCATION_PERMISSION = 3
-        private const val TAG = "SetLocationFragment"
-    }
+    private val RC_LOCATION_PERMISSION = 3
+    private val TAG = "SetLocationFragment"
 
     //////////////fuse location client////
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -70,16 +73,79 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     ///////////////////////////////////
 
     private val documentReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
-
+    private val viewModel: SetLocationViewModel by viewModels()
     lateinit var binding: FragmentSetLocationBinding
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSetLocationBinding.bind(view)
         initProgressBar()
 
-        networkConnectionIsPresent()
-
+        checkIfNetworkConnectionIsPresent()
+        setUpLocationManager()
         setOnClickListeners()
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            subScribeToObservers()
+
+        }
+
+    }
+
+    private suspend fun subScribeToObservers() {
+        viewModel.setLocationEvents.collect {
+            when (it) {
+                is Event.GoToSettingScreen -> {
+                    goToSettingsScreen()
+                }
+                is Event.StartLocationUpdates -> {
+                    startLocationUpdates(it.radius)
+                }
+                is Event.StopLocationUpdates -> {
+                    stopLocationUpdates()
+                }
+            }
+        }
+
+        viewModel.setRadiusStatus.collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+
+                }
+                Resource.Status.SUCCESS -> {
+
+                }
+                Resource.Status.ERROR -> {
+                    showToastInfo("Error:${it.exception?.message}")
+
+                }
+            }
+        }
+
+        viewModel.uploadCurrentPositionStatus.collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+                    showProgress(true)
+
+                }
+                Resource.Status.SUCCESS -> {
+                    showProgress(false)
+
+                }
+                Resource.Status.ERROR -> {
+                    showProgress(false)
+                    showToastInfo("Error:${it.exception?.message}")
+
+                }
+            }
+        }
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    private fun goToSettingsScreen() {
+        val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+        startActivity(intent)
 
     }
 
@@ -90,10 +156,10 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "setUpLocationManager: permissions available requesting location updates")
 
-            mLocationListener = MyLocationListener(this, locationManager)
-            locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                    LOCATION_REFRESH_DISTANCE, mLocationListener
-            )
+            /*    mLocationListener = MyLocationListener(this, locationManager)
+                locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                        LOCATION_REFRESH_DISTANCE, mLocationListener
+                )*/
 
         } else {
 
@@ -120,7 +186,7 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
         }
     }
 
-    private fun networkConnectionIsPresent() {
+    private fun checkIfNetworkConnectionIsPresent() {
         if (!isOnline()) {
             createNetErrorDialog()
         }
@@ -129,11 +195,7 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     protected fun isOnline(): Boolean {
         val cm = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val netInfo = cm.activeNetworkInfo
-        return if (netInfo != null && netInfo.isConnected) {
-            true
-        } else {
-            false
-        }
+        return netInfo != null && netInfo.isConnected
     }
 
     ////////dialog shows when internet connection is not available
@@ -145,8 +207,7 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
                 .setCancelable(false)
                 .setPositiveButton("Settings"
                 ) { dialog, id ->
-                    val i = Intent(Settings.ACTION_WIRELESS_SETTINGS)
-                    startActivity(i)
+                    viewModel.setEvent(Event.GoToSettingScreen)
                 }
                 .setNegativeButton("Cancel"
                 ) { dialog, id -> findNavController().popBackStack() }
@@ -196,34 +257,22 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     }
 
     private fun setBtnClicked() {
-
-        if (binding.chooseRadiusEditTxt.text.isNullOrBlank()) {
-            Toasty.error(requireContext(), "Please Choose Radius").show()
-            return
-        }
-
-        // getLastKnownLocation()
-        // startLocationUpdates()
-        showProgress(true)
-
-        //////////////
-
-
-        locationCallback = MyLocationCallback { location ->
-            stopLocationUpdates()
-            Log.d(TAG, "setBtnClicked: :  ${location!!.latitude} Long: ${location.longitude} ")
-            uploadCurrentPosition(location)
-        }
-
-
-        startLocationUpdates();
-
+        val radius = binding.chooseRadiusEditTxt.text.toString()
+        viewModel.setEvent(Event.SetClicked(radius))
 
     }
 
 
-    private fun startLocationUpdates() {
+    private fun startLocationUpdates(radius: Int) {
         Log.d(TAG, "startLocationUpdates: started location updates")
+        locationCallback = MyLocationCallback { location ->
+
+            viewModel.setEvent(Event.StopLocationUpdates)
+
+            Log.d(TAG, "setBtnClicked: :  ${location!!.latitude} Long: ${location.longitude} ")
+            viewModel.setEvent(Event.UploadCurrentPosition(location, radius))
+
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
         locationRequest = LocationRequest.create()
@@ -339,4 +388,12 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     }
 
     //end progressbar
+
+    sealed class Event {
+        object GoToSettingScreen : Event()
+        data class SetClicked(val radius: String) : Event()
+        data class StartLocationUpdates(val radius: Int) : Event()
+        object StopLocationUpdates : Event()
+        data class UploadCurrentPosition(val location: Location, val radius: Int) : Event()
+    }
 }

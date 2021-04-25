@@ -16,6 +16,7 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -28,6 +29,7 @@ import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
@@ -52,61 +54,64 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
     private fun subScribeToObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            viewModel.getTeacherToEdit
-                    .collect {
-                        Log.d(TAG, "subScribeToObservers: status:${it.status.name}")
-                        when (it.status) {
-                            Resource.Status.LOADING -> {
-                                showProgress(true)
-                            }
-                            Resource.Status.SUCCESS -> {
-                                Log.d(TAG, "subScribeToObservers: success loading data")
-                                showProgress(false)
-                                viewModel.setCurrentSnapshot(it.data!!)
-                                val teacherData = it.data.toObject(TeacherData::class.java)!!
-                                setDefaultValues(teacherData)
-                                setOnClickListeners()
-                            }
-                            Resource.Status.ERROR -> {
-                                showProgress(false)
-                                showToastInfo("Error: ${it.exception?.message}")
 
+            launch {
+                viewModel.getTeacherToEdit
+                        .collect {
+                            Log.d(TAG, "subScribeToObservers: status:${it.status.name}")
+                            when (it.status) {
+                                Resource.Status.LOADING -> {
+                                    showProgress(true)
+                                }
+                                Resource.Status.SUCCESS -> {
+                                    Log.d(TAG, "subScribeToObservers: success loading data")
+                                    showProgress(false)
+                                    viewModel.setCurrentSnapshot(it.data!!)
+                                    val teacherData = it.data.toObject(TeacherData::class.java)!!
+                                    setDefaultValues(teacherData)
+                                    setOnClickListeners()
+                                }
+                                Resource.Status.ERROR -> {
+                                    showProgress(false)
+                                    showToastInfo("Error: ${it.exception?.message}")
+
+                                }
+                                Resource.Status.EMPTY -> {
+                                    showProgress(false)
+                                    Log.d(TAG, "subScribeToObservers: document does not exit")
+                                }
                             }
-                            Resource.Status.EMPTY -> {
-                                showProgress(false)
-                                Log.d(TAG, "subScribeToObservers: document does not exit")
-                            }
+
+                        }
+            }
+
+            launch {
+                viewModel.editTeacherStatus.collect {
+                    Log.d(TAG, "subsribeToObservers: editTeacherStatus:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                            Log.d(TAG, "subsribeToObservers: LOADING:${it.message}")
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            // causes an error
+                            findNavController().popBackStack()
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            Log.d(TAG, "subsribeToObservers: Error:${it.exception?.message}")
+                        }
+                        Resource.Status.EMPTY -> {
+                            showToastInfo("Please Fill All Fields")
                         }
 
                     }
-
-
-        }
-
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewModel.editTeacherStatus.collect {
-                Log.d(TAG, "subsribeToObservers: editTeacherStatus:${it.status.name}")
-                when (it.status) {
-                    Resource.Status.LOADING -> {
-                        showProgress(true)
-                        Log.d(TAG, "subsribeToObservers: LOADING:${it.message}")
-                    }
-                    Resource.Status.SUCCESS -> {
-                        showProgress(false)
-                        // causes an error
-                        //  findNavController().popBackStack()
-                    }
-                    Resource.Status.ERROR -> {
-                        showProgress(false)
-                        Log.d(TAG, "subsribeToObservers: Error:${it.exception?.message}")
-                    }
-                    Resource.Status.EMPTY -> {
-                        showToastInfo("Please Fill All Fields")
-                    }
-
                 }
             }
         }
+
+
     }
 
     private fun showToastInfo(message: String) {

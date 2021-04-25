@@ -69,13 +69,14 @@ class ResultsEditViewModel @ViewModelInject constructor(private val repository: 
     }
 
     private suspend fun updateDatabase(studentMarks: StudentMarks) {
+        Log.d(TAG, "updateDatabase: studentMarks:$studentMarks")
         repository.updateDatabase(currentStudentMarks.value!!, studentMarks).collect {
             _editMarksStatus.send(it)
         }
     }
 
     private fun computeTotalMarks(studentMarks: StudentMarks) {
-        studentMarks.totalMarks = "${studentMarks.math.toInt() + studentMarks.science.toInt() + studentMarks.english.toInt() + studentMarks.kiswahili.toInt() + studentMarks.sst_cre.toInt()}"
+        studentMarks.totalMarks = studentMarks.math.toInt() + studentMarks.science.toInt() + studentMarks.english.toInt() + studentMarks.kiswahili.toInt() + studentMarks.sst_cre.toInt()}
     }
 
     private fun marksAreNotValid(studentMarks: StudentMarks): Boolean {
@@ -102,4 +103,3 @@ class ResultsEditViewModel @ViewModelInject constructor(private val repository: 
                 || studentMarks.kiswahili.isBlank()
                 || studentMarks.sst_cre.isBlank())
     }
-}

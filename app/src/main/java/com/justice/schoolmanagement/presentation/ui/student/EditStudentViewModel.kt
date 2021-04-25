@@ -204,9 +204,9 @@ class EditStudentViewModel @ViewModelInject constructor(private val repository: 
 
     private suspend fun updateStudentMarks(snapshot: DocumentSnapshot, student: StudentData) {
         val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
-        studentMarks.setFullName(student.fullName)
-        studentMarks.setEmail(student.email)
-        studentMarks.setClassGrade(student.classGrade)
+        studentMarks.fullName=student.fullName
+        studentMarks.email=student.email
+        studentMarks.classGrade=student.classGrade
 
 
 

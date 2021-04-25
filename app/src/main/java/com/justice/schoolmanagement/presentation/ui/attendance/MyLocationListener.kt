@@ -29,6 +29,7 @@ class MyLocationListener(private val listenerCallbacks: LocationListenerCallback
     interface LocationListenerCallbacks {
         fun onProviderDisabled()
         fun sendLocation(location: Location?)
+
     }
 
     companion object {

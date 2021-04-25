@@ -50,7 +50,7 @@ class AddStudentViewModel @ViewModelInject constructor(private val repository: S
         Log.d(TAG, "trimDataAndSaveIntoDatabase: student:$student")
         student.firstName = student.firstName.trim()
         student.lastName = student.lastName.trim()
-        student.fullName = "${student.firstName} ${student.firstName}"
+        student.fullName = "${student.firstName} ${student.lastName}"
         student.classGrade = student.classGrade
         student.nationality = student.nationality.trim()
         student.religion = student.religion.trim()
@@ -163,9 +163,9 @@ class AddStudentViewModel @ViewModelInject constructor(private val repository: S
         val student = snapshot.toObject(StudentData::class.java)!!
         Log.d(TAG, "addStudentMarks: student:$student")
         val studentMarks = StudentMarks()
-        studentMarks.setFullName(student.fullName)
-        studentMarks.setEmail(student.email)
-        studentMarks.setClassGrade(student.classGrade)
+        studentMarks.fullName=student.fullName
+        studentMarks.email=student.email
+        studentMarks.classGrade=student.classGrade
 
 
         repository.addStudentMarks(snapshot, studentMarks).collect {

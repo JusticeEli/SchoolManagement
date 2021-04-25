@@ -17,6 +17,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentRegisterBinding
+import com.justice.schoolmanagement.utils.cleanString
+import com.justice.schoolmanagement.utils.formatDate
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
@@ -350,12 +352,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
 
 
     }
-
-    val Date.formatDate get() = SimpleDateFormat("dd/MM/yyyy").format(this)
-
-    val String.cleanString
-        get() =
-            this.replace("/", "_").replace("0", "")
 
 }
 

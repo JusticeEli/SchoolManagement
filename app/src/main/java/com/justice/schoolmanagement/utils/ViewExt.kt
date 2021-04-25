@@ -1,6 +1,8 @@
 package com.justice.schoolmanagement.utils
 
 import androidx.appcompat.widget.SearchView
+import java.text.SimpleDateFormat
+import java.util.*
 
 inline fun SearchView.onQueryTextChanged(crossinline listener: (String) -> Unit) {
     this.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -18,3 +20,12 @@ inline fun SearchView.onQueryTextChanged(crossinline listener: (String) -> Unit)
 
 val <T> T.exhaustive: T
     get() = this
+
+
+
+
+val Date.formatDate get() = SimpleDateFormat("dd/MM/yyyy").format(this)
+
+val String.cleanString
+    get() =
+        this.replace("/", "_")

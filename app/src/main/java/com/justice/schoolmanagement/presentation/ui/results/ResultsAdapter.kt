@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.results
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -11,6 +12,8 @@ import com.justice.schoolmanagement.databinding.ItemResultsBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 
 class ResultsAdapter(private val onEditClicked: (DocumentSnapshot) -> Unit) : ListAdapter<DocumentSnapshot, ResultsAdapter.ViewHolder>(DIFF_UTIL) {
+
+    private val TAG = "ResultsAdapter"
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<DocumentSnapshot>() {
@@ -25,6 +28,7 @@ class ResultsAdapter(private val onEditClicked: (DocumentSnapshot) -> Unit) : Li
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = getItem(position).toObject(StudentMarks::class.java)!!
+        Log.d(TAG, "onBindViewHolder: model:$model")
         holder.binding.apply {
             positionTxtView.text = "" + model.position
             nameTxtView.text = "" + model.fullName

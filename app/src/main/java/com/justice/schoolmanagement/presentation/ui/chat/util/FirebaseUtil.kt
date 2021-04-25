@@ -71,6 +71,7 @@ object FirebaseUtil {
 
 
     fun storageReferenceBlogsImages() = firebaseStorage.getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.BLOGS_IMAGES)
+    fun documentReferenceCurrentLocation() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
 
 
     val isUserLoggedIn: Boolean

@@ -23,6 +23,7 @@ import com.justice.schoolmanagement.databinding.FragmentResultsEditBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.android.synthetic.main.fragment_fees.*
 import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
@@ -42,37 +43,73 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
         Log.d(TAG, "onViewCreated: studentMarks:${navArgs.studentMarks}")
         setOnClickListeners()
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            subscribeToObservers()
+            subscribeToObservers2()
+
         }
+
 
     }
 
-    private suspend fun subscribeToObservers() {
+    private  suspend fun subscribeToObservers2() {
+
         viewModel.getStudentMarks.collect {
+            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
             when (it.status) {
                 Resource.Status.LOADING -> {
-                    showProgress(true)
+                    //   showProgress(true)
 
                 }
                 Resource.Status.SUCCESS -> {
-                    showProgress(false)
+                    //    showProgress(false)
                     viewModel.setCurrentStudentMarks(it.data!!)
                     setDefaultValues(it.data!!)
 
                 }
                 Resource.Status.ERROR -> {
-                    showProgress(false)
+                    //   showProgress(false)
 
                 }
             }
         }
 
-        viewModel.editMarksStatus.collect {
+
+    }
+
+    private suspend fun subscribeToObservers() {
+
+        viewModel.getStudentMarks.collect {
+            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
             when (it.status) {
                 Resource.Status.LOADING -> {
+                    //   showProgress(true)
 
                 }
                 Resource.Status.SUCCESS -> {
+                    //    showProgress(false)
+                    viewModel.setCurrentStudentMarks(it.data!!)
+                    setDefaultValues(it.data!!)
+
+                }
+                Resource.Status.ERROR -> {
+                    //   showProgress(false)
+
+                }
+            }
+        }
+
+
+
+
+
+
+        viewModel.editMarksStatus.collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+                    //    showProgress(true)
+
+                }
+                Resource.Status.SUCCESS -> {
+                    //     showProgress(false)
 
                 }
                 Resource.Status.ERROR -> {
@@ -80,6 +117,8 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
                 }
             }
         }
+
+
     }
 
     private fun showToastInfo(message: String) {
@@ -88,8 +127,6 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     private fun setOnClickListeners() {
         binding.submitBtn.setOnClickListener {
-
-
             val studentMarks = getStudentMarksObject()
             viewModel.setEvent(Event.SubmitClicked(studentMarks))
 
@@ -122,7 +159,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
             englishEdtTxt.setText("" + studentMarks!!.english)
             kiswahiliEdtTxt.setText("" + studentMarks!!.kiswahili)
             sstCreEdtTxt.setText("" + studentMarks!!.sst_cre)
-
+            totalEdtTxt.setText(studentMarks.totalMarks.toString())
         }
     }
 

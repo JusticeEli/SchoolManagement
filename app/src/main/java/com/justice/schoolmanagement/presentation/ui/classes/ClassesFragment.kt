@@ -8,9 +8,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentClassesBinding
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_classes.*
 import kotlinx.coroutines.flow.collect
-
+@AndroidEntryPoint
 class ClassesFragment : Fragment(R.layout.fragment_classes), View.OnClickListener {
     lateinit var binding: FragmentClassesBinding
     private val viewModel: ClassesViewModel by viewModels()
@@ -34,7 +35,7 @@ class ClassesFragment : Fragment(R.layout.fragment_classes), View.OnClickListene
     }
 
     private fun classChoosen(classNumber: Int) {
-        findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(classNumber))
+        findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(classNumber.toString()))
     }
 
     private fun setOnClickListeners() {

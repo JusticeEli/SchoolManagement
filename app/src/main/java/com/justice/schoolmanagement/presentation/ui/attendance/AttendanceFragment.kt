@@ -5,159 +5,181 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.DatePicker
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAttendanceBinding
-import com.justice.schoolmanagement.presentation.ui.attendance.model.AttendanceFragmentAdapter
-import com.justice.schoolmanagement.presentation.ui.attendance.model.CheckInOut
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
-import com.justice.schoolmanagement.presentation.utils.Constants
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
 import java.util.*
+import javax.inject.Inject
 
-class AttendanceFragment : Fragment(R.layout.fragment_attendance) {
-    companion object {
-        private const val TAG = "AttendanceFragment"
-    }
+@AndroidEntryPoint
+class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDialog.OnDateSetListener {
 
-    private val documentReferenceCurrentLocation = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
-    lateinit var currentDateServer: Date
+    private val TAG = "AttendanceFragment"
+
     lateinit var binding: FragmentAttendanceBinding
 
-    lateinit var attendanceFragmentAdapter: AttendanceFragmentAdapter
+    lateinit var adapter: AttendanceAdapter
 
+    @Inject
+    lateinit var requestManager: RequestManager
+    private val viewModel: AttendanceViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAttendanceBinding.bind(view)
         initProgressBar()
         initRecyclerView()
         setOnClickListeners()
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            subScribeToObservers()
+
+        }
+    }
+
+    private suspend fun subScribeToObservers() {
+
+
+        viewModel.getCurrentDate.collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+                    showProgress(true)
+
+                }
+                Resource.Status.SUCCESS -> {
+                    showProgress(false)
+                    viewModel.setEvent(Event.FetchAttendance(it.data!!))
+                }
+
+            }
+        }
+
+        viewModel.attendanceEvents.collect {
+            when (it) {
+                is Event.DateClicked -> {
+                    showDateDialog()
+                }
+                is Event.SetLocationClicked -> {
+                    goToSetLocationScreen()
+                }
+            }
+        }
+
+        viewModel.dateChoosenStatus.collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+                    showProgress(true)
+
+                }
+                Resource.Status.SUCCESS -> {
+                    showProgress(false)
+                    updateLabel(it.data!!)
+                    viewModel.setEvent(Event.FetchAttendance(it.data!!))
+                }
+                Resource.Status.ERROR -> {
+                    showProgress(false)
+                    showToastInfo("Error: ${it.exception?.message}")
+                }
+            }
+        }
+        viewModel.fetchAttendanceStatus.collect {
+            when (it.status) {
+                Resource.Status.LOADING -> {
+                    showProgress(true)
+
+                }
+                Resource.Status.SUCCESS -> {
+                    showProgress(false)
+                    adapter.submitList(it.data)
+
+                }
+                Resource.Status.ERROR -> {
+                    showProgress(false)
+                    showToastInfo("Error: ${it.exception?.message}")
+
+                }
+                Resource.Status.EMPTY -> {
+                    showProgress(false)
+                    showToastInfo("No Records in database!!")
+
+                }
+            }
+        }
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    private fun showDateDialog() {
+        val myCalendar = Calendar.getInstance()
+        DatePickerDialog(requireContext(), this, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
+                myCalendar[Calendar.DAY_OF_MONTH]).show()
+
+    }
+
+    override fun onDateSet(view: DatePicker?, year: Int, month: Int, dayOfMonth: Int) {
+        val choosenCalender = Calendar.getInstance()
+
+        choosenCalender[Calendar.YEAR] = year
+        choosenCalender[Calendar.MONTH] = month
+        choosenCalender[Calendar.DAY_OF_MONTH] = dayOfMonth
+        //month usually starts from 0
+        viewModel.setEvent(Event.DateChoosen(choosenCalender.time))
+
+    }
+
+    private fun goToSetLocationScreen() {
+        findNavController().navigate(R.id.action_attendanceFragment_to_setLocationFragment)
+
     }
 
     private fun setOnClickListeners() {
+
+
         binding.dateBtn.setOnClickListener {
-
-
-            val myCalendar = Calendar.getInstance()
-
-            val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth -> // TODO Auto-generated method stub
-                myCalendar[Calendar.YEAR] = year
-                myCalendar[Calendar.MONTH] = monthOfYear
-                myCalendar[Calendar.DAY_OF_MONTH] = dayOfMonth
-                //month usually starts from 0
-                updateLabel(dayOfMonth, monthOfYear + 1, year)
-            }
-
-            binding.dateBtn.setOnClickListener(object : View.OnClickListener {
-                override fun onClick(v: View?) {
-                    // TODO Auto-generated method stub
-                    DatePickerDialog(requireContext(), date, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
-                            myCalendar[Calendar.DAY_OF_MONTH]).show()
-                }
-            })
+            viewModel.setEvent(Event.DateClicked)
         }
-
         binding.setLocationBtn.setOnClickListener {
-            findNavController().navigate(R.id.action_attendanceFragment_to_setLocationFragment)
-
-        }
-    }
-
-    private fun updateLabel(dayOfMonth: Int, monthOfYear: Int, year: Int) {
-        val data = "$dayOfMonth" + "/" + "${monthOfYear}" + "/" + "$year"
-        Log.d(TAG, "updateLabel: ${data}")
-//check if we have choosen a future date and reject it if its future date
-
-        val myCalendar = Calendar.getInstance()
-        myCalendar.set(Calendar.YEAR, year);
-        myCalendar.set(Calendar.MONTH, monthOfYear - 1);
-        myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-        val choosenDate = myCalendar.time
-
-///checks if we are on same day
-        val cal1 = Calendar.getInstance()
-        val cal2 = Calendar.getInstance()
-        cal1.time = choosenDate
-        cal2.time = currentDateServer
-
-        val sameDay = cal1[Calendar.DAY_OF_YEAR] == cal2[Calendar.DAY_OF_YEAR] &&
-                cal1[Calendar.YEAR] == cal2[Calendar.YEAR]
-
-        if (sameDay) {
-            //nothing to do hear
-        } else if (choosenDate.after(currentDateServer)) {
-
-            myCalendar.get(Calendar.YEAR)
-
-            Toasty.error(requireContext(), "Please Don't Choose  Future date only past  can be choosen").show()
-            return
+            viewModel.setEvent(Event.SetLocationClicked)
         }
 
-        binding.currentDateTxtView.text = data
-        var currentDate=""
-        currentDate = data.replace("/", "_")
-        currentDate = currentDate.replace("0", "")
-        setUpRecyclerView(currentDate)
 
     }
 
-    private fun setUpRecyclerView(date: String) {
-        binding.currentDateTxtView.text = date
-        val query: Query = documentReferenceCurrentLocation.collection(date!!)
-        val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<CheckInOut>().setQuery(query, CheckInOut::class.java).setLifecycleOwner(viewLifecycleOwner).build()
-        attendanceFragmentAdapter = AttendanceFragmentAdapter(this, firestoreRecyclerOptions)
-        binding.recyclerView.apply {
-            setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = attendanceFragmentAdapter
-        }
-        setSwipeListenerForItems()
+    private fun updateLabel(choosenDate: String) {
+
+
+        binding.currentDateTxtView.text = choosenDate
+
     }
+
 
     private fun initRecyclerView() {
 
-        FirebaseUtil.getCurrentDateFormatted { date ->
-            binding.currentDateTxtView.text = date
-            val query: Query = documentReferenceCurrentLocation.collection(date!!)
-            val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<CheckInOut>().setQuery(query, CheckInOut::class.java).setLifecycleOwner(viewLifecycleOwner).build()
-            attendanceFragmentAdapter = AttendanceFragmentAdapter(this, firestoreRecyclerOptions)
-            binding.recyclerView.apply {
-                setHasFixedSize(true)
-                layoutManager = LinearLayoutManager(requireContext())
-                adapter = attendanceFragmentAdapter
-            }
-            setSwipeListenerForItems()
 
+        adapter = AttendanceAdapter(requestManager)
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = adapter
         }
 
 
-    }
-
-    private fun setSwipeListenerForItems() {
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
-                return false
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                attendanceFragmentAdapter!!.deleteTeacherDataFromDatabase(viewHolder.adapterPosition)
-            }
-        }).attachToRecyclerView(binding.recyclerView)
     }
 
 
@@ -229,4 +251,12 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance) {
     }
 
     //end progressbar
+    sealed class Event {
+        object DateClicked : Event()
+        object SetLocationClicked : Event()
+        data class DateChoosen(val choosenDate: Date) : Event()
+        data class FetchAttendance(val choosenDate: String) : Event()
+    }
+
+
 }

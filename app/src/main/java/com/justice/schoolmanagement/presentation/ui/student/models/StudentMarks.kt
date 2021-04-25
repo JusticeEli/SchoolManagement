@@ -15,12 +15,12 @@ data class StudentMarks(
         var fullName: String = "",
         var email: String = "",
         var classGrade: String = "",
-        var math: String = "",
-        var science: String = "",
-        var english: String = "",
-        var kiswahili: String = "",
-        var sst_cre: String = "",
-        var totalMarks: String = ""
+        var math: String = "0",
+        var science: String = "0",
+        var english: String = "0",
+        var kiswahili: String = "0",
+        var sst_cre: String = "0",
+        var totalMarks: Int = 0
 ) : Parcelable, Comparable<StudentMarks> {
     override fun compareTo(other: StudentMarks): Int {
         return this.position.compareTo(other.position)

@@ -168,7 +168,8 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
 
     private fun editFees(it: DocumentSnapshot) {
         val studentFees = it.toObject(StudentFees::class.java)!!
-        navController.navigate(FeesFragmentDirections.actionFeesFragmentToFeesEditFragment(studentFees))
+        val studentData=viewModel.currentStudent.value!!.toObject(StudentData::class.java)!!
+        navController.navigate(FeesFragmentDirections.actionFeesFragmentToFeesEditFragment(studentFees,studentData))
     }
 
     private fun showToastInfo(message: String) {

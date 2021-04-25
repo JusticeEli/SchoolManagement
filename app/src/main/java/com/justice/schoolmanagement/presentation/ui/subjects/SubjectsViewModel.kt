@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.subjects
 
+import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +16,8 @@ import java.util.*
 
 class SubjectsViewModel @ViewModelInject constructor(private val repository: SubjectsRepository) : ViewModel() {
 
+    private val TAG = "SubjectsViewModel"
+   
     val getAllTeachers = repository.getAllTeachers()
 
     private val _currentTeachersLiveData = MutableLiveData<List<DocumentSnapshot>>()
@@ -65,13 +68,16 @@ class SubjectsViewModel @ViewModelInject constructor(private val repository: Sub
 
 
     private fun getMath(): List<String> {
+        Log.d(TAG, "getMath: ")
         val list = ArrayList<String>()
         currentTeachersLiveData.value!!.forEach {
             val teacherData=it.toObject(TeacherData::class.java)!!
+            Log.d(TAG, "getMath: $teacherData")
             if (teacherData.subject == "Math") {
                 list.add(teacherData.fullName)
             }
         }
+        Log.d(TAG, "getMath: size: ${list.size}")
         return list
     }
 

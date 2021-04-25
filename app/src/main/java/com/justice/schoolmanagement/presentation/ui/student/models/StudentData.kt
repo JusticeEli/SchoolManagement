@@ -11,7 +11,7 @@ data class StudentData(
         @DocumentId
         var id: String? = null,
         var fullName: String = "",
-        var classGrade: Int = 0,
+        var classGrade: String = "",
         var firstName: String = "",
         var lastName: String = "",
         var nationality: String = "",

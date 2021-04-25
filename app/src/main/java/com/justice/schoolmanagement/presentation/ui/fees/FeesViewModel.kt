@@ -3,10 +3,7 @@ package com.justice.schoolmanagement.presentation.ui.fees
 import android.util.Log
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.student.StudentsFragment.Companion.STUDENT_ARGS
@@ -23,9 +20,10 @@ class FeesViewModel @ViewModelInject constructor(private val repository: FeesRep
 
     val getAllFees = repository.getAllFees(savedStateHandle.get<StudentData>(STUDENT_ARGS)!!.id!!)
     val getStudent = repository.getStudent(savedStateHandle.get<StudentData>(STUDENT_ARGS)!!.id!!)
-    private val currentStudent = MutableLiveData<DocumentSnapshot>()
+    private val _currentStudent = MutableLiveData<DocumentSnapshot>()
+    val currentStudent=_currentStudent as LiveData<DocumentSnapshot>
     fun setCurrentStudent(snapshot: DocumentSnapshot) {
-        currentStudent.value = snapshot
+        _currentStudent.value = snapshot
     }
 
     private val _feesEvents = Channel<FeesFragment.Event>()
@@ -72,7 +70,7 @@ class FeesViewModel @ViewModelInject constructor(private val repository: FeesRep
 
         feesList.forEach {
             val singleFee = it.toObject(StudentFees::class.java)!!
-            feesAlreadyPaid += singleFee.payedAmount
+            feesAlreadyPaid += singleFee.payedAmount.toInt()
         }
 
         val balance = feesToBePaid - feesAlreadyPaid
