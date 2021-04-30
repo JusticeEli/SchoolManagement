@@ -23,8 +23,12 @@ import com.justice.schoolmanagement.databinding.FragmentResultsEditBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
-import kotlinx.android.synthetic.main.fragment_fees.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
@@ -36,88 +40,74 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     private val viewModel: ResultsEditViewModel by viewModels()
     private val navArgs: ResultsEditFragmentArgs by navArgs()
+
+    @Inject
+    lateinit var coroutineScope: CoroutineScope
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentResultsEditBinding.bind(view)
         initProgressBar()
         Log.d(TAG, "onViewCreated: studentMarks:${navArgs.studentMarks}")
         setOnClickListeners()
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            subscribeToObservers2()
 
-        }
+        subscribeToObservers()
 
 
     }
 
-    private  suspend fun subscribeToObservers2() {
-
-        viewModel.getStudentMarks.collect {
-            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    //   showProgress(true)
-
-                }
-                Resource.Status.SUCCESS -> {
-                    //    showProgress(false)
-                    viewModel.setCurrentStudentMarks(it.data!!)
-                    setDefaultValues(it.data!!)
-
-                }
-                Resource.Status.ERROR -> {
-                    //   showProgress(false)
-
-                }
-            }
-        }
-
-
+    val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        Log.d(TAG, "Handler Error::${throwable.message} ")
     }
 
-    private suspend fun subscribeToObservers() {
+    private fun subscribeToObservers() {
+        coroutineScope.launch(handler) {
+            supervisorScope {
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
 
-        viewModel.getStudentMarks.collect {
-            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    //   showProgress(true)
+                    launch {
+                        viewModel.getStudentMarks.collect {
+                            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
+                            when (it.status) {
+                                Resource.Status.LOADING -> {
+                                    //   showProgress(true)
 
+                                }
+                                Resource.Status.SUCCESS -> {
+                                    //    showProgress(false)
+                                    viewModel.setCurrentStudentMarks(it.data!!)
+                                    setDefaultValues(it.data!!)
+
+                                }
+                                Resource.Status.ERROR -> {
+                                    //   showProgress(false)
+
+                                }
+                            }
+                        }
+                    }
+                    launch {
+                        viewModel.editMarksStatus.collect {
+                            Log.d(TAG, "subscribeToObservers: editMarksStatus:${it.status.name}")
+                            when (it.status) {
+                                Resource.Status.LOADING -> {
+                                    //    showProgress(true)
+
+                                }
+                                Resource.Status.SUCCESS -> {
+                                    //     showProgress(false)
+
+                                }
+                                Resource.Status.ERROR -> {
+                                    showToastInfo("Error: ${it.exception?.message}")
+                                }
+                            }
+                        }
+                    }
                 }
-                Resource.Status.SUCCESS -> {
-                    //    showProgress(false)
-                    viewModel.setCurrentStudentMarks(it.data!!)
-                    setDefaultValues(it.data!!)
 
-                }
-                Resource.Status.ERROR -> {
-                    //   showProgress(false)
 
-                }
             }
         }
-
-
-
-
-
-
-        viewModel.editMarksStatus.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    //    showProgress(true)
-
-                }
-                Resource.Status.SUCCESS -> {
-                    //     showProgress(false)
-
-                }
-                Resource.Status.ERROR -> {
-                    showToastInfo("Error: ${it.exception?.message}")
-                }
-            }
-        }
-
 
     }
 
@@ -152,6 +142,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     private fun setDefaultValues(snapshot: DocumentSnapshot) {
         val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
+        Log.d(TAG, "setDefaultValues: studentMarks:$studentMarks")
         binding.apply {
             nameTxtView.setText(studentMarks!!.fullName)
             mathEdtTxt.setText("" + studentMarks!!.math)
@@ -159,8 +150,8 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
             englishEdtTxt.setText("" + studentMarks!!.english)
             kiswahiliEdtTxt.setText("" + studentMarks!!.kiswahili)
             sstCreEdtTxt.setText("" + studentMarks!!.sst_cre)
-            totalEdtTxt.setText(studentMarks.totalMarks.toString())
         }
+        Log.d(TAG, "setDefaultValues: end")
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////

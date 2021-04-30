@@ -8,12 +8,15 @@ import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.student.models.STUDENT_MARKS_ARGS
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 
-class ResultsEditViewModel @ViewModelInject constructor(private val repository: ResultsRepository, @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class ResultsEditViewModel @ViewModelInject constructor(private val repository: ResultsRepository, @Assisted private val savedStateHandle: SavedStateHandle, private val coroutineScope: CoroutineScope) : ViewModel() {
     private val TAG = "ResultsEditViewModel"
 
     val getStudentMarks = repository.getStudentMarks(savedStateHandle.get<StudentMarks>(STUDENT_MARKS_ARGS)!!.id!!)
@@ -24,16 +27,28 @@ class ResultsEditViewModel @ViewModelInject constructor(private val repository: 
         _currentStudentMarks.value = snapshot
     }
 
-    private val _editMarksStatus = Channel<Resource<StudentMarks>>()
+    private val _editMarksStatus = Channel<Resource<DocumentSnapshot>>()
     val editMarksStatus = _editMarksStatus.receiveAsFlow()
     fun setEvent(event: ResultsEditFragment.Event) {
-        viewModelScope.launch {
-            when (event) {
-                is ResultsEditFragment.Event.SubmitClicked -> {
-                    submitClicked(event.studentMarks)
+
+        coroutineScope.launch(handler) {
+            supervisorScope {
+                viewModelScope.launch {
+                    when (event) {
+                        is ResultsEditFragment.Event.SubmitClicked -> {
+                            submitClicked(event.studentMarks)
+                        }
+                    }
                 }
+
             }
         }
+
+
+    }
+
+    val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        Log.d(TAG, "Handler Error::${throwable.message} ")
     }
 
     private suspend fun submitClicked(studentMarks: StudentMarks) {
@@ -70,9 +85,16 @@ class ResultsEditViewModel @ViewModelInject constructor(private val repository: 
 
     private suspend fun updateDatabase(studentMarks: StudentMarks) {
         Log.d(TAG, "updateDatabase: studentMarks:$studentMarks")
-        repository.updateDatabase(currentStudentMarks.value!!, studentMarks).collect {
+
+        val map = mapOf<String,String>("math" to studentMarks.math)
+
+
+        repository.updateDatabase(currentStudentMarks.value!!, map).collect {
+            Log.d(TAG, "updateDatabase: status:${it.status.name}")
             _editMarksStatus.send(it)
         }
+
+
     }
 
     private fun computeTotalMarks(studentMarks: StudentMarks) {

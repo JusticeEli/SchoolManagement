@@ -38,8 +38,8 @@ class ResultsAdapter(private val onEditClicked: (DocumentSnapshot) -> Unit) : Li
             kiswahiliTxtView.text = "" + model.kiswahili
             sstCreTxtView.text = "" + model.sst_cre
             classGradeTxtView.text = "Class: " + model.classGrade
-            val totalMarks = model.math + model.science + model.english + model.kiswahili + model.sst_cre
-            totalMarkTxtView.text = "" + totalMarks
+          //  val totalMarks = model.math + model.science + model.english + model.kiswahili + model.sst_cre
+            totalMarkTxtView.text = "" + model.totalMarks
 
             editTxtView.setOnClickListener {
                 onEditClicked(getItem(position))

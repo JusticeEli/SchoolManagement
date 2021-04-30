@@ -83,18 +83,39 @@ class ResultsRepository {
         }
     }
 
-    fun updateDatabase(snapshot: DocumentSnapshot, studentMarks: StudentMarks) = callbackFlow<Resource<StudentMarks>> {
+    fun updateDatabase(snapshot: DocumentSnapshot, map: Map<String,String>) = callbackFlow<Resource<DocumentSnapshot>> {
+        Log.d(TAG, "updateDatabase: ")
 
-        offer(Resource.loading(""))
-        snapshot.reference.set(studentMarks).addOnSuccessListener {
-            offer(Resource.success(studentMarks))
+        snapshot.reference.update(map).addOnSuccessListener {
+            Log.d(TAG, "updateDatabase: start success")
+            offer(Resource.success(snapshot))
+            Log.d(TAG, "updateDatabase: success")
         }.addOnFailureListener {
             offer(Resource.error(it))
         }
 
 
 
-        awaitClose { }
+        awaitClose {
+
+        }
+    }
+
+    fun updateDatabase2(snapshot: DocumentSnapshot, studentMarks: StudentMarks) = callbackFlow<Resource<DocumentSnapshot>> {
+        Log.d(TAG, "updateDatabase: ")
+        try {
+            offer(Resource.loading(""))
+          //  snapshot.reference.set(studentMarks).await()
+            Log.d(TAG, "updateDatabase2: end")
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+
+
+
+        awaitClose {
+
+        }
     }
 
 
