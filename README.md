@@ -33,7 +33,7 @@ Teachers can
 
 
 ### login screen
-<img src="https://user-images.githubusercontent.com/63531125/109155096-36922a00-7780-11eb-9791-250a48f690b0.jpeg" width="260">
+<img src="https://user-images.githubusercontent.com/63531125/109155096-36922a00-7780-11eb-9791-250a48f690b0.jpeg" width="260">&emsp;
 
 
 ### Admin screen
@@ -65,13 +65,15 @@ Teachers can
 
 ### when you press on a teacher you can see his/her detail even you can call her
 <img src="https://user-images.githubusercontent.com/63531125/109155414-9092ef80-7780-11eb-9db7-2171693c2a14.jpeg" width="260">
+
+
 ### screen for monitoring which students where absent and the one who were present
 <img src="https://user-images.githubusercontent.com/63531125/109155443-98eb2a80-7780-11eb-8746-4bff3e34b1a6.jpeg" width="260">&emsp;
 <img src="https://user-images.githubusercontent.com/63531125/109155446-9a1c5780-7780-11eb-95af-1f7716a21d1e.jpeg" width="260">&emsp;
 <img src="https://user-images.githubusercontent.com/63531125/109155448-9b4d8480-7780-11eb-90ab-ab2251d2dd83.jpeg" width="260">
 
 
-### teachers can chat in the app ,even sending image chats Image
+### teachers can chat in the app ,even sending image chats 
 <img src="https://user-images.githubusercontent.com/63531125/109155611-d5b72180-7780-11eb-9e5b-6b22ffad1ad3.jpeg" width="260">
 
 
