@@ -25,12 +25,14 @@ public class AllData {
     public static List<TeacherData> teacherDataList = new ArrayList<>();
     public static List<StudentData> studentDataList = new ArrayList<>();
     public static List<StudentMarks> studentMarksList = new ArrayList<>();
+    public static List<StudentMarks> studentMarksList2 = new ArrayList<>();
+    public static List<StudentMarks> studentMarksList3 = new ArrayList<>();
 
-
+////
 
 
     public static void createDirectoryForDataStorage() {
-      path=Environment.getExternalStorageDirectory().getAbsolutePath()+"/SchoolManagement";
+        path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/SchoolManagement";
 
         File dir = new File(path);
         dir.mkdirs();
@@ -97,7 +99,7 @@ public class AllData {
 
 
     public static void writeAllDataToFiles() {
-       writeStudentMarksFile();
+        writeStudentMarksFile();
         writeLoginDataFile();
         writeParentDataFile();
         writeTeacherDataFile();
