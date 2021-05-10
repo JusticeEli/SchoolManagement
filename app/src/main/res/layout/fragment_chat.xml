@@ -3,10 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#EEEEEE">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_messages"
+        android:id="@+id/recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/relativeLayout_message"
@@ -41,6 +42,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
+            android:textColor="@android:color/black"
+            tools:text="hey"
             android:layout_marginBottom="8dp"
             android:layout_toEndOf="@id/fab_send_image"
             android:background="@drawable/rect_oval_white"

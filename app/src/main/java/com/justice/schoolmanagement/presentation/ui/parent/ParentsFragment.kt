@@ -6,49 +6,160 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.ViewGroup.*
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.firebase.ui.firestore.FirestoreRecyclerOptions
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.onQueryTextChanged
+import dagger.hilt.android.AndroidEntryPoint
+import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ParentsFragment : Fragment(R.layout.fragment_parents) {
-   private val firebaseFirestore = FirebaseFirestore.getInstance()
+
+    private val TAG = "ParentsFragment"
+
+    @Inject
+    lateinit var requestManager: RequestManager
     lateinit var binding: FragmentParentsBinding
     lateinit var navController: NavController
-
-    lateinit var originalList: List<DocumentSnapshot>
     lateinit var searchView: SearchView
+    lateinit var adapter: ParentsAdapter
 
-    private var parentsActivityRecyclerAdapter: ParentsActivityRecyclerAdapter? = null
-    lateinit var parentFilterAdapter: ParentFilterAdapter
-
-
+    private val viewModel: ParentViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated: ")
         binding = FragmentParentsBinding.bind(view)
         navController = findNavController()
         initProgressBar()
-        initRecyclerViewAdapter()
         setOnClickListeners()
+        initRecyclerViewAdapter()
         setSwipeListenerForItems()
         setHasOptionsMenu(true)
+        subscribeToObservers()
     }
+
+    private fun subscribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.getParents.collect {
+                Log.d(TAG, "subscribeToObservers: getParents:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        viewModel.setCurrentParentsLiveData(it.data!!.documents)
+                        adapter.submitList(it.data?.documents)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showErrorToast(it.exception?.message ?: "Error Occurred")
+
+                    }
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.parentQueryStatus.collect {
+                Log.d(TAG, "subscribeToObservers: parentQueryStatus:${it.status.name}")
+
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        //   showProgress(true)
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        adapter.submitList(it.data)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showErrorToast(it.exception?.message ?: "Error Occurred")
+
+                    }
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.parentChannelEvents.collect {
+                when (it) {
+                    is Event.AddParent -> {
+                        goToAddParentFragment()
+                    }
+                    is Event.ParentDelete -> {
+                        deleteFromDatabase(it.parentSnapshot)
+                    }
+
+                    is Event.ParentSwiped -> {
+                        deleteFromDatabase(it.parentSnapshot)
+                    }
+                    is Event.ParentClicked -> {
+                        val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        Log.d(TAG, "subscribeToObservers: ")
+                        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToParentDetailsFragment(parent))
+                    }
+                    is Event.ParentEdit -> {
+                        val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToEditParentFragment(parent))
+                    }
+
+                }
+
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.deleteParentStatus.collect {
+                Log.d(TAG, "subscribeToObservers: deleteParentStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+
+                    }
+                    Resource.Status.SUCCESS -> {
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showErrorToast("Error: ${it.exception?.message}")
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun goToAddParentFragment() {
+        navController.navigate(ParentsFragmentDirections.actionParentsFragmentToAddParentFragment(null))
+    }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
@@ -58,74 +169,40 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
         searchView = searchItem.actionView as SearchView
 
 
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                return false
-            }
+        searchView.onQueryTextChanged { query ->
+            Log.d(TAG, "onCreateOptionsMenu: query:$query")
+            viewModel.setEvent(Event.ParentQuery(query))
 
-            override fun onQueryTextChange(s: String): Boolean {
-
-                Log.d(TAG, "onQueryTextChange: Text: ${s}")
-
-                if (s.isNullOrEmpty()) {
-                    startUsingRealTimeAdapter()
-                    Log.d(TAG, "onQueryTextChange: startUsingRealTimeAdapter")
-
-                } else {
-                    startUsingParentFilter(s.trim())
-                    Log.d(TAG, "onQueryTextChange:  startUsingParentFilter ")
-
-                }
-                return true
-
-            }
-        })
-
-
-
+        }
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    private fun startUsingRealTimeAdapter() {
-        binding.recyclerView.adapter = parentsActivityRecyclerAdapter
-    }
-
-    private fun startUsingParentFilter(string: String) {
-        originalList = mutableListOf<DocumentSnapshot>()
-        (originalList as MutableList<DocumentSnapshot>)?.clear()
-        parentsActivityRecyclerAdapter?.snapshots?.forEachIndexed { index, _ ->
-            (originalList as MutableList<DocumentSnapshot>).add(parentsActivityRecyclerAdapter!!.snapshots.getSnapshot(index))
-        }
-       // parentFilterAdapter.submitList(originalList)
-        binding.recyclerView.adapter = parentFilterAdapter
-
-        parentFilterAdapter.getFilter().filter(string)
-
-    }
 
     private fun initRecyclerViewAdapter() {
-       parentFilterAdapter = ParentFilterAdapter(this)
-        val query: Query = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
-        val firestoreRecyclerOptions = FirestoreRecyclerOptions.Builder<ParentData>().setQuery(query) { snapshot ->
-            val parentData = snapshot.toObject(ParentData::class.java)
-            parentData!!.id = snapshot.id
-            parentData!!
-        }.setLifecycleOwner(viewLifecycleOwner).build()
 
-
-        parentsActivityRecyclerAdapter = ParentsActivityRecyclerAdapter(this, firestoreRecyclerOptions)
+        adapter = ParentsAdapter(requestManager, onEditClicked = { onEditClicked(it) }, onParentClicked = { onParentClicked(it) }, onParentDelete = { onParentDelete(it) })
         binding.recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
-        binding.recyclerView.setAdapter(parentsActivityRecyclerAdapter)
+        binding.recyclerView.setAdapter(adapter)
+
+    }
+
+    private fun onParentDelete(it: DocumentSnapshot) {
+        viewModel.setEvent(Event.ParentDelete(it))
+    }
+
+    private fun onParentClicked(it: DocumentSnapshot) {
+        viewModel.setEvent(Event.ParentClicked(it))
+    }
+
+    private fun onEditClicked(it: DocumentSnapshot) {
+        viewModel.setEvent(Event.ParentEdit(it))
 
     }
 
     private fun setOnClickListeners() {
-        binding.addParentBtn.setOnClickListener(View.OnClickListener {
-
-            ApplicationClass.documentSnapshot = null
-
-            navController.navigate(ParentsFragmentDirections.actionParentsFragmentToAddParentFragment(null, null))
-        })
+        binding.addParentBtn.setOnClickListener {
+            viewModel.setEvent(Event.AddParent)
+        }
     }
 
     private fun setSwipeListenerForItems() {
@@ -135,84 +212,123 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                parentsActivityRecyclerAdapter?.deleteFromDatabase(viewHolder.adapterPosition)
+                val snapshot = adapter.currentList[viewHolder.bindingAdapterPosition]
+                viewModel.setEvent(Event.ParentSwiped(snapshot))
             }
         }).attachToRecyclerView(binding.recyclerView)
     }
 
-  /////////////////////PROGRESS_BAR////////////////////////////
-      lateinit var dialog: AlertDialog
+    /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
 
-       fun showProgress(show: Boolean) {
+    fun showProgress(show: Boolean) {
 
-          if (show) {
-              dialog.show()
+        if (show) {
+            dialog.show()
 
-          } else {
-              dialog.dismiss()
+        } else {
+            dialog.dismiss()
 
-          }
+        }
 
-      }
-      private fun initProgressBar() {
+    }
 
-          dialog = setProgressDialog(requireContext(), "Loading..")
-          dialog.setCancelable(false)
-          dialog.setCanceledOnTouchOutside(false)
-      }
+    private fun initProgressBar() {
 
-      fun setProgressDialog(context: Context, message: String): AlertDialog {
-          val llPadding = 30
-          val ll = LinearLayout(context)
-          ll.orientation = LinearLayout.HORIZONTAL
-          ll.setPadding(llPadding, llPadding, llPadding, llPadding)
-          ll.gravity = Gravity.CENTER
-          var llParam = LinearLayout.LayoutParams(
-                  LinearLayout.LayoutParams.WRAP_CONTENT,
-                  LinearLayout.LayoutParams.WRAP_CONTENT)
-          llParam.gravity = Gravity.CENTER
-          ll.layoutParams = llParam
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
+    }
 
-          val progressBar = ProgressBar(context)
-          progressBar.isIndeterminate = true
-          progressBar.setPadding(0, 0, llPadding, 0)
-          progressBar.layoutParams = llParam
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
 
-          llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                  ViewGroup.LayoutParams.WRAP_CONTENT)
-          llParam.gravity = Gravity.CENTER
-          val tvText = TextView(context)
-          tvText.text = message
-          tvText.setTextColor(Color.parseColor("#000000"))
-          tvText.textSize = 20.toFloat()
-          tvText.layoutParams = llParam
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
 
-          ll.addView(progressBar)
-          ll.addView(tvText)
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
 
-          val builder = AlertDialog.Builder(context)
-          builder.setCancelable(true)
-          builder.setView(ll)
+        ll.addView(progressBar)
+        ll.addView(tvText)
 
-          val dialog = builder.create()
-          val window = dialog.window
-          if (window != null) {
-              val layoutParams = WindowManager.LayoutParams()
-              layoutParams.copyFrom(dialog.window?.attributes)
-              layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
-              layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
-              dialog.window?.attributes = layoutParams
-          }
-          return dialog
-      }
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
 
-      //end progressbar
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+    //end progressbar
     override fun onDestroyView() {
         super.onDestroyView()
         searchView.setOnQueryTextListener(null)
     }
 
-    companion object {
-        private const val TAG = "ParentsFragment"
+    fun deleteFromDatabase(snapshot: DocumentSnapshot) {
+        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which ->
+            val position = adapter.currentList.indexOf(snapshot)
+            adapter.notifyItemChanged(position)
+        }.setPositiveButton("yes") { dialog, which ->
+
+            viewModel.setEvent(Event.ParentConfirmDelete(snapshot))
+        }.show()
+    }
+
+
+
+    private fun showSuccessToast(message: String) {
+        Toasty.success(requireContext(), message).show()
+    }
+
+    private fun showInfoToast(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    private fun showErrorToast(message: String) {
+        Toasty.error(requireContext(), message).show()
+
+    }
+
+
+
+    sealed class Event {
+        data class ParentClicked(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentEdit(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentDelete(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentConfirmDelete(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentSwiped(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentQuery(val query: String) : Event()
+        object AddParent : Event()
+    }
+
+    companion object{
+        const val PARENT_ARGS = "parent"
     }
 }

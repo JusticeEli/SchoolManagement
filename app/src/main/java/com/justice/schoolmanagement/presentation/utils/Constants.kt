@@ -1,7 +1,5 @@
 package com.justice.schoolmanagement.presentation.utils
 
-import com.justice.schoolmanagement.presentation.ui.exam.Answer
-import java.util.*
 
 object Constants {
 
@@ -9,7 +7,7 @@ object Constants {
     public var isAdmin = true
 
     //Instution
-    public var DOCUMENT_CODE = "institution"
+    var DOCUMENT_CODE = "institution"
 
     //root
     public val COLLECTION_ROOT = "Institutions/"
@@ -18,6 +16,12 @@ object Constants {
     val TEACHERS= "/teachers"
     val TEACHERS_IMAGES= "/teachers_images"
     val TEACHERS_THUMBNAIL_IMAGES=  "/teachers_thumbnail_images"
+
+    //teachers chat channels
+    val COLLECTION_CHAT_CHANNELS= "chatChannels"
+    val COLLECTION_ENGAGED_CHAT_CHANNELS= "engagedChatChannels"
+    val COLLECTION_MESSAGES= "messages"
+    val COLLECTION_LIKES= "likes"
 
     public val COLLECTION_TEACHERS1 = COLLECTION_ROOT + DOCUMENT_CODE + TEACHERS
     public val COLLECTION_TEACHERS_IMAGES1 = COLLECTION_ROOT + DOCUMENT_CODE + TEACHERS_IMAGES
@@ -29,6 +33,10 @@ object Constants {
     val STUDENTS_IMAGES="/students_images"
     val STUDENTS_THUMBNAIL_IMAGES="/students_thumbnail_images"
     val STUDENTS_MARKS="/students_marks"
+
+
+    //student fees
+    val COLLECTION_FEES="fees"
 
     public val COLLECTION_STUDENTS1 = COLLECTION_ROOT + DOCUMENT_CODE + STUDENTS
     public val COLLECTION_STUDENTS_IMAGES1 = COLLECTION_ROOT + DOCUMENT_CODE + STUDENTS_IMAGES
@@ -55,9 +63,12 @@ object Constants {
     val DATE="/dates"
     public val COLLECTION_DATE1 = COLLECTION_ROOT + DOCUMENT_CODE + DATE
 
-    //exam data
-    //teachers answers
-    var teachersAnswers: ArrayList<Answer> = ArrayList<Answer>()
+
     var imagePath: String? = null
+
+
+    //attendance
+    var COLLECTION_ATTENDANCE="/attendance"
+    var DOCUMENT_CURRENT_LOCATION="currentLocation"
 
 }

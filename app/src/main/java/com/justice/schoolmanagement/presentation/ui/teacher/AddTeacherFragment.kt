@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -13,55 +12,75 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
 import com.firebase.ui.auth.AuthUI
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAddTeacherBinding
+import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity
+import com.justice.schoolmanagement.presentation.splash.adminData
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
-import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
-import id.zelory.compressor.Compressor
 import kotlinx.android.synthetic.main.fragment_add_parent.*
-import java.io.File
-import java.io.IOException
+import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
-    private var teacherData: TeacherData? = null
-    private var teacherId: String? = null
+    private val TAG = "AddTeacherFragment"
 
-
-    private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS)
+    @Inject
+    lateinit var requestManager: RequestManager
     private var uri: Uri? = null
     lateinit var progressBar: ProgressBar
     lateinit var binding: FragmentAddTeacherBinding
+    private val viewModel: AddTeacherViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         binding = FragmentAddTeacherBinding.bind(view)
-        setDefaultValues()
-        //   initNavigationDrawer();
-
-        //   initNavigationDrawer();
-        setOnClickListeners()
-        setUpSubjectsSpinner();
         initProgressBar()
+        setDefaultValues()
+        setOnClickListeners()
+        setUpSubjectsSpinner()
+        subScribeToObservers()
+    }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.addTeacherStatus.collect {
+                Log.d(TAG, "subScribeToObservers: addTeacherStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        showToastInfo("Success Saving data")
+                        requireActivity().recreate()
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                }
+            }
+        }
     }
 
 
-
     private fun setUpSubjectsSpinner() {
-        val subjects = arrayOf("Math", "Science", "English", "Kiswahili", "sst_cre")
+        val subjects = requireActivity().resources.getStringArray(R.array.subjects)
         val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, subjects)
         binding.subjectSpinner.setAdapter(arrayAdapter)
 
@@ -85,29 +104,51 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
         Log.d(TAG, "onOptionsItemSelected: item selected")
         if (item.itemId == R.id.logoutMenu) {
             Log.d(TAG, "onOptionsItemSelected: logout pressed")
-            AuthUI.getInstance()
-                    .signOut(requireContext())
-                    .addOnSuccessListener {
-                        Log.d(TAG, "onOptionsItemSelected: signed out")
-                        findNavController().popBackStack()
-                    }
-
+            logout()
         }
         return true
 
+    }
+
+    private fun logout() {
+        AuthUI.getInstance().signOut(requireContext()).addOnSuccessListener {
+
+            Log.d(TAG, "onNavigationItemSelected: logout success")
+            getRidOfSharedPreferenceData()
+            requireActivity().finish()
+        }
+    }
+
+    private fun getRidOfSharedPreferenceData() {
+        val sharedPreferences = requireActivity().getSharedPreferences(SplashScreenActivity.SHARED_PREF, Context.MODE_PRIVATE)
+        sharedPreferences.adminData = null
+
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
     }
 
     private fun setOnClickListeners() {
 
         binding.apply {
 
-            addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
-            imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-            addBtn.setOnClickListener(View.OnClickListener {
-                Log.d(TAG, "setOnClickListeners: add btn pressed")
-                addBtn.isVisible = false
-                getDataFromEdtTxtAndAddItToDatabase()
-            })
+            addPhotoBtn.setOnClickListener { choosePhoto() }
+            imageView.setOnClickListener { choosePhoto() }
+            binding.submitBtn.setOnClickListener {
+
+                if (uri == null) {
+                    showToastInfo("Please choose a photo")
+                    return@setOnClickListener
+                }
+                val teacher = getTeacherObject()
+                viewModel.setEvent(Event.TeacherAddSubmitClicked(teacher))
+
+
+            }
+
+
+
             contactEdtTxt.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -124,6 +165,29 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
 
 
         }
+
+    }
+
+    private fun getTeacherObject(): TeacherData {
+
+        val teacherData = TeacherData()
+
+        binding.apply {
+            teacherData.firstName = firstNameEdtTxt.text.toString()
+            teacherData.lastName = lastNameEdtTxt.text.toString()
+            teacherData.fullName = "${teacherData.firstName} ${teacherData.lastName}"
+            teacherData.email = emailEdtTxt.text.toString()
+            teacherData.salary = salaryEdtTxt.text.toString()
+            teacherData.city = cityEdtTxt.text.toString()
+            teacherData.degree = degreeEdtTxt.text.toString()
+            teacherData.age = ageEdtTxt.text.toString()
+            teacherData.contact = contactEdtTxt.text.toString()
+            teacherData.gender = getSelectedGenderRadioBtn()
+            teacherData.subject = subjectSpinner.selectedItem.toString()
+
+            teacherData.uri = uri
+        }
+        return teacherData
 
     }
 
@@ -156,9 +220,8 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
                 val error = result.error
             }
         }
-        val requestOptions = RequestOptions()
-        requestOptions.centerCrop()
-        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(uri).into(binding.imageView)
+
+        requestManager.load(uri).into(binding.imageView)
     }
 
     private fun resetEdtTxt() {
@@ -172,162 +235,17 @@ class AddTeacherFragment : Fragment(R.layout.fragment_add_teacher) {
             ageEdtTxt.setText("")
             contactEdtTxt.setText("")
         }
-showProgress(false)
-    }
-
-    private fun fieldsAreEmpty(): Boolean {
-        binding.apply {
-            return if (uri == null || firstNameEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || lastNameEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || contactEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || salaryEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || cityEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || degreeEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || ageEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty()) {
-                true
-            } else false
-
-        }
 
     }
 
-    private fun getDataFromEdtTxtAndAddItToDatabase() {
-        if (uri == null) {
-            Toasty.info(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
-            addBtn.isVisible = true
-            return
-        }
-        if (fieldsAreEmpty()) {
-            Toasty.error(requireContext(), "Please Fill All Fields", Toast.LENGTH_SHORT).show()
-            addBtn.isVisible = true
-            return
-        }
-        if (!contactEdtTxtFormatIsCorrect()) {
-            addBtn.isVisible = true
-            return
-        }
-        binding.apply {
 
-            val fullName = firstNameEdtTxt.getText().toString().trim() + " " + lastNameEdtTxt.getText().toString().trim()
-            val firstName = firstNameEdtTxt.getText().toString().trim()
-            val lastName = lastNameEdtTxt.getText().toString().trim()
-            val email = emailEdtTxt.getText().toString().trim()
-            val salary = salaryEdtTxt.getText().toString().trim()
-            val city = cityEdtTxt.getText().toString().trim()
-            val degree = degreeEdtTxt.getText().toString().trim()
-            val age = ageEdtTxt.getText().toString().trim()
-            val contact = contactEdtTxt.getText().toString().trim()
-
-
-
-
-            teacherData = TeacherData(firstNameEdtTxt.getText().toString().trim() + " " + lastNameEdtTxt.getText().toString().trim(), firstNameEdtTxt.getText().toString().trim(), lastNameEdtTxt.getText().toString().trim(), emailEdtTxt.getText().toString().trim(), salaryEdtTxt.getText().toString().trim(), cityEdtTxt.getText().toString().trim(), degreeEdtTxt.getText().toString().trim(), ageEdtTxt.getText().toString().trim(), getSelectedGenderRadioBtn(), "admin", "photo", subjectSpinner.getSelectedItem().toString(), contactEdtTxt.getText().toString().trim())
-
-
-            registerTeacherAndPutDataInDatabase()
-        }
-
-    }
-
-    private fun contactEdtTxtFormatIsCorrect(): Boolean {
-        val contact: String = binding.contactEdtTxt.getText().toString().trim { it <= ' ' }
-        if (!contact.startsWith("07")) {
-            Toasty.error(requireContext(), "Contact Must start with 07 !!", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (contact.length != 10) {
-            Toasty.info(requireContext(), "Contact Must have 10 characters", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        return true
-    }
-
-    private fun registerTeacherAndPutDataInDatabase() {
-        teacherId = FirebaseAuth.getInstance().uid
-        putTeacherPhotoInDatabase()
-    }
-
-    private fun putTeacherPhotoInDatabase() {
-
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        showProgress(true)
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child("$teacherId.jpg")
-        val uploadTask = ref.putFile(uri!!)
-        uploadTask.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                throw task.exception!!
-            }
-            // Continue with the task to get the download URL
-            ref.downloadUrl
-        }.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUri = task.result
-                teacherData!!.photo = downloadUri.toString()
-                uploadThumbnail()
-                Toasty.success(requireContext(), "Photo Uploaded", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-
-        }
-
-        /////////////////////////////////////////////
-    }
-
-    private fun uploadThumbnail() {
-        var thumbnail: Uri? = null
-        var compressedImgFile: File? = null
-        try {
-            compressedImgFile = Compressor(requireContext()).setCompressFormat(Bitmap.CompressFormat.JPEG).setMaxHeight(10).setMaxWidth(10).setQuality(40).compressToFile(File(uri!!.path))
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        thumbnail = Uri.fromFile(compressedImgFile)
-        showProgress(true)
-        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES).child(teacherId!!)
-        val uploadTask1 = ref1.putFile(thumbnail)
-        uploadTask1.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                throw task.exception!!
-            }
-            // Continue with the task to get the download URL
-            ref1.downloadUrl
-        }.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUri = task.result
-                teacherData!!.thumbnail = downloadUri.toString()
-                putTeacherDataInDatabase()
-                Toasty.info(requireContext(), "Thumbnail Uploaded", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-
-        }
-    }
-
-
-    private fun putTeacherDataInDatabase() {
-        showProgress(true)
-        collectionReference.document(FirebaseAuth.getInstance().uid!!).set(teacherData!!).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d(TAG, "putTeacherDataInDatabase: ")
-                Toasty.info(requireContext(), "Teacher Data Saved", Toast.LENGTH_SHORT).show()
-                resetEdtTxt()
-                Log.d(TAG, "putTeacherDataInDatabase: going to dashboard fragment")
-                findNavController().navigate(R.id.action_addTeacherFragment_to_dashboardFragment)
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-
-        }
-    }
-
-
-    private fun getSelectedGenderRadioBtn(): String? {
+    private fun getSelectedGenderRadioBtn(): String {
         when (binding.genderRadioGroup.getCheckedRadioButtonId()) {
             R.id.maleRadioBtn -> return "Male"
             R.id.femaleRadioBtn -> return "Female"
-            R.id.otherRadioBtn -> return "Other"
+            else -> return "Other"
         }
-        return null
+
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -344,6 +262,7 @@ showProgress(false)
         }
 
     }
+
     private fun initProgressBar() {
 
         dialog = setProgressDialog(requireContext(), "Loading..")
@@ -397,7 +316,7 @@ showProgress(false)
     }
 
     //end progressbar
-    companion object {
-        private const val TAG = "AddTeacherFragment"
+    sealed class Event {
+        data class TeacherAddSubmitClicked(val teacher: TeacherData) : Event()
     }
 }

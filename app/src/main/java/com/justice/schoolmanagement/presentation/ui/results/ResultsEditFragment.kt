@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -11,88 +12,137 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
+import com.example.edward.nyansapo.wrappers.Resource
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentResultsEditBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
-    lateinit var binding: FragmentResultsEditBinding
-    private var studentMarks: StudentMarks? = null
+    private val TAG = "ResultsEditFragment"
 
+
+    lateinit var binding: FragmentResultsEditBinding
+
+    private val viewModel: ResultsEditViewModel by viewModels()
+    private val navArgs: ResultsEditFragmentArgs by navArgs()
+
+    @Inject
+    lateinit var coroutineScope: CoroutineScope
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentResultsEditBinding.bind(view)
-        studentMarks = ApplicationClass.documentSnapshot!!.toObject(StudentMarks::class.java)
-
-        setDefaultValues()
-        setOnClickListeners()
         initProgressBar()
+        Log.d(TAG, "onViewCreated: studentMarks:${navArgs.studentMarks}")
+        setOnClickListeners()
+
+        subscribeToObservers()
+
+
+    }
+
+    val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
+        Log.d(TAG, "Handler Error::${throwable.message} ")
+    }
+
+    private fun subscribeToObservers() {
+        coroutineScope.launch(handler) {
+            supervisorScope {
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+
+                    launch {
+                        viewModel.getStudentMarks.collect {
+                            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
+                            when (it.status) {
+                                Resource.Status.LOADING -> {
+                                    //   showProgress(true)
+
+                                }
+                                Resource.Status.SUCCESS -> {
+                                    //    showProgress(false)
+                                    viewModel.setCurrentStudentMarks(it.data!!)
+                                    setDefaultValues(it.data!!)
+
+                                }
+                                Resource.Status.ERROR -> {
+                                    //   showProgress(false)
+
+                                }
+                            }
+                        }
+                    }
+                    launch {
+                        viewModel.editMarksStatus.collect {
+                            Log.d(TAG, "subscribeToObservers: editMarksStatus:${it.status.name}")
+                            when (it.status) {
+                                Resource.Status.LOADING -> {
+                                    //    showProgress(true)
+
+                                }
+                                Resource.Status.SUCCESS -> {
+                                    //     showProgress(false)
+
+                                }
+                                Resource.Status.ERROR -> {
+                                    showToastInfo("Error: ${it.exception?.message}")
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+            }
+        }
+
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
     }
 
     private fun setOnClickListeners() {
-        binding.submitBtn.setOnClickListener(View.OnClickListener {
-            if (fieldsAreEmpty()) {
-                Toasty.error(requireContext(), "Please Fill All Fields", Toast.LENGTH_SHORT).show()
-                return@OnClickListener
-            }
-            if (marksAreAbove_100()) {
-                Toasty.error(requireContext(), "Some Marks Are Not Valid", Toast.LENGTH_SHORT).show()
-                return@OnClickListener
-            }
-            getDataFromEdtTxtAndUpdateInDatabase()
-        })
+        binding.submitBtn.setOnClickListener {
+            val studentMarks = getStudentMarksObject()
+            viewModel.setEvent(Event.SubmitClicked(studentMarks))
+
+        }
     }
 
-    private fun marksAreAbove_100(): Boolean {
+    private fun getStudentMarksObject(): StudentMarks {
+
+        val studentMarks = viewModel.currentStudentMarks.value!!.toObject(StudentMarks::class.java)!!
         binding.apply {
-            return if (mathEdtTxt.getText().toString().toInt() > 100 || scienceEdtTxt.getText().toString().toInt() > 100 || englishEdtTxt.getText().toString().toInt() > 100 || kiswahiliEdtTxt.getText().toString().toInt() > 100 || sstCreEdtTxt.getText().toString().toInt() > 100) {
-                true
-            } else false
+            studentMarks.math = mathEdtTxt.text.toString()
+            studentMarks.science = scienceEdtTxt.text.toString()
+            studentMarks.english = englishEdtTxt.text.toString()
+            studentMarks.kiswahili = kiswahiliEdtTxt.text.toString()
+            studentMarks.sst_cre = sstCreEdtTxt.text.toString()
+
+
         }
+        return studentMarks
 
     }
 
-    private fun getDataFromEdtTxtAndUpdateInDatabase() {
-        binding.apply {
-            studentMarks!!.math = mathEdtTxt.getText().toString().toInt()
-            studentMarks!!.science = scienceEdtTxt.getText().toString().toInt()
-            studentMarks!!.english = englishEdtTxt.getText().toString().toInt()
-            studentMarks!!.kiswahili = kiswahiliEdtTxt.getText().toString().toInt()
-            studentMarks!!.sst_cre = sstCreEdtTxt.getText().toString().toInt()
-            studentMarks!!.totalMarks = studentMarks!!.math + studentMarks!!.science + studentMarks!!.english + studentMarks!!.kiswahili + studentMarks!!.sst_cre
 
-        }
-        updateInDatabase()
-    }
-
-    private fun updateInDatabase() {
-        showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(studentMarks!!).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), "Marks Updated", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-            showProgress(false)
-        }
-    }
-
-    private fun fieldsAreEmpty(): Boolean {
-        binding.apply {
-            return if (mathEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || scienceEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || englishEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || kiswahiliEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || sstCreEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty()) {
-                true
-            } else false
-        }
-
-    }
-
-    private fun setDefaultValues() {
+    private fun setDefaultValues(snapshot: DocumentSnapshot) {
+        val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
+        Log.d(TAG, "setDefaultValues: studentMarks:$studentMarks")
         binding.apply {
             nameTxtView.setText(studentMarks!!.fullName)
             mathEdtTxt.setText("" + studentMarks!!.math)
@@ -100,8 +150,8 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
             englishEdtTxt.setText("" + studentMarks!!.english)
             kiswahiliEdtTxt.setText("" + studentMarks!!.kiswahili)
             sstCreEdtTxt.setText("" + studentMarks!!.sst_cre)
-
         }
+        Log.d(TAG, "setDefaultValues: end")
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -172,4 +222,8 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
     }
 
     //end progressbar
+
+    sealed class Event {
+        data class SubmitClicked(val studentMarks: StudentMarks) : Event()
+    }
 }

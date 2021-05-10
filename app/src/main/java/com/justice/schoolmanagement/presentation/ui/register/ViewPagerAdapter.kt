@@ -1,3 +1,4 @@
+/*
 package com.justice.schoolmanagement.presentation.ui.register
 
 import androidx.fragment.app.Fragment
@@ -31,4 +32,4 @@ class ViewPagerAdapter(fa: FragmentActivity?,val registerFragment: RegisterFragm
     override fun createFragment(position: Int): Fragment {
         return mFragments[position]
     }
-}
+}*/

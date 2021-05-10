@@ -454,7 +454,7 @@
                                 android:textAllCaps="false" />
 
                             <Button
-                                android:id="@+id/addBtn"
+                                android:id="@+id/submit_btn"
                                 android:layout_width="100dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="20dp"

@@ -9,7 +9,10 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'dagger.hilt.android.plugin'
 
 android {
-
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
 
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
@@ -17,8 +20,8 @@ android {
         applicationId "com.justice.schoolmanagement"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -47,9 +50,14 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+
+    //support for kotlin
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    //cardview
     implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.firebase:firebase-firestore-ktx:22.1.2'
 
     //testing
     testImplementation 'junit:junit:4.12'
@@ -59,15 +67,21 @@ dependencies {
     //material design
     implementation 'com.google.android.material:material:1.2.1'
 
-    // firebase
-    implementation 'com.google.firebase:firebase-storage:17.0.0'
+    // firebase storage
+    implementation 'com.google.firebase:firebase-storage:'
 
-//firebase ui
+
+    //firebase ui
     implementation 'com.firebaseui:firebase-ui-firestore:6.2.1'
     implementation 'com.firebaseui:firebase-ui-auth:6.3.0'
+    implementation 'com.firebaseui:firebase-ui-storage:3.3.1'
+
+    //firebase messaging
+    implementation 'com.google.firebase:firebase-messaging'
+
 
     //crops images
-    api 'com.theartofdev.edmodo:android-image-cropper:2.8.+'
+    api 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
 
     //circular image view
     implementation 'de.hdodenhof:circleimageview:3.1.0'
@@ -80,7 +94,7 @@ dependencies {
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //toasty
-    implementation 'com.github.GrenderG:Toasty:1.4.2'
+    implementation 'com.github.GrenderG:Toasty:1.4.0'
 
     //compresses files
     implementation 'id.zelory:compressor:2.1.0'
@@ -120,10 +134,24 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
 
     //firebase ML vision library
-    implementation 'com.google.firebase:firebase-ml-vision:18.0.1'
+// implementation 'com.google.firebase:firebase-ml-vision:'
+
+    //   implementation 'com.google.firebase:firebase-functions:19.2.0'
+    implementation platform('com.google.firebase:firebase-bom:26.0.0')
 
     //exif interface for rotating image
     implementation "androidx.exifinterface:exifinterface:1.0.0"
+
+    //play service location
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
+
+    //very large libray increased my apk from 12mb -> 36mb
+    //agora video voice chat
+    implementation 'io.agora.rtc:full-sdk:3.0.0'
+
+
+    //load data from firebase synchronously
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.1.1"
 
 }
 kapt {

@@ -3,17 +3,39 @@ package com.justice.schoolmanagement.presentation.ui.classes
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentClassesBinding
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_classes.*
-
+import kotlinx.coroutines.flow.collect
+@AndroidEntryPoint
 class ClassesFragment : Fragment(R.layout.fragment_classes), View.OnClickListener {
     lateinit var binding: FragmentClassesBinding
+    private val viewModel: ClassesViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentClassesBinding.bind(view)
         setOnClickListeners()
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            subScribeToObservers()
+        }
+    }
+
+    private suspend fun subScribeToObservers() {
+        viewModel.classesEvents.collect {
+            when (it) {
+                is Event.ClassChoosen -> {
+                    classChoosen(it.classNumber)
+                }
+            }
+        }
+    }
+
+    private fun classChoosen(classNumber: Int) {
+        findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(classNumber.toString()))
     }
 
     private fun setOnClickListeners() {
@@ -32,30 +54,33 @@ class ClassesFragment : Fragment(R.layout.fragment_classes), View.OnClickListene
     override fun onClick(v: View) {
         when (v.id) {
             R.id.class_1_btn -> {
-
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(1))
+                viewModel.setEvent(Event.ClassChoosen(1))
             }
             R.id.class_2_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(2))
+                viewModel.setEvent(Event.ClassChoosen(2))
             }
             R.id.class_3_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(3))
+                viewModel.setEvent(Event.ClassChoosen(3))
             }
             R.id.class_4_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(4))
+                viewModel.setEvent(Event.ClassChoosen(4))
             }
             R.id.class_5_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(5))
+                viewModel.setEvent(Event.ClassChoosen(5))
             }
             R.id.class_6_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(6))
+                viewModel.setEvent(Event.ClassChoosen(6))
             }
             R.id.class_7_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(7))
+                viewModel.setEvent(Event.ClassChoosen(7))
             }
             R.id.class_8_btn -> {
-                findNavController().navigate(ClassesFragmentDirections.actionClassesFragmentToChoosenClassFragment(8))
+                viewModel.setEvent(Event.ClassChoosen(8))
             }
         }
+    }
+
+    sealed class Event {
+        data class ClassChoosen(val classNumber: Int) : Event()
     }
 }

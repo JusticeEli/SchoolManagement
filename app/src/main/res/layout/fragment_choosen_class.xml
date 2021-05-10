@@ -35,7 +35,7 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/listOfStudentBtn"
+                    android:id="@+id/studentBtn"
                     android:layout_width="130dp"
                     android:layout_height="wrap_content"
                     android:background="@drawable/class_button"
@@ -85,7 +85,7 @@
 
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/listOfStudentRecyclerView"
+            android:id="@+id/studentsRecyclerView"
             android:layout_width="match_parent"
             android:background="@color/colorPrimaryDark"
             android:layout_height="match_parent"

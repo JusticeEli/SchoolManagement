@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -13,98 +14,182 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentDetailsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
 
-    private var parentData: ParentData? = null
-    private var email: String? = null
-    lateinit var binding: FragmentParentDetailsBinding
-    val navArgs: ParentDetailsFragmentArgs by navArgs()
+    private val TAG = "ParentDetailsFragment"
+
+
+    lateinit var parentData: ParentData
+    private lateinit var binding: FragmentParentDetailsBinding
+    private val viewModel: ParentDetailsViewModel by viewModels()
+    private val navArgs: ParentDetailsFragmentArgs by navArgs()
+
+    @Inject
+    lateinit var requestManager: RequestManager
+
+    @Inject
+    lateinit var applicationScope: CoroutineScope
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated: ")
         binding = FragmentParentDetailsBinding.bind(view)
-
-        email = navArgs.email
-
-        parentData = ApplicationClass.documentSnapshot!!.toObject(ParentData::class.java)
-        parentData!!.id = ApplicationClass.documentSnapshot!!.id
-        setDefaultValues()
-        setOnClickListeners()
-        setImageViewClickListeners()
         initProgressBar()
+        subScribeToObservers()
+
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed() {
+            viewModel.getParent.collect {
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        viewModel.setCurrentSnapshot(it.data!!)
+                        parentData = it.data?.toObject(ParentData::class.java)!!
+                        setDefaultValues()
+                        setOnClickListeners()
+                        setImageViewClickListeners()
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+                        Log.d(TAG, "subScribeToObservers: document does not exit")
+                    }
+                }
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.parentDetailsEvent.collect {
+                when (it) {
+                    is Event.ParentDelete -> {
+                        deleteFromDatabase(it.parentSnapshot)
+                    }
+                    is Event.ParentEdit -> {
+                        val parent = it.parentSnapshot.toObject(ParentData::class.java)!!
+                        findNavController().navigate(ParentDetailsFragmentDirections.actionParentDetailsFragmentToEditParentFragment(parent))
+                    }
+                    is Event.ParentCall -> {
+                        startCall(it.number)
+                    }
+                    is Event.ParentEmail -> {
+                        startEmailing(it.email)
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+
+
+            viewModel.deleteStatus.collect {
+
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo(it.exception?.message!!)
+
+                    }
+
+                }
+
+            }
+        }
+    }
+
+
+    private fun startEmailing(email: String) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/html"
+        val email = arrayOf(email)
+        intent.putExtra(Intent.EXTRA_EMAIL, email)
+        startActivity(Intent.createChooser(intent, "Choose app to use for sending Email"))
+    }
+
+    private fun startCall(number: String) {
+
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:$number")
+        startActivity(intent)
+
     }
 
     private fun setImageViewClickListeners() {
-        binding.callImageView.setOnClickListener(View.OnClickListener {
-            val intent = Intent(Intent.ACTION_DIAL)
-            intent.data = Uri.parse("tel:" + parentData!!.contact)
-            startActivity(intent)
-        })
-        binding.emailImageView.setOnClickListener(View.OnClickListener {
-            val intent = Intent(Intent.ACTION_SEND)
-            intent.type = "text/html"
-            val email = arrayOf(parentData!!.email)
-            intent.putExtra(Intent.EXTRA_EMAIL, email)
-            startActivity(Intent.createChooser(intent, "Choose app to use for sending Email"))
-        })
+        binding.callImageView.setOnClickListener {
+
+            viewModel.setEvent(Event.ParentCall(parentData.contact))
+
+
+        }
+        binding.emailImageView.setOnClickListener {
+
+            viewModel.setEvent(Event.ParentEmail(parentData.email))
+
+
+        }
     }
 
     private fun setOnClickListeners() {
-        binding.deleteTxtView.setOnClickListener(View.OnClickListener { deleteFromDatabase() })
-        binding.editTxtView.setOnClickListener(View.OnClickListener {
-            findNavController().navigate(R.id.action_parentDetailsFragment_to_editParentFragment)
-        })
-    }
-
-    private fun deleteFromDatabase() {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteParentPhoto() }.show()
-    }
-
-    private fun deleteParentPhoto() {
-
-        showProgress(true)
-        /**
-         * ACTIVITY EXITING BEFORE DELETION OF PHOTO IS COMPLETE MAY CAUSE CRASH OF THE PROGRAM//////////
-         *
-         */
-        FirebaseStorage.getInstance().getReferenceFromUrl(parentData!!.photo).delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
-                deleteParentMetaData()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
+        binding.deleteTxtView.setOnClickListener {
+            viewModel.setEvent(Event.ParentDelete(viewModel.currentSnapshot.value!!))
+        }
+        binding.editTxtView.setOnClickListener {
+            viewModel.setEvent(Event.ParentEdit(viewModel.currentSnapshot.value!!))
         }
     }
 
-    private fun deleteParentMetaData() {
-        ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), parentData!!.firstName + " Parent Removed Successfully", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-            showProgress(false)
-            findNavController().popBackStack()
-
-        }
+    private fun deleteFromDatabase(snapshot: DocumentSnapshot) {
+        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which ->
+            viewModel.setEvent(Event.ParentDeleteConfirmed(snapshot))
+        }.show()
     }
+
+
+
 
 
     private fun setDefaultValues() {
@@ -120,17 +205,7 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
             jobTypeTxtView.setText(parentData!!.jobType)
 
         }
-        val requestOptions = RequestOptions()
-        requestOptions.placeholder(R.mipmap.place_holder)
-        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(parentData!!.photo).thumbnail(Glide.with(this).load(parentData!!.thumbnail)).into(binding.imageView)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        parentData = ApplicationClass.documentSnapshot!!.toObject(ParentData::class.java)
-        parentData!!.id = ApplicationClass.documentSnapshot!!.id
-
-        setDefaultValues()
+       requestManager.load(parentData!!.photo).thumbnail(requestManager.load(parentData!!.thumbnail)).into(binding.imageView)
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -201,4 +276,14 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
     }
 
     //end progressbar
+
+
+    sealed class Event {
+        data class ParentDelete(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentDeleteConfirmed(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentEdit(val parentSnapshot: DocumentSnapshot) : Event()
+        data class ParentCall(val number: String) : Event()
+        data class ParentEmail(val email: String) : Event()
+
+    }
 }

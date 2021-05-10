@@ -3,10 +3,10 @@ package com.justice.schoolmanagement.presentation.ui.admin
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
-import android.text.TextUtils
 import android.util.Log
 import android.view.Gravity
 import android.view.View
@@ -17,132 +17,164 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.google.firebase.firestore.FirebaseFirestore
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import com.example.edward.nyansapo.wrappers.Resource
 import com.google.gson.Gson
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAdminBinding
+import com.justice.schoolmanagement.presentation.MainActivity
+import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity.Companion.SHARED_PREF
+import com.justice.schoolmanagement.presentation.splash.adminData
+import com.justice.schoolmanagement.presentation.ui.teacher.AddTeacherFragment
 import com.justice.schoolmanagement.presentation.utils.Constants
-import es.dmoral.toasty.Toasty
-import kotlinx.android.synthetic.main.fragment_admin.*
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 
+@AndroidEntryPoint
 class AdminFragment : Fragment(R.layout.fragment_admin) {
-    lateinit var sharedPreferences: SharedPreferences
+
+    private val TAG = "AdminFragment"
+
+    lateinit var sharedPref: SharedPreferences
     lateinit var binding: FragmentAdminBinding
-    private val KEY_ADMIN_DATA = "admin_data"
-    lateinit var adminData: AdminData
-    val firestore = FirebaseFirestore.getInstance()
-
-    companion object {
-        private const val TAG = "AdminFragment"
-    }
-
+    private val viewModel: AdminViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAdminBinding.bind(view)
-        sharedPreferences = requireContext().getSharedPreferences("shared_pref", MODE_PRIVATE)
+        sharedPref = requireContext().getSharedPreferences(SHARED_PREF, MODE_PRIVATE)
         initProgressBar()
-        setDefaultValues()
         setOnClickListeners()
+        subScribeToObservers()
+        viewModel.setEvent(Event.CheckIfAdminDataExists)
+    }
+
+    private fun subScribeToObservers() {
+        lifecycleScope.launchWhenResumed {
+            viewModel.fetchDataFromSharedPrefStatus.collect {
+                Log.d(TAG, "subScribeToObservers: adminDataStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        Constants.DOCUMENT_CODE = it.data!!.institutionCode
+                        setDefaultValues(it.data!!)
+
+                    }
+                    Resource.Status.ERROR -> {
+
+                    }
+
+                }
+            }
+        }
+        lifecycleScope.launchWhenResumed {
+            viewModel.saveAdminDataStatus.collect {
+                Log.d(TAG, "subScribeToObservers:saveAdminDataStatus:${it.status.name} ")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        Constants.DOCUMENT_CODE = it.data!!.institutionCode
+                        adminDataExists(it.data!!)
+
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+                        //am creating a new institution
+                        adminDataDoesNotExist()
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+
+                    }
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.adminEvents.collect {
+                when (it) {
+                    is Event.GoToSetupScreen -> {
+                        goToSetupScreen()
+                    }
+                    is Event.GoToDashBoard -> {
+                        goToDashBoardScreen()
+                    }
+                }
+            }
+        }
+        lifecycleScope.launchWhenResumed {
+            viewModel.checkIfUserIsSetupStatus.collect {
+                Log.d(TAG, "subScribeToObservers: checkIfUserIsSetup:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        viewModel.setEvent(Event.GoToDashBoard)
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        viewModel.setEvent(Event.GoToSetupScreen)
+
+                    }
+
+                }
+            }
+        }
+    }
+
+    private fun adminDataDoesNotExist() {
+
+        //set visibility of edit text on
+        binding.apply {
+            institutionCodeEdtTxt.isEnabled = false
+            name.visibility = View.VISIBLE
+            phone.visibility = View.VISIBLE
+        }
+
+        val adminData = getAdminObject()
+        viewModel.setEvent(Event.SaveAdminDataInDB(adminData))
+    }
+
+    private fun adminDataExists(adminData: AdminData) {
+        Log.d(TAG, "adminDataExists: adminData:$adminData")
+        val stringData = Gson().toJson(adminData)
+        sharedPref.adminData = stringData
+        viewModel.setEvent(Event.CheckIfUserIsSetup)
+
     }
 
     private fun setOnClickListeners() {
 
         binding.submitBtn.setOnClickListener {
-            submitBtnClicked();
+            val adminData = getAdminObject()
+            viewModel.setEvent(Event.SubmitClicked(adminData))
         }
     }
 
-    private fun submitBtnClicked() {
-        Log.d(TAG, "submitBtnClicked: ")
-        //first check if data is already available in database
-        if (TextUtils.isEmpty(institutionCodeEdtTxt.text.toString().trim())) {
-
-            Toasty.error(requireContext(), "Please Fill Institution Code !!").show()
-            return
-        }
-        val institutionCode = institutionCodeEdtTxt.text.toString().trim().replace("/", "")
-        showProgress(true)
-        firestore.collection(Constants.COLLECTION_ROOT).document(institutionCode).get().addOnSuccessListener {
-            if (it.exists()) {
-                Log.d(TAG, "submitBtnClicked: institution code does not exit setting it")
-                //u are ordinary teacher
-                Constants.DOCUMENT_CODE = institutionCode
-                val gson = Gson()
-                adminData = AdminData(null, null, institutionCode)
-                val stringData = gson.toJson(adminData)
-                //save data in share preference
-                sharedPreferences.edit().putString(KEY_ADMIN_DATA, stringData).commit()
-                //save institution code//
-                Log.d(TAG, "submitBtnClicked: institution code does not exit setting it")
-                Constants.DOCUMENT_CODE = institutionCode
-                showProgress(false)
-                findNavController().popBackStack()
-
-            } else {
-                showProgress(false)
-                ///you are admin first to create this school
-                Constants.DOCUMENT_CODE = institutionCode
-                Log.d(TAG, "submitBtnClicked: institution code exists ${Constants.DOCUMENT_CODE }")
-
-                fillAdminData()
-            }
-        }
-
-
-    }
-
-    private fun fillAdminData() {
-
-        //set visibility of edit text on
+    private fun getAdminObject(): AdminData {
+        val adminData = AdminData()
         binding.apply {
-            institutionCodeEdtTxt.isEnabled=false
-            name.visibility = View.VISIBLE
-            phone.visibility = View.VISIBLE
+            adminData.institutionCode = institutionCodeEdtTxt.text.toString()
+            adminData.name = nameEdtTxt.text.toString()
+            adminData.phone = phoneNumberEdtTxt.text.toString()
         }
-        binding.apply {
-            if (TextUtils.isEmpty(nameEdtTxt.text?.trim()) || TextUtils.isEmpty(phoneNumberEdtTxt.text?.trim()) || TextUtils.isEmpty(institutionCodeEdtTxt.text?.trim())) {
-
-                Toasty.error(requireContext(), "Please Fill All Fields !!").show()
-                return
-            }
-
-
-            val gson = Gson()
-            adminData = AdminData(nameEdtTxt.text.toString().trim(), phoneNumberEdtTxt.text.toString().trim(), institutionCodeEdtTxt.text.toString().trim())
-            val stringData = gson.toJson(adminData)
-            //save data in share preference
-            sharedPreferences.edit().putString(KEY_ADMIN_DATA, stringData).commit()
-
-            saveDataInDatabase()
-        }
-
+        return adminData
     }
 
-    private fun saveDataInDatabase() {
-        firestore.collection(Constants.COLLECTION_ROOT).document(adminData.institutionCode).set(adminData).addOnSuccessListener {
-            Log.d(TAG, "saveDataInDatabase: Admin data saved in database")
-            Toasty.success(requireContext(), "Data Saved")
-            findNavController().popBackStack()
-        }
-
-    }
-
-    private fun setDefaultValues() {
-
-        val stringData = sharedPreferences.getString(KEY_ADMIN_DATA, null)
-        if (stringData == null) {
-            Log.d(TAG, "setDefaultValues: no default values found...")
-            return
-        }
-
-        val gson = Gson()
-        val adminData = gson.fromJson(stringData, AdminData::class.java)
-
+    private fun setDefaultValues(adminData: AdminData) {
         binding.nameEdtTxt.setText(adminData.name)
         binding.phoneNumberEdtTxt.setText(adminData.phone)
         binding.institutionCodeEdtTxt.setText(adminData.institutionCode)
-
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -158,6 +190,18 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
 
         }
 
+    }
+
+    private fun goToSetupScreen() {
+        requireActivity().supportFragmentManager.beginTransaction().replace(R.id.container, AddTeacherFragment()).commit()
+    }
+
+    private fun goToDashBoardScreen() {
+        Log.d(TAG, "goToDashBoardScreen: institution code:${Constants.DOCUMENT_CODE}")
+
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun initProgressBar() {
@@ -213,5 +257,16 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
     }
 
     //end progressbar
+
+    sealed class Event {
+        data class SubmitClicked(val adminData: AdminData) : Event()
+        data class SaveAdminDataInDB(val adminData: AdminData) : Event()
+        object CheckIfAdminDataExists : Event()
+        object CheckIfUserIsSetup : Event()
+        object GoToDashBoard : Event()
+        object GoToSetupScreen : Event()
+
+
+    }
 
 }

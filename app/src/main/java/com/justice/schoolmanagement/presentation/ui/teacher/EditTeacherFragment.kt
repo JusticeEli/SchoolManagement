@@ -4,65 +4,125 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.google.firebase.storage.FirebaseStorage
+import com.example.edward.nyansapo.wrappers.Resource
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentEditTeacherBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
-import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
-import id.zelory.compressor.Compressor
-import java.io.File
-import java.io.IOException
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
+    companion object {
+        private const val TAG = "EditTeacherFragment"
+    }
 
     lateinit var binding: FragmentEditTeacherBinding
     private var uri: Uri? = null
     private var photoChanged = false
-    private var photo: String? = null
-    private val email: String? = null
-    private var teacherData: TeacherData? = null
 
     lateinit var progressBar: ProgressBar
     val navArgs: EditTeacherFragmentArgs by navArgs()
+    private val viewModel: EditTeacherViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentEditTeacherBinding.bind(view)
-
-
-
-
-        teacherData = ApplicationClass.documentSnapshot!!.toObject(TeacherData::class.java)
-        teacherData?.setId(ApplicationClass.documentSnapshot!!.id)
-        setDefaultValues()
-        setOnClickListeners()
-        setUpSubjectsSpinner()
         initProgressBar()
+        setUpSubjectsSpinner()
+        subScribeToObservers()
+    }
+
+    private fun subScribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+
+            launch {
+                viewModel.getTeacherToEdit
+                        .collect {
+                            Log.d(TAG, "subScribeToObservers: status:${it.status.name}")
+                            when (it.status) {
+                                Resource.Status.LOADING -> {
+                                    showProgress(true)
+                                }
+                                Resource.Status.SUCCESS -> {
+                                    Log.d(TAG, "subScribeToObservers: success loading data")
+                                    showProgress(false)
+                                    viewModel.setCurrentSnapshot(it.data!!)
+                                    val teacherData = it.data.toObject(TeacherData::class.java)!!
+                                    setDefaultValues(teacherData)
+                                    setOnClickListeners()
+                                }
+                                Resource.Status.ERROR -> {
+                                    showProgress(false)
+                                    showToastInfo("Error: ${it.exception?.message}")
+
+                                }
+                                Resource.Status.EMPTY -> {
+                                    showProgress(false)
+                                    Log.d(TAG, "subScribeToObservers: document does not exit")
+                                }
+                            }
+
+                        }
+            }
+
+            launch {
+                viewModel.editTeacherStatus.collect {
+                    Log.d(TAG, "subsribeToObservers: editTeacherStatus:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                            Log.d(TAG, "subsribeToObservers: LOADING:${it.message}")
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            // causes an error
+                            findNavController().popBackStack()
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            Log.d(TAG, "subsribeToObservers: Error:${it.exception?.message}")
+                        }
+                        Resource.Status.EMPTY -> {
+                            showToastInfo("Please Fill All Fields")
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
     }
 
     private fun setUpSubjectsSpinner() {
-        val subjects = arrayOf("Math", "Science", "English", "Kiswahili", "sst_cre")
+        val subjects = requireActivity().resources.getStringArray(R.array.subjects)
         val arrayAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_dropdown_item_1line, subjects)
         binding.subjectSpinner.setAdapter(arrayAdapter)
 
-        binding.contactEdtTxt.setText("07")
     }
 
     private fun choosePhoto() {
@@ -70,7 +130,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         CropImage.activity()
                 .setGuidelines(CropImageView.Guidelines.ON)
                 .setAspectRatio(1, 1)
-                .start(requireContext(), this);
+                .start(requireContext(), this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -104,7 +164,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
     }
 
 
-    private fun setDefaultValues() {
+    private fun setDefaultValues(teacherData: TeacherData) {
         binding.apply {
             firstNameEdtTxt.setText(teacherData!!.firstName)
             lastNameEdtTxt.setText(teacherData!!.lastName)
@@ -113,9 +173,10 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
             cityEdtTxt.setText(teacherData!!.city)
             degreeEdtTxt.setText(teacherData!!.degree)
             ageEdtTxt.setText(teacherData!!.age)
-            setDefaultValueForGenderRadioBtn()
-            setDefaultValueForTypeRadioBtn()
-            setDefaultValueForSubjectSpinner()
+            setDefaultValueForGenderRadioBtn(teacherData)
+            setDefaultValueForTypeRadioBtn(teacherData)
+            setDefaultValueForSubjectSpinner(teacherData)
+            Log.d(TAG, "setDefaultValues: ${teacherData!!.contact}")
             contactEdtTxt.setText(teacherData!!.contact)
             uri = Uri.parse(teacherData!!.photo)
             val requestOptions = RequestOptions()
@@ -125,14 +186,14 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
     }
 
-    private fun setDefaultValueForTypeRadioBtn() {
+    private fun setDefaultValueForTypeRadioBtn(teacherData: TeacherData) {
         when (teacherData!!.type) {
             "teacher" -> binding.teacherRadioBtn.setChecked(true)
             "admin" -> binding.adminRadioBtn.setChecked(true)
         }
     }
 
-    private fun setDefaultValueForGenderRadioBtn() {
+    private fun setDefaultValueForGenderRadioBtn(teacherData: TeacherData) {
         binding.apply {
             when (teacherData!!.gender) {
 
@@ -146,7 +207,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
 
     }
 
-    private fun setDefaultValueForSubjectSpinner() {
+    private fun setDefaultValueForSubjectSpinner(teacherData: TeacherData) {
         binding.apply {
             when (teacherData!!.subject) {
                 "Math" -> subjectSpinner.setSelection(0)
@@ -160,149 +221,67 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
     }
 
     private fun setOnClickListeners() {
-        binding.addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
-        binding.imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-        binding.submitBtn.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View) {
-                if (uri == null) {
-                    Toast.makeText(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
-                    return
-                }
-                if (fieldsAreEmpty()) {
-                    Toast.makeText(requireContext(), "Please fill All fields", Toast.LENGTH_SHORT).show()
-                    return
-                }
-                if (!contactEdtTxtFormatIsCorrect()) {
-                    return
-                }
-                dataFromEdtTxtAndAddToDataBase
+        binding.addPhotoBtn.setOnClickListener { choosePhoto() }
+        binding.imageView.setOnClickListener { choosePhoto() }
+        binding.submitBtn.setOnClickListener {
+
+            Log.d(TAG, "setOnClickListeners: submitBtn Clicked")
+            if (uri == null) {
+                Toasty.error(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-
-            // Continue with the task to get the download URL
-            private val dataFromEdtTxtAndAddToDataBase: Unit
-                private get() {
-
-                    teacherData!!.fullName = binding.firstNameEdtTxt.getText().toString() + " " + binding.lastNameEdtTxt.getText().toString()
-                    teacherData!!.firstName = binding.firstNameEdtTxt.getText().toString()
-                    teacherData!!.lastName = binding.lastNameEdtTxt.getText().toString()
-                    teacherData!!.email = binding.emailEdtTxt.getText().toString()
-                    teacherData!!.salary = binding.salaryEdtTxt.getText().toString()
-                    teacherData!!.city = binding.cityEdtTxt.getText().toString()
-                    teacherData!!.degree = binding.degreeEdtTxt.getText().toString()
-                    teacherData!!.age = binding.ageEdtTxt.getText().toString()
-                    teacherData!!.gender = getSelectedGenderRadioBtn()
-                    teacherData!!.type = getSelectedTypeRadioBtn()
-                    teacherData!!.subject = binding.subjectSpinner.getSelectedItem().toString()
-                    teacherData!!.contact = binding.contactEdtTxt.getText().toString()
-                    if (photoChanged) {
-                        teacherData!!.photo = photo
-                    }
-                    if (photoChanged) {
-                        showProgress(true)
-                        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_IMAGES).child(teacherData!!.id + ".jpg")
-                        val uploadTask = ref.putFile(uri!!)
-                        uploadTask.continueWithTask { task ->
-                            if (!task.isSuccessful) {
-                                throw task.exception!!
-                            }
-                            // Continue with the task to get the download URL
-                            ref.downloadUrl
-                        }.addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                val downloadUri = task.result
-                                photo = downloadUri.toString()
-                                teacherData!!.photo = photo
-                                uploadThumbnail()
-                                Toast.makeText(requireContext(), "Photo Uploaded", Toast.LENGTH_SHORT).show()
-                            } else {
-                                val error = task.exception!!.message
-                                Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-                            }
-                         }
-                    } else {
-                        putDataInDatabase()
-                    }
-
-                    teacherData
-                }
-        })
-    }
-
-    private fun uploadThumbnail() {
-        var thumbnail: Uri? = null
-        var compressedImgFile: File? = null
-        try {
-            compressedImgFile = Compressor(requireContext()).setCompressFormat(Bitmap.CompressFormat.JPEG).setMaxHeight(10).setMaxWidth(10).setQuality(40).compressToFile(File(uri!!.path))
-        } catch (e: IOException) {
-            e.printStackTrace()
+            val teacherData = viewModel.currentSnapshot.value!!.toObject(TeacherData::class.java)!!
+            val teacher = getTeacherObject()
+            Log.d(TAG, "setOnClickListeners: teacher:$teacher")
+            teacher.photo = teacherData.photo
+            teacher.thumbnail = teacherData.thumbnail
+            viewModel.setEvent(EditTeacherFragment.Event.TeacherEditSubmitClicked(teacher, photoChanged))
         }
-        thumbnail = Uri.fromFile(compressedImgFile)
-        showProgress(true)
-        val ref1 = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS_THUMBNAIL_IMAGES).child(teacherData!!.id)
-        val uploadTask1 = ref1.putFile(thumbnail)
-        uploadTask1.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                throw task.exception!!
-            }
-            // Continue with the task to get the download URL
-            ref1.downloadUrl
-        }.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUri = task.result
-                teacherData!!.thumbnail = downloadUri.toString()
-                putDataInDatabase()
-                Toast.makeText(requireContext(), "Thumbnail Uploaded", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-         }
+
     }
 
+    private fun getTeacherObject(): TeacherData {
 
-    private fun putDataInDatabase() {
-        showProgress(true)
-        ApplicationClass.documentSnapshot!!.reference.set(teacherData!!).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toast.makeText(requireContext(), "Teacher Data updated successfully", Toast.LENGTH_SHORT).show()
-                ApplicationClass.documentSnapshot!!.reference.get().addOnSuccessListener { documentSnapshot ->
-                    ApplicationClass.documentSnapshot = documentSnapshot
-                    showProgress(false)
-                    findNavController().popBackStack()
-                }
-            } else {
-                val error = task.exception!!.message
-                Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
+        val teacherData = TeacherData()
 
+        binding.apply {
+            teacherData.firstName = firstNameEdtTxt.text.toString()
+            teacherData.lastName = lastNameEdtTxt.text.toString()
+            teacherData.fullName = "${teacherData.firstName} ${teacherData.lastName}"
+            teacherData.email = emailEdtTxt.text.toString()
+            teacherData.salary = salaryEdtTxt.text.toString()
+            teacherData.city = cityEdtTxt.text.toString()
+            teacherData.degree = degreeEdtTxt.text.toString()
+            teacherData.age = ageEdtTxt.text.toString()
+            teacherData.contact = contactEdtTxt.text.toString()
+            teacherData.gender = getSelectedGenderRadioBtn()
+            teacherData.type = getSelectedTypeRadioBtn()
+            teacherData.subject = subjectSpinner.selectedItem.toString()
+
+            teacherData.uri = uri
         }
+        return teacherData
+
     }
 
-    private fun getSelectedTypeRadioBtn(): String? {
+    private fun getSelectedTypeRadioBtn(): String {
         when (binding.typeRadioGroup.getCheckedRadioButtonId()) {
             R.id.teacherRadioBtn -> return "teacher"
-            R.id.adminRadioBtn -> return "admin"
+            else -> return "admin"
         }
-        return null
+
     }
 
-    private fun getSelectedGenderRadioBtn(): String? {
+    private fun getSelectedGenderRadioBtn(): String {
         when (binding.genderRadioGroup.getCheckedRadioButtonId()) {
             R.id.maleRadioBtn -> return "Male"
             R.id.femaleRadioBtn -> return "Female"
-            R.id.otherRadioBtn -> return "Other"
-        }
-        return null
-    }
-
-    private fun fieldsAreEmpty(): Boolean {
-        binding.apply {
-            return if (uri == null || firstNameEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || lastNameEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || contactEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || emailEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || salaryEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || cityEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || degreeEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || ageEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty()) {
-                true
-            } else false
+            else -> return "Other"
         }
 
     }
+
+
     /////////////////////PROGRESS_BAR////////////////////////////
     lateinit var dialog: AlertDialog
 
@@ -317,6 +296,7 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
         }
 
     }
+
     private fun initProgressBar() {
 
         dialog = setProgressDialog(requireContext(), "Loading..")
@@ -370,5 +350,8 @@ class EditTeacherFragment : Fragment(R.layout.fragment_edit_teacher) {
     }
 
     //end progressbar
+    sealed class Event {
+        data class TeacherEditSubmitClicked(val teacher: TeacherData, val photoChanged: Boolean) : Event()
+    }
 
 }

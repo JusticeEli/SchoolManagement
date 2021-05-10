@@ -15,10 +15,14 @@ import androidx.navigation.ui.NavigationUI.navigateUp
 import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
-import com.justice.schoolmanagement.presentation.ui.SplashScreenFragment
+import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity.Companion.SHARED_PREF
+import com.justice.schoolmanagement.presentation.splash.adminData
+import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
 
@@ -29,8 +33,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-
         setSupportActionBar(binding.toolbar)
 
         val navHostFragment =
@@ -82,6 +84,14 @@ class MainActivity : AppCompatActivity() {
                 logout()
                 return true
             }
+            R.id.myAccountMenu -> {
+                showMyAccountDetails()
+                return true
+            }
+            R.id.videoChatMenu->{
+                startActivity(Intent(this,VideoChatViewActivity::class.java))
+                return true
+            }
             else -> {
                 item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
 
@@ -89,6 +99,16 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+    }
+
+    private fun showMyAccountDetails() {
+
+
+        FirebaseUtil.getCurrentUser {
+            SchoolApplication.documentSnapshot=it
+            navController.navigate(R.id.action_global_teacherDetailsFragment)
+
+        }
     }
 
     private fun logout() {
@@ -103,8 +123,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getRidOfSharedPreferenceData() {
-        val sharedPreferences = getSharedPreferences("shared_pref", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString(SplashScreenFragment.KEY_ADMIN_DATA, null).commit()
+        val sharedPreferences = getSharedPreferences(SHARED_PREF, Context.MODE_PRIVATE)
+        sharedPreferences.adminData=null
 
     }
 
@@ -141,7 +161,11 @@ class MainActivity : AppCompatActivity() {
     }
     // This might just fix your issue by itself.
 
+
+
     companion object {
         private const val TAG = "MainActivity"
     }
+
+
 }

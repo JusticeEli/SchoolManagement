@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -11,115 +12,134 @@ import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.RequestManager
+import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentStudentDetailsBinding
-import com.justice.schoolmanagement.presentation.ApplicationClass
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
-import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
-import com.justice.schoolmanagement.presentation.utils.Constants
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
 
-    private val email: String? = null
-    private var studentData: StudentData? = null
-    private val studentMarks: StudentMarks? = null
+    private val TAG = "StudentDetailFragment"
+
+    @Inject
+    lateinit var requestManager: RequestManager
     lateinit var binding: FragmentStudentDetailsBinding
+    private val viewModel: StudentDetailsViewModel by viewModels()
+    private val navArgs: StudentDetailsFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated: ${navArgs.studentData}")
         binding = FragmentStudentDetailsBinding.bind(view)
-
-
-        studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)
-        studentData!!.id = ApplicationClass.documentSnapshot!!.id
-
-
-        setDefaultValues()
-        setOnClickListeners()
         initProgressBar()
+        subScribeToObservers()
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
 
-        studentData = ApplicationClass.documentSnapshot!!.toObject(StudentData::class.java)
-        studentData!!.id = ApplicationClass.documentSnapshot!!.id
-        setDefaultValues()
+    private fun subScribeToObservers() {
 
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.currentStudent.collect {
+                Log.d(TAG, "subScribeToObservers: currentStudent:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+
+                    }
+                    Resource.Status.SUCCESS -> {
+                        viewModel.setCurrentSnapshot(it.data!!)
+                        setDefaultValues(it.data!!.toObject(StudentData::class.java)!!)
+                        setOnClickListeners()
+
+                    }
+                    Resource.Status.ERROR -> {
+                        showToastInfo("Error:${it.exception?.message}")
+                    }
+                }
+
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            Log.d(TAG, "subScribeToObservers: studentDetailEvents")
+            viewModel.studentDetailEvents.collect {
+                when (it) {
+                    is Event.StudentEdit -> {
+                        goToStudentEditScreen(it.snapshot)
+                    }
+                    is Event.StudentDelete -> {
+                        deleteStudentDataFromDatabase(it.snapshot)
+                    }
+                    is Event.FeesClicked -> {
+                        goToFeesScreen(it.snapshot)
+                    }
+
+                }
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.deleteStudentStatus.collect {
+                when (it.status) {
+                    Resource.Status.SUCCESS -> {
+                        showToastInfo("Success deleting student")
+                        findNavController().popBackStack()
+                    }
+                    Resource.Status.ERROR -> {
+                        showToastInfo("Error: ${it.exception?.message}")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun goToFeesScreen(snapshot: DocumentSnapshot) {
+        val student = snapshot.toObject(StudentData::class.java)!!
+        findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToFeesFragment(student))
+
+    }
+
+    private fun goToStudentEditScreen(snapshot: DocumentSnapshot) {
+        val studentData = snapshot.toObject(StudentData::class.java)!!
+        findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToEditStudentFragment(studentData))
     }
 
 
     private fun setOnClickListeners() {
-        binding.deleteTxtView.setOnClickListener(View.OnClickListener { deleteStudentDataFromDatabase() })
-        binding.editTxtView.setOnClickListener(View.OnClickListener {
+        binding.deleteTxtView.setOnClickListener {
+            viewModel.setEvent(Event.StudentDelete(viewModel.currentSnapshot.value!!))
 
-            findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToEditStudentFragment())
-        })
-    }
-
-    private fun deleteStudentDataFromDatabase() {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which -> deleteStudentPhoto() }.show()
-    }
-
-    private fun deleteStudentPhoto() {
-        showProgress(true)
-        FirebaseStorage.getInstance().getReferenceFromUrl(studentData!!.photo).delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), "Photo Deleted", Toast.LENGTH_SHORT).show()
-                deleteStudentData()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
         }
-
-    }
-
-    private fun deleteStudentData() {
-        ApplicationClass.documentSnapshot!!.reference.delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                ApplicationClass.documentSnapshot!!.reference.get().addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        ApplicationClass.documentSnapshot = task.result
-                        removeStudentMarksFromDatabase()
-                        Toasty.success(requireContext(), "Student data Removed", Toast.LENGTH_SHORT).show()
-                    } else {
-                        val error = task.exception!!.message
-                        Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                val error = task.exception!!.message
-                Toast.makeText(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
+        binding.editTxtView.setOnClickListener {
+            viewModel.setEvent(Event.StudentEdit(viewModel.currentSnapshot.value!!))
+        }
+        binding.feesTxtView.setOnClickListener {
+            viewModel.setEvent(Event.FeesClicked(viewModel.currentSnapshot.value!!))
         }
     }
 
-    private fun removeStudentMarksFromDatabase() {
-        FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.STUDENTS_MARKS).document(studentData!!.id).delete().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Toasty.success(requireContext(), "Student Marks removed", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-            showProgress(false)
-            findNavController().popBackStack()
+    private fun deleteStudentDataFromDatabase(snapshot: DocumentSnapshot) {
+        MaterialAlertDialogBuilder(requireContext()).setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no", null).setPositiveButton("yes") { dialog, which ->
+            viewModel.setEvent(Event.StudentDeleteConfirmed(snapshot))
 
-        }
+        }.show()
     }
 
 
-    private fun setDefaultValues() {
+    private fun setDefaultValues(studentData: StudentData) {
         binding.apply {
             studentNameTxtView.setText(studentData!!.fullName)
             studentClassTxtView.setText("" + studentData!!.classGrade)
@@ -138,9 +158,8 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
             cityTxtView.setText(studentData!!.city)
         }
 
-        val requestOptions = RequestOptions()
-        requestOptions.placeholder(R.mipmap.place_holder)
-        Glide.with(this).applyDefaultRequestOptions(requestOptions).load(studentData!!.photo).thumbnail(Glide.with(this).load(studentData!!.thumbnail)).into(binding.imageView)
+
+        requestManager.load(studentData!!.photo).thumbnail(requestManager.load(studentData!!.thumbnail)).into(binding.imageView)
     }
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -212,4 +231,13 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
     }
 
     //end progressbar
+
+
+    sealed class Event {
+        data class StudentDeleteConfirmed(val snapshot: DocumentSnapshot) : Event()
+        data class StudentDelete(val snapshot: DocumentSnapshot) : Event()
+        data class StudentEdit(val snapshot: DocumentSnapshot) : Event()
+        data class FeesClicked(val snapshot: DocumentSnapshot) : Event()
+
+    }
 }

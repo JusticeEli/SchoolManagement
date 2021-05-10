@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="job_status">
+        <item>Employed</item>
+        <item>Unemployed</item>
+        <item>Retired</item>
+    </string-array>
+
+    <string-array name="cities">
+        <item>Kisumu</item>
+        <item>Kitui</item>
+        <item>Lamu</item>
+        <item>Machakos</item>
+        <item>Marsabit</item>
+        <item>Meru</item>
+        <item>Migori</item>
+        <item>Mombasa</item>
+        <item>Nakuru</item>
+        <item>Narok</item>
+        <item>Trans Nzoi</item>
+        <item>Turkana</item>
+        <item>Vihiga</item>
+        <item>Naivasha</item>
+        <item>Eldoret</item>
+        <item>Kericho</item>
+    </string-array>
+
+    <string-array name="jobType">
+        <item>medical</item>
+        <item>business</item>
+        <item>health</item>
+        <item>administrative</item>
+        <item>secretarial</item>
+        <item>sales</item>
+        <item>marketing</item>
+        <item>finance</item>
+        <item>auditing</item>
+        <item>accounting</item>
+        <item>education</item>
+        <item>ngo</item>
+        <item>ict</item>
+        <item>building</item>
+        <item>construction</item>
+        <item>procument</item>
+        <item>engineering</item>
+        <item>media</item>
+        <item>computer</item>
+        <item>human resource</item>
+        <item>law</item>
+        <item>research</item>
+        <item>manufacturing</item>
+        <item>hospitality</item>
+    </string-array>
+
+    <string-array name="classGrade">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+    <string-array name="classGradeR">
+        <item>all</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+    <string-array name="nationality">
+        <item>Kenyan</item>
+        <item>Foreigner</item>
+    </string-array>
+
+    <string-array name="religion">
+        <item>Christian</item>
+        <item>Muslim</item>
+    </string-array>
+    <string-array name="subjects">
+        <item>Math</item>
+        <item>Science</item>
+        <item>English</item>
+        <item>Kiswahili</item>
+        <item>sst_cre</item>
+    </string-array>
+
+
+
+</resources>

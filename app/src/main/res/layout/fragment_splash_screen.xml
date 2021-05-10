@@ -4,6 +4,6 @@
     android:layout_width="match_parent"
     android:id="@+id/relativeLayout"
     android:layout_height="match_parent"
-    tools:context=".presentation.ui.SplashScreenFragment">
+    tools:context=".presentation.splash.SplashScreenFragment">
 
 </RelativeLayout>

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -17,48 +16,74 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import com.example.edward.nyansapo.wrappers.Resource
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAddParentBinding
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
-import com.justice.schoolmanagement.presentation.utils.Constants
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
-import id.zelory.compressor.Compressor
-import java.io.File
-import java.io.IOException
+import kotlinx.android.synthetic.main.fragment_add_parent.*
+import kotlinx.coroutines.flow.collect
 import java.util.*
 
+@AndroidEntryPoint
 class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
-    companion object {
-        private const val TAG = "AddParentFragment"
-    }
 
-    private var parentData: ParentData? = null
+    private val TAG = "AddParentFragment"
 
-    private val collectionReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS)
+
     lateinit var progressBar: ProgressBar
     private var uri: Uri? = null
     lateinit var binding: FragmentAddParentBinding
     val navArgs: AddParentFragmentArgs by navArgs()
+    private val viewModel: AddParentViewModel by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddParentBinding.bind(view)
-        Log.d(TAG, "onViewCreated: CODE: ${Constants.DOCUMENT_CODE}")
-        Log.d(TAG, "onViewCreated: ALL: ${Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS}")
-        Log.d(TAG, "onViewCreated: "+ Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/parents")
-        binding.contactEdtTxt.setText("07")
-        setSkipBtn()
-        initAdapters()
-        setOnClickListeners()
-
         initProgressBar()
+        setUpViews()
+        setSkipBtn()
+        initSpinnerAdapters()
+        setOnClickListeners()
+        subsribeToObservers()
+
+    }
+
+    private fun subsribeToObservers() {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.addParentStatus.collect {
+                //   Log.d(TAG, "subsribeToObservers: addParentStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                        Log.d(TAG, "subsribeToObservers: LOADING:${it.message}")
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        Log.d(TAG, "subsribeToObservers: Error:${it.exception?.message}")
+                    }
+                    Resource.Status.EMPTY -> {
+                        showToastError("Please Fill All Fields")
+                    }
+
+                }
+            }
+        }
+    }
+
+    private fun setUpViews() {
+        binding.contactEdtTxt.setText("07")
     }
 
 
@@ -86,71 +111,68 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         Glide.with(this).applyDefaultRequestOptions(requestOptions).load(uri).into(binding.imageView)
     }
 
+    //if executed when we are adding student then we need to add a parent
     private fun setSkipBtn() {
-        val flag: Boolean = navArgs.flag
-
-        if (flag) {
+        val student = navArgs.student
+        if (student != null) {
             binding.apply {
                 skipLinearLayout.setVisibility(View.VISIBLE)
-                firstNameEdtTxt.setText(navArgs.parentName)
-                emailEdtTxt.setText(navArgs.parentEmail)
+                firstNameEdtTxt.setText(student.parentName)
+                emailEdtTxt.setText(student.email)
 
             }
         }
     }
 
-    private fun initAdapters() {
-        val jobStatus = arrayOf("Employed", "Unemployed", "Retired")
+    private fun initSpinnerAdapters() {
+        //   val jobStatus = arrayOf("Employed", "Unemployed", "Retired")
+        val jobStatus = requireActivity().resources.getStringArray(R.array.job_status)
         val jobStatusAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobStatus)
         binding.jobStatusSpinner.setAdapter(jobStatusAdapter)
-        val cities = arrayOf("Kisumu", "Kitui", "Lamu", "Machakos", "Marsabit", "Meru", "Migori", "Mombasa", "Nakuru", "Narok", "Trans Nzoia", "Turkana", "Vihiga", "Naivasha", "Eldoret", "Kericho")
+
+
+        val cities = requireActivity().resources.getStringArray(R.array.cities)
         val cityAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, cities)
         binding.cityEdtTxt.setAdapter<ArrayAdapter<String>>(cityAdapter)
-        val jobType = arrayOf("medical", "business", "health", "administrative", "secretarial", "sales", "marketing", "finance", "auditing", "accounting", "education", "ngo", "ict", "building", "construction", "procument", "engineering", "media", "computer", "human resource", "law", "research", "manufacturing", "hospitality")
+        val jobType = requireActivity().resources.getStringArray(R.array.jobType)
         val jobTypeAdapter: ArrayAdapter<String> = ArrayAdapter<String>(requireContext(), android.R.layout.simple_list_item_1, jobType)
         binding.jobTypeEdtTxt.setAdapter<ArrayAdapter<String>>(jobTypeAdapter)
     }
 
-    private fun contactEdtTxtFormatIsCorrect(): Boolean {
-        val contact: String = binding.contactEdtTxt.getText().toString().trim { it <= ' ' }
-        if (!contact.startsWith("07")) {
-            Toasty.error(requireContext(), "Contact Must start with 07 !!", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (contact.length != 10) {
-            Toasty.error(requireContext(), "Contact Must have 10 characters", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        return true
-    }
 
-    private fun getSelectedRadioBtn(): String? {
-        when (binding.genderRadioGroup.getCheckedRadioButtonId()) {
-            R.id.maleRadioBtn -> return "Male"
-            R.id.femaleRadioBtn -> return "Female"
-            R.id.otherRadioBtn -> return "Other"
-        }
-        return null
+    private fun getSelectedRadioBtn(): String =
+            when (binding.genderRadioGroup.getCheckedRadioButtonId()) {
+                R.id.maleRadioBtn ->
+                    "Male"
+                R.id.femaleRadioBtn ->
+                    "Female"
+                else ->
+                    "Other"
+            }
+
+
+    private fun showToastError(message: String) {
+        Toasty.error(requireContext(), message, Toast.LENGTH_SHORT).show()
+
     }
 
     private fun setOnClickListeners() {
-        binding.addPhotoBtn.setOnClickListener(View.OnClickListener { choosePhoto() })
-        binding.imageView.setOnClickListener(View.OnClickListener { choosePhoto() })
-        binding.addBtn.setOnClickListener(View.OnClickListener {
+        binding.addPhotoBtn.setOnClickListener { choosePhoto() }
+        binding.imageView.setOnClickListener { choosePhoto() }
+        binding.submitBtn.setOnClickListener {
+
+
             if (uri == null) {
-                Toasty.error(requireContext(), "Please choose a photo", Toast.LENGTH_SHORT).show()
-                return@OnClickListener
+                showToastError("Please choose a photo")
+                return@setOnClickListener
             }
-            if (fieldsAreEmpty()) {
-                Toasty.error(requireContext(), "Please Fill All Fields", Toast.LENGTH_SHORT).show()
-                return@OnClickListener
-            }
-            if (!contactEdtTxtFormatIsCorrect()) {
-                return@OnClickListener
-            }
-            getDataFromEdtTxtAndSaveInDatabase()
-        })
-        binding.skipBtn.setOnClickListener(View.OnClickListener { findNavController().popBackStack(R.id.addStudentFragment, true) })
+            val parent = getParentObject()
+            viewModel.setEvent(AddParentViewModel.Event.ParentAddSubmitClicked(parent))
+
+
+        }
+
+        binding.skipBtn.setOnClickListener { findNavController().popBackStack(R.id.addStudentFragment, true) }
         binding.contactEdtTxt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -170,81 +192,35 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
         })
     }
 
-    private fun fieldsAreEmpty(): Boolean {
 
-        binding.apply {
-            return if (uri == null || firstNameEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || lastNameEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || emailEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || cityEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || contactEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || ageEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty() || jobTypeEdtTxt.getText().toString().trim { it <= ' ' }.isEmpty()) {
-                true
-            } else false
-        }
+    private fun getParentObject(): ParentData {
+        val firstName = firstNameEdtTxt.text.toString()
+        val lastName = lastNameEdtTxt.text.toString()
+        val fullName = "$firstName $lastName"
 
-    }
+        val email = emailEdtTxt.text.toString()
+        val city = cityEdtTxt.text.toString()
+        val contact = contactEdtTxt.text.toString()
+        val age = ageEdtTxt.text.toString()
+        val jobType = jobTypeEdtTxt.text.toString()
+        val jobStatus = jobStatusSpinner.getSelectedItem().toString()
+        val gender = getSelectedRadioBtn()!!
 
-    private fun getDataFromEdtTxtAndSaveInDatabase() {
-        binding.apply {
-            parentData = ParentData(firstNameEdtTxt.getText().toString() + " " + lastNameEdtTxt.getText().toString(), contactEdtTxt.getText().toString(), firstNameEdtTxt.getText().toString(), lastNameEdtTxt.getText().toString(), cityEdtTxt.getText().toString(), jobStatusSpinner.getSelectedItem().toString().trim { it <= ' ' }, ageEdtTxt.getText().toString(), getSelectedRadioBtn(), jobTypeEdtTxt.getText().toString(), emailEdtTxt.getText().toString())
 
-        }
-        putPhotoIntoDatabase()
-    }
+        val parent = ParentData()
+        parent.firstName = firstName
+        parent.lastName = lastName
+        parent.fullName = "${parent.firstName} ${parent.lastName}"
+        parent.email = email
+        parent.city = city
+        parent.contact = contact
+        parent.age = age
+        parent.jobType = jobType
+        parent.jobStatus = jobStatus
+        parent.gender = gender
+        parent.uri = uri
 
-    private fun putPhotoIntoDatabase() {
-        showProgress(true)
-        val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_IMAGES).child(photoName)
-        val uploadTask = ref.putFile(uri!!)
-        uploadTask.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                throw task.exception!!
-            }
-            // Continue with the task to get the download URL
-            ref.downloadUrl
-        }.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUri = task.result
-                parentData!!.photo = downloadUri.toString()
-                uploadThumbnail()
-                Toasty.success(requireContext(), "Photo Uploaded", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-
-        }
-
-        /////////////////////////////////////////////
-    }
-
-    private fun uploadThumbnail() {
-        var thumbnail: Uri? = null
-        var compressedImgFile: File? = null
-        try {
-            compressedImgFile = Compressor(requireActivity()).setCompressFormat(Bitmap.CompressFormat.JPEG).setMaxHeight(10).setMaxWidth(10).setQuality(40).compressToFile(File(uri!!.path))
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        thumbnail = Uri.fromFile(compressedImgFile)
-        showProgress(true)
-        val photoName = UUID.randomUUID().toString()
-        val ref = FirebaseStorage.getInstance().getReference(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.PARENTS_THUMBNAIL_IMAGES).child(photoName)
-        val uploadTask = ref.putFile(thumbnail)
-        uploadTask.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                throw task.exception!!
-            }
-            // Continue with the task to get the download URL
-            ref.downloadUrl
-        }.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUri = task.result
-                parentData!!.thumbnail = downloadUri.toString()
-                putDataIntoDataBase()
-                Toasty.success(requireContext(), "Thumbnail Uploaded", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-        }
+        return parent
     }
 
 
@@ -258,23 +234,8 @@ class AddParentFragment : Fragment(R.layout.fragment_add_parent) {
             ageEdtTxt.setText("")
             contactEdtTxt.setText("")
         }
-        showProgress(false)
     }
 
-
-    private fun putDataIntoDataBase() {
-        showProgress(true)
-        collectionReference.add(parentData!!).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                resetEdtTxt()
-                Toasty.success(requireContext(), "Parent data saved", Toast.LENGTH_SHORT).show()
-            } else {
-                val error = task.exception!!.message
-                Toasty.error(requireContext(), "Error: $error", Toast.LENGTH_SHORT).show()
-            }
-
-        }
-    }
 
     /////////////////////PROGRESS_BAR////////////////////////////
     lateinit var dialog: AlertDialog

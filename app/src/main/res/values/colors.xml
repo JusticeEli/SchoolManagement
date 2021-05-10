@@ -5,6 +5,13 @@
     <color name="colorAccent">#536DFE</color>
     <color name="colorPrimaryLight">#D1C4E9</color>
     <color name="colorWhite">#FFFFFF</color>
+    <!--VideoChatViewActivity-->
+    <color name="localBackground">#827b92</color>
+    <color name="remoteBackground">#484258</color>
 
 
+    <!-- Logs -->
+    <color name="logInfo">#4a90e2</color>
+    <color name="logWarn">#fedd56</color>
+    <color name="logError">#fe375f</color>
 </resources>

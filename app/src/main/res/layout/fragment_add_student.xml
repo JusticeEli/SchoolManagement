@@ -302,12 +302,13 @@
                             app:boxBackgroundMode="outline"
                             app:boxCornerRadiusTopEnd="20dp"
                             app:boxCornerRadiusTopStart="20dp"
-                            app:helperText="Class Teacher Name">
+                            app:endIconMode="dropdown_menu">
 
-                            <Spinner
+                            <AutoCompleteTextView
                                 android:id="@+id/classTeacherNameSpinner"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:completionThreshold="1"
                                 android:padding="10dp" />
 
                         </com.google.android.material.textfield.TextInputLayout>
@@ -331,7 +332,7 @@
 
                         </com.google.android.material.textfield.TextInputLayout>
 
-                        a
+
                         <!--
                            <LinearLayout
                             android:layout_width="wrap_content"
@@ -595,7 +596,7 @@
                                 android:textAllCaps="false" />
 
                             <Button
-                                android:id="@+id/addBtn"
+                                android:id="@+id/submit_btn"
                                 android:layout_width="100dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginLeft="20dp"
