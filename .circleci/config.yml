@@ -1,0 +1,43 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/android:api-28-alpha
+    environment:
+      JVM_OPTS: -Xmx3200m
+
+    steps:
+      - checkout:
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - run:
+          name: Check Dependency Versions
+          command: ./gradlew dependencyUpdates
+      - run:
+          name: Check Code Formatting
+          command: ./gradlew ktlintCheck
+      - run:
+          name: Run Tests
+          command: ./gradlew test
+      - run:
+          name: Assemble
+          command: ./gradlew assemble --continue
+      - run:
+          name: Configure Bundler
+          command: |
+            echo 'export BUNDLER_VERSION=$(cat Gemfile.lock | tail -1 | tr -d " ")' >> $BASH_ENV
+            source $BASH_ENV
+            gem install bundler
+      - run:
+          name: Install Gem
+          command: bundle install
+      - run:
+          name: Danger
+          command: bundle exec danger
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build
