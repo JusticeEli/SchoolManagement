@@ -7,10 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.teacher.TeachersFragment.Companion.TEACHER_ARGS
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -46,6 +46,9 @@ class TeacherDetailViewModel @ViewModelInject constructor(private val repository
                 }
                 is TeacherDetailsFragment.Event.TeacherEdit -> {
                     _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherEdit(event.snapshot))
+                }
+                is TeacherDetailsFragment.Event.TeacherChat -> {
+                    _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherChat(event.snapshot))
                 }
                 is TeacherDetailsFragment.Event.TeacherCall -> {
                     _teacherDetailsEvent.send(TeacherDetailsFragment.Event.TeacherCall(event.number))

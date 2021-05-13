@@ -36,9 +36,9 @@ import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentCheckInCheckOutBinding
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CheckInOut
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CurrentPosition
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
+import com.justice.schoolmanagement.utils.FirebaseUtil
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_check_in_check_out.*
 

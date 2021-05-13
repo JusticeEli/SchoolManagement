@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui.chat.util
+package com.justice.schoolmanagement.utils
 
 import android.net.Uri
 import android.util.Log
@@ -14,14 +14,14 @@ object StorageUtil {
 
     private val storageInstance: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
 
-    private val currentUserRef: StorageReference
+     val currentUserStorageRef: StorageReference
         get() = storageInstance.reference
                 .child(FirebaseAuth.getInstance().currentUser?.uid
                         ?: throw NullPointerException("UID is null."))
 
     fun uploadProfilePhoto(imageBytes: ByteArray,
                            onSuccess: (imagePath: String) -> Unit) {
-        val ref = currentUserRef.child("profilePictures/${UUID.nameUUIDFromBytes(imageBytes)}")
+        val ref = currentUserStorageRef.child("profilePictures/${UUID.nameUUIDFromBytes(imageBytes)}")
         ref.putBytes(imageBytes)
                 .addOnSuccessListener {
                     onSuccess(ref.path)
@@ -30,7 +30,7 @@ object StorageUtil {
 
     fun uploadMessageImage(uri: Uri,
                            onSuccess: (imagePath: String) -> Unit) {
-        val ref = currentUserRef.child("messages/${UUID.randomUUID()}")
+        val ref = currentUserStorageRef.child("messages/${UUID.randomUUID()}")
         val uploadTask = ref.putFile(uri!!)
 
         uploadTask.continueWithTask { task ->

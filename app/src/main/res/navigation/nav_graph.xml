@@ -210,6 +210,9 @@
         <argument
             android:name="teacherData"
             app:argType="com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData" />
+        <action
+            android:id="@+id/action_teacherDetailsFragment_to_chatFragment2"
+            app:destination="@id/chatFragment" />
     </fragment>
     <fragment
         android:id="@+id/parentDetailsFragment"
@@ -266,6 +269,15 @@
         <action
             android:id="@+id/action_choosenClassFragment_to_editStudentFragment"
             app:destination="@id/editStudentFragment" />
+        <action
+            android:id="@+id/action_choosenClassFragment_to_studentDetailsFragment2"
+            app:destination="@id/studentDetailsFragment" />
+        <action
+            android:id="@+id/action_choosenClassFragment_to_editStudentFragment2"
+            app:destination="@id/editStudentFragment" />
+        <action
+            android:id="@+id/action_choosenClassFragment_to_resultsEditFragment2"
+            app:destination="@id/resultsEditFragment" />
     </fragment>
     <fragment
         android:id="@+id/registerFragment"
@@ -321,8 +333,8 @@
         android:name="com.justice.schoolmanagement.presentation.ui.chat.ChatFragment"
         android:label="{name}" >
         <argument
-            android:name="name"
-            app:argType="string" />
+            android:name="teacherData"
+            app:argType="com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData" />
     </fragment>
     <action android:id="@+id/action_global_teacherDetailsFragment" app:destination="@id/teacherDetailsFragment" />
     <fragment

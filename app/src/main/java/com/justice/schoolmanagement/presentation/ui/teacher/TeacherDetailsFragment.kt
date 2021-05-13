@@ -22,12 +22,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentTeacherDetailsBinding
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
@@ -90,6 +90,11 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
                     is Event.TeacherEdit -> {
                         val teacher = it.snapshot.toObject(TeacherData::class.java)!!
                         findNavController().navigate(TeacherDetailsFragmentDirections.actionTeacherDetailsFragmentToEditTeacherFragment(teacher))
+                    }
+                    is Event.TeacherChat -> {
+                        Log.d(TAG, "subScribeToObservers: teacherchat")
+                        val teacher = it.snapshot.toObject(TeacherData::class.java)!!
+                        findNavController().navigate(TeacherDetailsFragmentDirections.actionTeacherDetailsFragmentToChatFragment(teacher))
                     }
                     is Event.TeacherCall -> {
                         startCall(it.number)
@@ -169,6 +174,9 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
         }
         binding.editTxtView.setOnClickListener {
             viewModel.setEvent(TeacherDetailsFragment.Event.TeacherEdit(viewModel.currentSnapshot.value!!))
+        }
+        binding.chatTxtView.setOnClickListener {
+            viewModel.setEvent(TeacherDetailsFragment.Event.TeacherChat(viewModel.currentSnapshot.value!!))
         }
     }
 
@@ -275,6 +283,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
         data class TeacherDelete(val snapshot: DocumentSnapshot) : Event()
         data class TeacherDeleteConfirmed(val snapshot: DocumentSnapshot) : Event()
         data class TeacherEdit(val snapshot: DocumentSnapshot) : Event()
+        data class TeacherChat(val snapshot: DocumentSnapshot) : Event()
         data class TeacherCall(val number: String) : Event()
         data class TeacherEmail(val email: String) : Event()
 

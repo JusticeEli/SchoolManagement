@@ -1,6 +1,6 @@
-package com.example.edward.nyansapo.wrappers
+package com.justice.schoolmanagement.utils
 
-class Resource<out T>(val data:T?,val status:Status,val exception: Exception?,val message:String?){
+class Resource<out T>(val data:T?, val status: Status, val exception: Exception?, val message:String?){
 
     companion object{
         fun <T> success(data: T) = Resource<T>(data, Status.SUCCESS, null, null)

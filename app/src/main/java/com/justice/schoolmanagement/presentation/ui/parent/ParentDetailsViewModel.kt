@@ -7,10 +7,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.parent.ParentsFragment.Companion.PARENT_ARGS
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow

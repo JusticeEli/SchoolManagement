@@ -9,6 +9,7 @@ object MessageType {
     const val IMAGE = "IMAGE"
 }
 
+const val FIELD_TIME="time"
 interface Message {
     val time: Date
     val senderId: String

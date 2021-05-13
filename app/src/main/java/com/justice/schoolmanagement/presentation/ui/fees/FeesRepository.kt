@@ -1,10 +1,10 @@
 package com.justice.schoolmanagement.presentation.ui.fees
 
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.SetOptions
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await

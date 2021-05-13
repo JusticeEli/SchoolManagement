@@ -3,10 +3,10 @@ package com.justice.schoolmanagement.presentation.ui.fees
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.student.StudentsFragment
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow

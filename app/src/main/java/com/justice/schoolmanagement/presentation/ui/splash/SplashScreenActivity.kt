@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.splash
+package com.justice.schoolmanagement.presentation.ui.splash
 
 import android.app.Activity
 import android.content.Context
@@ -12,7 +12,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.ErrorCodes
 import com.firebase.ui.auth.IdpResponse
@@ -21,7 +20,8 @@ import com.justice.schoolmanagement.databinding.ActivitySplashScreenBinding
 import com.justice.schoolmanagement.presentation.MainActivity
 import com.justice.schoolmanagement.presentation.ui.admin.AdminFragment
 import com.justice.schoolmanagement.presentation.ui.teacher.AddTeacherFragment
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect

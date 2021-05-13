@@ -1,14 +1,14 @@
-package com.justice.schoolmanagement.presentation.splash
+package com.justice.schoolmanagement.presentation.ui.splash
 
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.util.Log
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
-import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity.Companion.SHARED_PREF
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.presentation.ui.splash.SplashScreenActivity.Companion.SHARED_PREF
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 

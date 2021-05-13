@@ -1,11 +1,11 @@
 package com.justice.schoolmanagement.presentation.ui.blog
 
 import android.net.Uri
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.justice.schoolmanagement.presentation.ui.blog.model.Blog
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import java.util.*

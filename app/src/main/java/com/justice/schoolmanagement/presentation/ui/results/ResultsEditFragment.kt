@@ -16,18 +16,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentResultsEditBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -60,54 +60,50 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
     }
 
     private fun subscribeToObservers() {
-        coroutineScope.launch(handler) {
-            supervisorScope {
-                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
 
-                    launch {
-                        viewModel.getStudentMarks.collect {
-                            Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
-                            when (it.status) {
-                                Resource.Status.LOADING -> {
-                                    //   showProgress(true)
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
 
-                                }
-                                Resource.Status.SUCCESS -> {
-                                    //    showProgress(false)
-                                    viewModel.setCurrentStudentMarks(it.data!!)
-                                    setDefaultValues(it.data!!)
+            launch {
+                viewModel.getStudentMarks.collect {
+                    Log.d(TAG, "subscribeToObservers: getStudentMarks:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            //   showProgress(true)
 
-                                }
-                                Resource.Status.ERROR -> {
-                                    //   showProgress(false)
-
-                                }
-                            }
                         }
-                    }
-                    launch {
-                        viewModel.editMarksStatus.collect {
-                            Log.d(TAG, "subscribeToObservers: editMarksStatus:${it.status.name}")
-                            when (it.status) {
-                                Resource.Status.LOADING -> {
-                                    //    showProgress(true)
+                        Resource.Status.SUCCESS -> {
+                            //    showProgress(false)
+                            viewModel.setCurrentStudentMarks(it.data!!)
+                            setDefaultValues(it.data!!)
 
-                                }
-                                Resource.Status.SUCCESS -> {
-                                    //     showProgress(false)
+                        }
+                        Resource.Status.ERROR -> {
+                            //   showProgress(false)
 
-                                }
-                                Resource.Status.ERROR -> {
-                                    showToastInfo("Error: ${it.exception?.message}")
-                                }
-                            }
                         }
                     }
                 }
+            }
+            launch {
+                viewModel.editMarksStatus.collect {
+                    Log.d(TAG, "subscribeToObservers: editMarksStatus:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            //    showProgress(true)
 
+                        }
+                        Resource.Status.SUCCESS -> {
+                            //     showProgress(false)
 
+                        }
+                        Resource.Status.ERROR -> {
+                            showToastInfo("Error: ${it.exception?.message}")
+                        }
+                    }
+                }
             }
         }
+
 
     }
 
@@ -117,8 +113,22 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     private fun setOnClickListeners() {
         binding.submitBtn.setOnClickListener {
+            Log.d(TAG, "setOnClickListeners: ")
             val studentMarks = getStudentMarksObject()
-            viewModel.setEvent(Event.SubmitClicked(studentMarks))
+
+            val snapshot = viewModel.currentStudentMarks.value!!
+          /*  snapshot.reference.get().addOnSuccessListener {
+                val marks = it.toObject(StudentMarks::class.java)!!
+                Log.d(TAG, "setOnClickListeners: marks:$marks")
+            }*/
+
+            FirebaseUtil.collectionReferenceStudentsMarks().document(studentMarks.id!!)
+             .set(studentMarks).addOnSuccessListener {
+                  Log.d(TAG, "setOnClickListeners: success")
+              }
+
+            //viewModel.setEvent(Event.SubmitClicked(studentMarks))
+
 
         }
     }
@@ -135,6 +145,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
 
         }
+        Log.d(TAG, "getStudentMarksObject: studentMarks:$studentMarks")
         return studentMarks
 
     }

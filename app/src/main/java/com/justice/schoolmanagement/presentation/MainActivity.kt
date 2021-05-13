@@ -15,10 +15,10 @@ import androidx.navigation.ui.NavigationUI.navigateUp
 import com.firebase.ui.auth.AuthUI
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
-import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity.Companion.SHARED_PREF
-import com.justice.schoolmanagement.presentation.splash.adminData
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.presentation.ui.splash.SplashScreenActivity.Companion.SHARED_PREF
+import com.justice.schoolmanagement.presentation.ui.splash.adminData
 import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
+import com.justice.schoolmanagement.utils.FirebaseUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 

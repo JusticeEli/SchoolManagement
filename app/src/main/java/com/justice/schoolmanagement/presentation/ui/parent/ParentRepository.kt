@@ -4,12 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose

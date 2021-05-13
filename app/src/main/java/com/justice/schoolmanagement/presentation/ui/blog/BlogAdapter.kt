@@ -10,8 +10,8 @@ import com.google.firebase.firestore.*
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemBlogBinding
 import com.justice.schoolmanagement.presentation.ui.blog.model.Blog
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
+import com.justice.schoolmanagement.utils.FirebaseUtil
 import java.text.SimpleDateFormat
 import java.util.*
 

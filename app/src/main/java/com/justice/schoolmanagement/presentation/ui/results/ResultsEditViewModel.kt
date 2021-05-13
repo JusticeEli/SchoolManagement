@@ -4,17 +4,17 @@ import android.util.Log
 import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.student.models.STUDENT_MARKS_ARGS
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.tasks.await
 
 class ResultsEditViewModel @ViewModelInject constructor(private val repository: ResultsRepository, @Assisted private val savedStateHandle: SavedStateHandle, private val coroutineScope: CoroutineScope) : ViewModel() {
     private val TAG = "ResultsEditViewModel"
@@ -31,17 +31,14 @@ class ResultsEditViewModel @ViewModelInject constructor(private val repository: 
     val editMarksStatus = _editMarksStatus.receiveAsFlow()
     fun setEvent(event: ResultsEditFragment.Event) {
 
-        coroutineScope.launch(handler) {
-            supervisorScope {
-                viewModelScope.launch {
-                    when (event) {
-                        is ResultsEditFragment.Event.SubmitClicked -> {
-                            submitClicked(event.studentMarks)
-                        }
-                    }
+        CoroutineScope(Dispatchers.Main).launch {
+            when (event) {
+                is ResultsEditFragment.Event.SubmitClicked -> {
+                    submitClicked(event.studentMarks)
                 }
-
             }
+
+
         }
 
 
@@ -85,43 +82,64 @@ class ResultsEditViewModel @ViewModelInject constructor(private val repository: 
 
     private suspend fun updateDatabase(studentMarks: StudentMarks) {
         Log.d(TAG, "updateDatabase: studentMarks:$studentMarks")
+        val snapshot = currentStudentMarks.value!!
+        try {
+            viewModelScope.launch(Dispatchers.IO) {
+                snapshot.reference.set(studentMarks).await()
+            }
+            Log.d(TAG, "updateDatabase: end")
+   /*         snapshot.reference.set(studentMarks).addOnSuccessListener {
+                Log.d(TAG, "updateDatabase: start success")
+                *//* viewModelScope.launch {
+                     _editMarksStatus.send(Resource.success(snapshot))
+                 }*//*
+                Log.d(TAG, "updateDatabase: success")
+            }.addOnFailureListener {
+                viewModelScope.launch {
+                    _editMarksStatus.send(Resource.error(it))
+                }
+            }*/
+        } catch (e: Exception) {
+            Log.d(TAG, "updateDatabase: error:${e.message}")
 
-        val map = mapOf<String,String>("math" to studentMarks.math)
 
-
-        repository.updateDatabase(currentStudentMarks.value!!, map).collect {
-            Log.d(TAG, "updateDatabase: status:${it.status.name}")
-            _editMarksStatus.send(it)
         }
+
+
+        /*     repository.updateDatabase(currentStudentMarks.value!!, studentMarks).collect {
+                 Log.d(TAG, "updateDatabase: status:${it.status.name}")
+                 _editMarksStatus.send(it)
+             }*/
 
 
     }
 
     private fun computeTotalMarks(studentMarks: StudentMarks) {
-        studentMarks.totalMarks = studentMarks.math.toInt() + studentMarks.science.toInt() + studentMarks.english.toInt() + studentMarks.kiswahili.toInt() + studentMarks.sst_cre.toInt()}
+        studentMarks.totalMarks = studentMarks.math.toInt() + studentMarks.science.toInt() + studentMarks.english.toInt() + studentMarks.kiswahili.toInt() + studentMarks.sst_cre.toInt()
     }
+}
 
-    private fun marksAreNotValid(studentMarks: StudentMarks): Boolean {
-        return (studentMarks.math.toInt() > 100
-                || studentMarks.science.toInt() > 100
-                || studentMarks.english.toInt() > 100
-                || studentMarks.kiswahili.toInt() > 100
-                || studentMarks.sst_cre.toInt() > 100)
+private fun marksAreNotValid(studentMarks: StudentMarks): Boolean {
+    return (studentMarks.math.toInt() > 100
+            || studentMarks.science.toInt() > 100
+            || studentMarks.english.toInt() > 100
+            || studentMarks.kiswahili.toInt() > 100
+            || studentMarks.sst_cre.toInt() > 100)
 
-    }
+}
 
-    private fun trimData(studentMarks: StudentMarks) {
-        studentMarks.math = studentMarks.math.trim()
-        studentMarks.science = studentMarks.science.trim()
-        studentMarks.english = studentMarks.english.trim()
-        studentMarks.kiswahili = studentMarks.kiswahili.trim()
-        studentMarks.sst_cre = studentMarks.sst_cre.trim()
-    }
+private fun trimData(studentMarks: StudentMarks) {
+    studentMarks.math = studentMarks.math.trim()
+    studentMarks.science = studentMarks.science.trim()
+    studentMarks.english = studentMarks.english.trim()
+    studentMarks.kiswahili = studentMarks.kiswahili.trim()
+    studentMarks.sst_cre = studentMarks.sst_cre.trim()
+}
 
-    private fun fieldsAreEmpty(studentMarks: StudentMarks): Boolean {
-        return (studentMarks.math.isBlank()
-                || studentMarks.science.isBlank()
-                || studentMarks.english.isBlank()
-                || studentMarks.kiswahili.isBlank()
-                || studentMarks.sst_cre.isBlank())
-    }
+private fun fieldsAreEmpty(studentMarks: StudentMarks): Boolean {
+    return (studentMarks.math.isBlank()
+            || studentMarks.science.isBlank()
+            || studentMarks.english.isBlank()
+            || studentMarks.kiswahili.isBlank()
+            || studentMarks.sst_cre.isBlank())
+}

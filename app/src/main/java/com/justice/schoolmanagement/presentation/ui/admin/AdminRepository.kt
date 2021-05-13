@@ -2,12 +2,12 @@ package com.justice.schoolmanagement.presentation.ui.admin
 
 import android.content.Context
 import android.util.Log
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.gson.Gson
-import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity
-import com.justice.schoolmanagement.presentation.splash.adminData
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
+import com.justice.schoolmanagement.presentation.ui.splash.SplashScreenActivity
+import com.justice.schoolmanagement.presentation.ui.splash.adminData
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 

@@ -20,12 +20,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentEditStudentBinding
 import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
+import com.justice.schoolmanagement.utils.Resource
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
@@ -87,7 +87,7 @@ class EditStudentFragment : Fragment(R.layout.fragment_edit_student) {
 
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewModel.editStudentStatus.collect {
-                Log.d(TAG, "subScribeToObservers: addStudentStatus:${it.status.name}")
+                Log.d(TAG, "subScribeToObservers: editStudentStatus:${it.status.name}")
                 when (it.status) {
                     Resource.Status.LOADING -> {
                         showProgress(true)

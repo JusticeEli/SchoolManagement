@@ -15,14 +15,14 @@ import android.widget.AdapterView.OnItemSelectedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.FirebaseFirestore
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.alldata.AllData
 import com.justice.schoolmanagement.databinding.FragmentSubjectsBinding
 import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch

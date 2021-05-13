@@ -11,7 +11,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.*
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -19,15 +18,15 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.gson.Gson
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentAdminBinding
 import com.justice.schoolmanagement.presentation.MainActivity
-import com.justice.schoolmanagement.presentation.splash.SplashScreenActivity.Companion.SHARED_PREF
-import com.justice.schoolmanagement.presentation.splash.adminData
+import com.justice.schoolmanagement.presentation.ui.splash.SplashScreenActivity.Companion.SHARED_PREF
+import com.justice.schoolmanagement.presentation.ui.splash.adminData
 import com.justice.schoolmanagement.presentation.ui.teacher.AddTeacherFragment
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 

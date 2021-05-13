@@ -25,7 +25,7 @@
         <activity android:name=".presentation.splash.DummyActivity">
 
         </activity>
-        <activity android:name=".presentation.splash.SplashScreenActivity">
+        <activity android:name=".presentation.ui.splash.SplashScreenActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

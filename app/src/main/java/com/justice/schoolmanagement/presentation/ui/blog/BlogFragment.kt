@@ -11,12 +11,12 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentBlogBinding
+import com.justice.schoolmanagement.utils.Resource
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject

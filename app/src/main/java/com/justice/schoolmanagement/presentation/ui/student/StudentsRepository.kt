@@ -4,13 +4,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QuerySnapshot
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.student.models.CLASS_GRADE
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.qualifiers.ApplicationContext
 import id.zelory.compressor.Compressor
 import kotlinx.coroutines.channels.awaitClose
@@ -110,6 +110,30 @@ class StudentsRepository @Inject constructor(@ApplicationContext private val con
     fun putPhotoIntoDatabase(photoName: String, uri: Uri) = callbackFlow<Resource<String>> {
         val ref = FirebaseUtil.storageReferenceStudentImages().child(photoName)
         val uploadTask = ref.putFile(uri)
+        uploadTask.continueWithTask { task ->
+            if (!task.isSuccessful) {
+                throw task.exception!!
+            }
+            // Continue with the task to get the download URL
+            ref.downloadUrl
+        }.addOnSuccessListener {
+            Log.d(TAG, "putPhotoIntoDatabase: success")
+
+            offer(Resource.success(it.toString()))
+
+        }.addOnFailureListener {
+            Log.d(TAG, "putPhotoIntoDatabase: failed")
+            val error = it!!.message
+            offer(Resource.error(java.lang.Exception("Error: $error")))
+
+        }
+        awaitClose {
+
+        }
+    } fun putPhotoIntoDatabase2(photoName: String, uri: Uri) = callbackFlow<Resource<String>> {
+        val ref = FirebaseUtil.storageReferenceStudentImages().child(photoName)
+        val uploadTask = ref.putFile(uri)
+
         uploadTask.continueWithTask { task ->
             if (!task.isSuccessful) {
                 throw task.exception!!

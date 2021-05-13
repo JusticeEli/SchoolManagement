@@ -1,13 +1,13 @@
 package com.justice.schoolmanagement.presentation.ui.results
 
 import android.util.Log
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
 import com.justice.schoolmanagement.presentation.ui.student.models.CLASS_GRADE
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
 import com.justice.schoolmanagement.presentation.ui.student.models.TOTAL_MARKS
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 
@@ -83,10 +83,10 @@ class ResultsRepository {
         }
     }
 
-    fun updateDatabase(snapshot: DocumentSnapshot, map: Map<String,String>) = callbackFlow<Resource<DocumentSnapshot>> {
+    fun updateDatabase(snapshot: DocumentSnapshot,studentMarks: StudentMarks) = callbackFlow<Resource<DocumentSnapshot>> {
         Log.d(TAG, "updateDatabase: ")
 
-        snapshot.reference.update(map).addOnSuccessListener {
+        snapshot.reference.set(studentMarks).addOnSuccessListener {
             Log.d(TAG, "updateDatabase: start success")
             offer(Resource.success(snapshot))
             Log.d(TAG, "updateDatabase: success")

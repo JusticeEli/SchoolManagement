@@ -1,85 +1,197 @@
 package com.justice.schoolmanagement.presentation.ui.chat
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ListenerRegistration
+import com.bumptech.glide.RequestManager
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentChatBinding
-import com.justice.schoolmanagement.presentation.SchoolApplication
 import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
-import com.justice.schoolmanagement.presentation.ui.chat.model.Message
-import com.justice.schoolmanagement.presentation.ui.chat.model.TextMessage
-import com.justice.schoolmanagement.presentation.ui.chat.util.FirebaseUtil
-import com.justice.schoolmanagement.presentation.ui.chat.util.StorageUtil
-import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
+import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.Resource
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
+import dagger.hilt.android.AndroidEntryPoint
+import es.dmoral.toasty.Toasty
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ChatFragment : Fragment(R.layout.fragment_chat) {
 
-      companion object {
-              private  const val TAG="ChatFragment"
-          }
-    private lateinit var currentChannelId: String
-    private lateinit var currentUser: TeacherData
-    private lateinit var otherUserId: String
-    private lateinit var binding: FragmentChatBinding
+    private val TAG = "ChatFragment"
 
-    lateinit var chatFragmentAdapter: ChatFragmentAdapter
-    private lateinit var messagesListenerRegistration: ListenerRegistration
+    @Inject
+    lateinit var requestManager: RequestManager
+    private val viewModel: ChatViewModel by viewModels()
 
+     private lateinit var binding: FragmentChatBinding
+    private lateinit var chatAdapter: ChatAdapter
+    private val navArgs: ChatFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChatBinding.bind(view)
+        Log.d(TAG, "onViewCreated:teacherData:${navArgs.teacherData} ")
+        initProgressBar()
+        subScribeToObservers()
+        setUpClickListeners()
         initRecyclerView()
-        FirebaseUtil.getCurrentUser {
-            currentUser = it!!.toObject(TeacherData::class.java)!!
+
+    }
+
+    private fun setUpClickListeners() {
+        binding.fabSendImage.setOnClickListener {
+            choosePhoto()
+
         }
-        otherUserId = SchoolApplication.documentSnapshot!!.id
+    }
 
-        FirebaseUtil.getOrCreateChatChannel(otherUserId) { channelId ->
-            currentChannelId = channelId
+    private fun subScribeToObservers() {
 
-            messagesListenerRegistration =
-                    FirebaseUtil.addChatMessagesListener(channelId, requireContext(), this::updateRecyclerView)
-            binding.apply {
-                imageViewSend.setOnClickListener {
-                    val messageToSend =
-                            TextMessage(editTextMessage.text.toString(), Calendar.getInstance().time,
-                                    FirebaseAuth.getInstance().currentUser!!.uid,
-                                    otherUserId, currentUser.fullName)
-                    editTextMessage.setText("")
-                    FirebaseUtil.sendMessage(messageToSend, channelId)
-                }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            launch {
+                viewModel.getChannelId.collect {
+                    Log.d(TAG, "subScribeToObservers: getChannelId:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            viewModel.setChannelId(it.data!!)
+                            viewModel.setEvent(Event.ReceivedChannelID(it.data!!))
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                        }
 
-                fabSendImage.setOnClickListener {
 
-
-                    choosePhoto()
-                   /* val intent = Intent().apply {
-                        type = "image/*"
-                        action = Intent.ACTION_GET_CONTENT
-                        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png"))
                     }
-                    startActivityForResult(Intent.createChooser(intent, "Select Image"), RC_SELECT_IMAGE)*/
+                }
+            }
+            launch {
+                viewModel.getChats.collect {
+                    Log.d(TAG, "subScribeToObservers: getChats:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            updateMessages(it.data!!)
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
 
-                    */
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
 
+                        }
 
+                    }
+                }
+            }
+            launch {
+                viewModel.uploadMessageImageStatus.collect {
+                    Log.d(TAG, "subScribeToObservers: uploadMessageImageStatus:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            sendMessage(it.data!!)
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
+
+                        }
+
+                    }
+                }
+            }
+            launch {
+                viewModel.getCurrentUser.collect {
+                    Log.d(TAG, "subScribeToObservers: getCurrentUser:${it.status.name}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            viewModel.setCurrentUser(it.data!!)
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
+
+                        }
+
+                    }
+                }
+            }
+            viewModel.sendMessageStatus.collect {
+                Log.d(TAG, "subScribeToObservers: sendMessageStatus:${it.status.name}")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
+                    }
+                    Resource.Status.SUCCESS -> {
+                    }
+                    Resource.Status.ERROR -> {
+
+                    }
+                    Resource.Status.EMPTY -> {
+
+                    }
 
                 }
-
             }
-
         }
+
+    }
+
+    private fun sendMessage(imagePath: String) {
+        val messageToSend =
+                ImageMessage(imagePath, Calendar.getInstance().time,
+                        FirebaseUtil.getUid(),
+                        navArgs.teacherData.id!!, viewModel.currentUserFlow.value.fullName)
+        viewModel.setEvent(Event.SendMessage(messageToSend))
+    }
+
+    private fun updateMessages(data: List<DocumentSnapshot>) {
+        Log.d(TAG, "updateMessages: ")
+        chatAdapter.submitList(data)
+
+
     }
 
     private fun choosePhoto() {
@@ -91,22 +203,17 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     }
 
     private fun initRecyclerView() {
-        chatFragmentAdapter = ChatFragmentAdapter()
+        chatAdapter = ChatAdapter(requestManager)
         binding.recyclerView.apply {
-
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
-
-            adapter = chatFragmentAdapter
+            adapter = chatAdapter
 
         }
-
-
-
         binding.recyclerView.addOnLayoutChangeListener(View.OnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
-            if (chatFragmentAdapter != null) {
+            if (chatAdapter != null) {
                 if (bottom < oldBottom) {
-                    binding.recyclerView.smoothScrollToPosition(chatFragmentAdapter.getItemCount() - 1)
+                    binding.recyclerView.smoothScrollToPosition(chatAdapter.getItemCount() - 1)
                 }
             }
         })
@@ -114,32 +221,98 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        var uri: Uri?=null
+        var uri: Uri? = null
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             val result = CropImage.getActivityResult(data)
             if (resultCode == Activity.RESULT_OK) {
-         uri = result.uri
+                uri = result.uri
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 val error = result.error
             }
         }
 
-            StorageUtil.uploadMessageImage(uri!!) { imagePath ->
-                val messageToSend =
-                        ImageMessage(imagePath, Calendar.getInstance().time,
-                                FirebaseAuth.getInstance().currentUser!!.uid,
-                                otherUserId, currentUser.fullName)
-                FirebaseUtil.sendMessage(messageToSend, currentChannelId)
-            }
+        viewModel.setEvent(Event.UploadMessageImage(uri!!))
+    }
+
+
+    private fun showToastInfo(message: String) {
+        Toasty.info(requireContext(), message).show()
+    }
+
+    /////////////////////PROGRESS_BAR////////////////////////////
+    lateinit var dialog: AlertDialog
+
+    private fun showProgress(show: Boolean) {
+
+        if (show) {
+            dialog.show()
+
+        } else {
+            dialog.dismiss()
+
+        }
 
     }
 
-    private fun updateRecyclerView(messages: List<Message>) {
-        Log.d(TAG, "updateRecyclerView: ${chatFragmentAdapter.itemCount}")
-        chatFragmentAdapter.submitList(messages)
-        binding.recyclerView.smoothScrollToPosition(chatFragmentAdapter.itemCount);
+    private fun initProgressBar() {
+
+        dialog = setProgressDialog(requireContext(), "Loading..")
+        dialog.setCancelable(false)
+        dialog.setCanceledOnTouchOutside(false)
+    }
+
+    fun setProgressDialog(context: Context, message: String): AlertDialog {
+        val llPadding = 30
+        val ll = LinearLayout(context)
+        ll.orientation = LinearLayout.HORIZONTAL
+        ll.setPadding(llPadding, llPadding, llPadding, llPadding)
+        ll.gravity = Gravity.CENTER
+        var llParam = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        ll.layoutParams = llParam
+
+        val progressBar = ProgressBar(context)
+        progressBar.isIndeterminate = true
+        progressBar.setPadding(0, 0, llPadding, 0)
+        progressBar.layoutParams = llParam
+
+        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam.gravity = Gravity.CENTER
+        val tvText = TextView(context)
+        tvText.text = message
+        tvText.setTextColor(Color.parseColor("#000000"))
+        tvText.textSize = 20.toFloat()
+        tvText.layoutParams = llParam
+
+        ll.addView(progressBar)
+        ll.addView(tvText)
+
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(true)
+        builder.setView(ll)
+
+        val dialog = builder.create()
+        val window = dialog.window
+        if (window != null) {
+            val layoutParams = WindowManager.LayoutParams()
+            layoutParams.copyFrom(dialog.window?.attributes)
+            layoutParams.width = LinearLayout.LayoutParams.WRAP_CONTENT
+            layoutParams.height = LinearLayout.LayoutParams.WRAP_CONTENT
+            dialog.window?.attributes = layoutParams
+        }
+        return dialog
+    }
+
+//end progressbar
 
 
+    sealed class Event {
+        data class ReceivedChannelID(val channelId: String) : Event()
+        data class UploadMessageImage(val uri: Uri) : Event()
+        data class SendMessage(val imageMessage: ImageMessage) : Event()
     }
 }

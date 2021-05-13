@@ -12,11 +12,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.RequestManager
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentRegisterBinding
+import com.justice.schoolmanagement.utils.Resource
 import com.justice.schoolmanagement.utils.cleanString
 import com.justice.schoolmanagement.utils.formatDate
 import dagger.hilt.android.AndroidEntryPoint

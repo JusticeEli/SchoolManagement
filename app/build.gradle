@@ -57,7 +57,7 @@ dependencies {
 
     //cardview
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.firebase:firebase-firestore-ktx:22.1.2'
+    implementation 'com.google.firebase:firebase-firestore-ktx:23.0.0'
 
     //testing
     testImplementation 'junit:junit:4.12'
@@ -72,9 +72,10 @@ dependencies {
 
 
     //firebase ui
-    implementation 'com.firebaseui:firebase-ui-firestore:6.2.1'
-    implementation 'com.firebaseui:firebase-ui-auth:6.3.0'
-    implementation 'com.firebaseui:firebase-ui-storage:3.3.1'
+    def firebase_ui="7.1.1"
+    implementation "com.firebaseui:firebase-ui-firestore:$firebase_ui"
+    implementation "com.firebaseui:firebase-ui-auth:$firebase_ui"
+    implementation "com.firebaseui:firebase-ui-storage:$firebase_ui"
 
     //firebase messaging
     implementation 'com.google.firebase:firebase-messaging'
@@ -100,7 +101,9 @@ dependencies {
     implementation 'id.zelory:compressor:2.1.0'
 
 
+    def nav_version1 = "2.3.5"
     def nav_version = "2.3.1"
+    def hiltAndroidXVersion1 = '1.0.0-alpha03'
     def hiltAndroidXVersion = '1.0.0-alpha02'
 
     def pagingVersion = '3.0.0-alpha05'
@@ -109,8 +112,8 @@ dependencies {
 
 
     // Navigation Component
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version1"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version1"
 
     // Dagger Hilt
     implementation "com.google.dagger:hilt-android:$hiltVersion"

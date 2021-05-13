@@ -5,8 +5,9 @@ import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
 import kotlinx.android.parcel.Parcelize
 
-const val TOTAL_MARKS="totalMarks"
-const val STUDENT_MARKS_ARGS="studentMarks"
+const val TOTAL_MARKS = "totalMarks"
+const val STUDENT_MARKS_ARGS = "studentMarks"
+
 /*@Parcelize
 data class StudentMarks(
         @DocumentId

@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.utils
+package com.justice.schoolmanagement.utils
 
 
 object Constants {
@@ -8,6 +8,7 @@ object Constants {
 
     //Instution
     var DOCUMENT_CODE = "institution"
+    var CHANNEL_ID = "channelId"
 
     //root
     public val COLLECTION_ROOT = "Institutions/"
@@ -25,7 +26,7 @@ object Constants {
 
     public val COLLECTION_TEACHERS1 = COLLECTION_ROOT + DOCUMENT_CODE + TEACHERS
     public val COLLECTION_TEACHERS_IMAGES1 = COLLECTION_ROOT + DOCUMENT_CODE + TEACHERS_IMAGES
-    public val COLLECTION_TEACHERS_THUMBNAIL_IMAGES1 = COLLECTION_ROOT + DOCUMENT_CODE +TEACHERS_THUMBNAIL_IMAGES
+    public val COLLECTION_TEACHERS_THUMBNAIL_IMAGES1 = COLLECTION_ROOT + DOCUMENT_CODE + TEACHERS_THUMBNAIL_IMAGES
 
     //student
 

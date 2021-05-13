@@ -11,19 +11,17 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.RequestManager
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentChoosenClassBinding
 import com.justice.schoolmanagement.presentation.ui.results.ResultsAdapter
 import com.justice.schoolmanagement.presentation.ui.results.ResultsFragment
-import com.justice.schoolmanagement.presentation.ui.results.ResultsFragmentDirections
 import com.justice.schoolmanagement.presentation.ui.student.StudentAdapter
 import com.justice.schoolmanagement.presentation.ui.student.StudentsFragment
-import com.justice.schoolmanagement.presentation.ui.student.StudentsFragmentDirections
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
+import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_choosen_class.*
@@ -96,12 +94,12 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
                     is StudentsFragment.Event.StudentClicked -> {
                         val student = it.parentSnapshot.toObject(StudentData::class.java)
                         Log.d(TAG, "subScribeToObservers: student:$student")
-                        navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToStudentDetailsFragment(student!!))
+                        navController.navigate(ChoosenClassFragmentDirections.actionChoosenClassFragmentToStudentDetailsFragment(student!!))
 
                     }
                     is StudentsFragment.Event.StudentEdit -> {
                         val student = it.parentSnapshot.toObject(StudentData::class.java)
-                        navController.navigate(StudentsFragmentDirections.actionStudentsFragmentToEditStudentFragment(student!!))
+                        navController.navigate(ChoosenClassFragmentDirections.actionChoosenClassFragmentToEditStudentFragment(student!!))
 
                     }
                     is StudentsFragment.Event.StudentDelete -> {
@@ -184,7 +182,7 @@ class ChoosenClassFragment : Fragment(R.layout.fragment_choosen_class) {
 
     private fun goToEditScreen(snapshot: DocumentSnapshot) {
         val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
-        findNavController().navigate(ResultsFragmentDirections.actionResultsFragmentToResultsEditFragment(studentMarks))
+        findNavController().navigate(ChoosenClassFragmentDirections.actionChoosenClassFragmentToResultsEditFragment(studentMarks))
     }
 
 

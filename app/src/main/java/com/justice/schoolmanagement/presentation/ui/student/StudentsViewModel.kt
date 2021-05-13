@@ -6,9 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
+import com.justice.schoolmanagement.utils.Resource
 import com.justice.schoolmanagement.utils.exhaustive
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect

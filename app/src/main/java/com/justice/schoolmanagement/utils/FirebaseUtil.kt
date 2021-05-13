@@ -1,4 +1,4 @@
-package com.justice.schoolmanagement.presentation.ui.chat.util
+package com.justice.schoolmanagement.utils
 
 import android.content.Context
 import android.util.Log
@@ -9,9 +9,8 @@ import com.justice.schoolmanagement.presentation.ui.chat.model.*
 import com.justice.schoolmanagement.presentation.ui.register.CurrentDate
 import com.justice.schoolmanagement.presentation.ui.register.CurrentInfo
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
-import com.justice.schoolmanagement.presentation.utils.Constants
-import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_ENGAGED_CHAT_CHANNELS
-import com.justice.schoolmanagement.presentation.utils.Constants.COLLECTION_MESSAGES
+import com.justice.schoolmanagement.utils.Constants.COLLECTION_ENGAGED_CHAT_CHANNELS
+import com.justice.schoolmanagement.utils.Constants.COLLECTION_MESSAGES
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
@@ -27,13 +26,13 @@ object FirebaseUtil {
     val firebaseAuth = FirebaseAuth.getInstance()
     val firebaseStorage = FirebaseStorage.getInstance()
 
-    private val currentUserDocRef: DocumentReference
-        get() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(firebaseAuth.currentUser!!.uid)
+    val currentUserDocRef: DocumentReference
+        get() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS).document(getUid())
 
     // private val chatChannelsCollectionRef = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
-    private fun chatChannelsCollectionRef() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
+    fun chatChannelsCollectionRef() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + "/" + Constants.COLLECTION_CHAT_CHANNELS)
 
-     fun collectionReferenceDate() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE)
+    fun collectionReferenceDate() = firebaseFirestore.collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.DATE)
 
 
     val collectionReferenceAdmin = firebaseFirestore.collection(Constants.COLLECTION_ROOT)
@@ -110,7 +109,6 @@ object FirebaseUtil {
     }
 
 
-
     fun removeListener(registration: ListenerRegistration) = registration.remove()
 
     fun getOrCreateChatChannel(otherUserId: String,
@@ -164,27 +162,27 @@ object FirebaseUtil {
     }
 
 
-    fun getUid():String{
+    fun getUid(): String {
         return FirebaseAuth.getInstance().currentUser!!.uid
 
 
     }
 
-    fun getAdminCurrentLocation(onComplete: (DocumentSnapshot?) -> Unit){
-     val documentReferenceCurrentLocation = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
+    fun getAdminCurrentLocation(onComplete: (DocumentSnapshot?) -> Unit) {
+        val documentReferenceCurrentLocation = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
         documentReferenceCurrentLocation.get().addOnSuccessListener {
-            if (it.exists()){
+            if (it.exists()) {
                 onComplete(it)
 
-            }else{
+            } else {
                 onComplete(null)
 
             }
-         }
+        }
 
     }
 
-     fun getCurrentDateFormatted(onComplete: (String?) -> Unit) {
+    fun getCurrentDateFormatted(onComplete: (String?) -> Unit) {
         val currentInfo = CurrentInfo("16", "all", 3)
 
         FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
@@ -209,6 +207,7 @@ object FirebaseUtil {
 
 
     }
+
     fun getCurrentDate(onComplete: (Date?) -> Unit) {
 
         FirebaseFirestore.getInstance().collection("dummy").document("date").set(CurrentDate()).addOnSuccessListener {
@@ -235,7 +234,7 @@ object FirebaseUtil {
 
     fun sendMessage(message: Message, channelId: String) {
         chatChannelsCollectionRef().document(channelId)
-                .collection("messages")
+                .collection(COLLECTION_MESSAGES)
                 .add(message)
     }
 
@@ -259,7 +258,6 @@ object FirebaseUtil {
         }
 
     }
-
 
 
     fun getStudents(onComplete: (QuerySnapshot?, Exception?) -> Unit): ListenerRegistration {

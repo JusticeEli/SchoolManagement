@@ -20,7 +20,7 @@ import com.google.firebase.firestore.Query
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentPresentBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
-import com.justice.schoolmanagement.presentation.utils.Constants
+import com.justice.schoolmanagement.utils.Constants
 import kotlinx.android.synthetic.main.fragment_present.*
 
 class AbsentFragment(val registerFragment: RegisterFragment) : Fragment(R.layout.fragment_present) {

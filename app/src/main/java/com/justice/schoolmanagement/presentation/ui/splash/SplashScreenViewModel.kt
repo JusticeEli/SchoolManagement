@@ -1,14 +1,14 @@
-package com.justice.schoolmanagement.presentation.splash
+package com.justice.schoolmanagement.presentation.ui.splash
 
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.edward.nyansapo.wrappers.Resource
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.gson.Gson
 import com.justice.schoolmanagement.presentation.ui.admin.AdminData
+import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
