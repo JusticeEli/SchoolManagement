@@ -9,14 +9,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.firebase.ui.auth.AuthUI.IdpConfig.*
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentDashboardBinding
 import com.justice.schoolmanagement.utils.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
-import java.util.*
 
 @AndroidEntryPoint
 class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickListener {
@@ -28,7 +26,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickLis
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentDashboardBinding.bind(view)
         setOnClickListeners()
-        setHasOptionsMenu(true)
+       // setHasOptionsMenu(true)
         subScribeToObservers()
     }
 

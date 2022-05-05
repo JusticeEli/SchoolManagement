@@ -1,6 +1,7 @@
 package com.justice.schoolmanagement.presentation.ui.video_chat
 
 import android.Manifest
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.TextUtils
@@ -8,10 +9,8 @@ import android.util.Log
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.Toast
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,6 +36,7 @@ class VideoChatViewActivity : AppCompatActivity() {
 
     // Customized logger view
     private var mLogView: LoggerRecyclerView? = null
+    var channelNameOriginal: String = CHANNEL_NAME
 
     /**
      * Event handler registered into RTC engine for RTC callbacks.
@@ -54,7 +54,7 @@ class VideoChatViewActivity : AppCompatActivity() {
          * @param elapsed Time elapsed (ms) from the user calling joinChannel until this callback is triggered.
          */
         override fun onJoinChannelSuccess(channel: String, uid: Int, elapsed: Int) {
-            runOnUiThread { mLogView!!.logI("Join channel success,Channel Name: " + channel + " uid: $uid")  }
+            runOnUiThread { mLogView!!.logI("Join channel success,Channel Name: " + channel + " uid: $uid") }
         }
 
         /**
@@ -75,7 +75,7 @@ class VideoChatViewActivity : AppCompatActivity() {
          */
         override fun onFirstRemoteVideoDecoded(uid: Int, width: Int, height: Int, elapsed: Int) {
             runOnUiThread {
-                mLogView!!.logI("First remote video decoded, uid: $uid" )
+                mLogView!!.logI("First remote video decoded, uid: $uid")
                 setupRemoteVideo(uid)
             }
         }
@@ -104,7 +104,7 @@ class VideoChatViewActivity : AppCompatActivity() {
          */
         override fun onUserOffline(uid: Int, reason: Int) {
             runOnUiThread {
-                mLogView!!.logI("User offline, uid: $uid" )
+                mLogView!!.logI("User offline, uid: $uid")
                 onRemoteUserLeft(uid)
             }
         }
@@ -155,8 +155,9 @@ class VideoChatViewActivity : AppCompatActivity() {
         // This is just an example set of permissions. Other permissions
         // may be needed, and please refer to our online documents.
         if (checkSelfPermission(REQUESTED_PERMISSIONS[0], PERMISSION_REQ_ID) &&
-                checkSelfPermission(REQUESTED_PERMISSIONS[1], PERMISSION_REQ_ID) &&
-                checkSelfPermission(REQUESTED_PERMISSIONS[2], PERMISSION_REQ_ID)) {
+            checkSelfPermission(REQUESTED_PERMISSIONS[1], PERMISSION_REQ_ID) &&
+            checkSelfPermission(REQUESTED_PERMISSIONS[2], PERMISSION_REQ_ID)
+        ) {
             initEngineAndJoinChannel()
         }
     }
@@ -181,19 +182,24 @@ class VideoChatViewActivity : AppCompatActivity() {
 
     private fun checkSelfPermission(permission: String, requestCode: Int): Boolean {
         if (ContextCompat.checkSelfPermission(this, permission) !=
-                PackageManager.PERMISSION_GRANTED) {
+            PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, REQUESTED_PERMISSIONS, requestCode)
             return false
         }
         return true
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
         if (requestCode == PERMISSION_REQ_ID) {
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED || grantResults[1] != PackageManager.PERMISSION_GRANTED || grantResults[2] != PackageManager.PERMISSION_GRANTED) {
-                showLongToast("Need permissions " + Manifest.permission.RECORD_AUDIO +
-                        "/" + Manifest.permission.CAMERA + "/" + Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                showLongToast(
+                    "Need permissions " + Manifest.permission.RECORD_AUDIO +
+                            "/" + Manifest.permission.CAMERA + "/" + Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
                 finish()
                 return
             }
@@ -214,7 +220,8 @@ class VideoChatViewActivity : AppCompatActivity() {
         initializeEngine()
         setupVideoConfig()
         setupLocalVideo()
-        joinChannel()
+        setUpdialog()
+        // joinChannel()
     }
 
     private fun initializeEngine() {
@@ -222,10 +229,12 @@ class VideoChatViewActivity : AppCompatActivity() {
             RtcEngine.create(baseContext, getString(R.string.agora_app_id), mRtcEventHandler)
         } catch (e: Exception) {
             Log.e(TAG, Log.getStackTraceString(e))
-            throw RuntimeException("""
+            throw RuntimeException(
+                """
     NEED TO check rtc sdk init fatal error
     ${Log.getStackTraceString(e)}
-    """.trimIndent())
+    """.trimIndent()
+            )
         }
     }
 
@@ -237,11 +246,14 @@ class VideoChatViewActivity : AppCompatActivity() {
 
         // Please go to this page for detailed explanation
         // https://docs.agora.io/en/Video/API%20Reference/java/classio_1_1agora_1_1rtc_1_1_rtc_engine.html#af5f4de754e2c1f493096641c5c5c1d8f
-        mRtcEngine!!.setVideoEncoderConfiguration(VideoEncoderConfiguration(
+        mRtcEngine!!.setVideoEncoderConfiguration(
+            VideoEncoderConfiguration(
                 VideoEncoderConfiguration.VD_640x360,
                 VideoEncoderConfiguration.FRAME_RATE.FRAME_RATE_FPS_15,
                 VideoEncoderConfiguration.STANDARD_BITRATE,
-                VideoEncoderConfiguration.ORIENTATION_MODE.ORIENTATION_MODE_FIXED_PORTRAIT))
+                VideoEncoderConfiguration.ORIENTATION_MODE.ORIENTATION_MODE_FIXED_PORTRAIT
+            )
+        )
     }
 
     private fun setupLocalVideo() {
@@ -261,7 +273,8 @@ class VideoChatViewActivity : AppCompatActivity() {
         mRtcEngine!!.setupLocalVideo(mLocalVideo)
     }
 
-    private fun joinChannel() {
+    private fun joinChannel(channelName: String) {
+        Log.d(TAG, "joinChannel: channelName:$channelName")
         // 1. Users can only see each other after they join the
         // same channel successfully using the same app id.
         // 2. One token is only valid for the channel name that
@@ -271,7 +284,9 @@ class VideoChatViewActivity : AppCompatActivity() {
             Log.d(TAG, "joinChannel: token is null")
             token = null // default, no token
         }
-        mRtcEngine!!.joinChannel(token, CHANNEL_NAME, "Extra Optional Data", 0)
+
+
+        mRtcEngine!!.joinChannel(token, channelName, "Extra Optional Data", 0)
     }
 
     override fun onDestroy() {
@@ -318,7 +333,7 @@ class VideoChatViewActivity : AppCompatActivity() {
 
     private fun startCall() {
         setupLocalVideo()
-        joinChannel()
+        joinChannel(channelNameOriginal)
     }
 
     private fun endCall() {
@@ -375,10 +390,49 @@ class VideoChatViewActivity : AppCompatActivity() {
         // for Agora RTC SDK, just in case if you wanna save
         // logs to external sdcard.
         private val REQUESTED_PERMISSIONS = arrayOf(
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.CAMERA,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
         private const val CHANNEL_NAME = "collet"
+    }
+
+
+    private fun setUpdialog() {
+        Log.d(TAG, "setUpdialog: ")
+        val inputEditTextField = EditText(this);
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Channel")
+            .setMessage("Please enter the channel you want to join")
+            .setView(inputEditTextField)
+
+            .setPositiveButton("OK", object : DialogInterface.OnClickListener {
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+
+                    val channelName = inputEditTextField.text.toString().trim()
+                    channelNameOriginal = channelName
+                    if (channelName.isEmpty()) {
+                        joinChannel(CHANNEL_NAME)
+                    } else {
+                        joinChannel(channelName)
+
+                    }
+
+
+                }
+
+            })
+            .setNegativeButton("DEFAULT", object : DialogInterface.OnClickListener {
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+                    joinChannel(CHANNEL_NAME)
+
+
+                }
+
+            })
+            .create();
+        dialog.show();
+
+
     }
 }

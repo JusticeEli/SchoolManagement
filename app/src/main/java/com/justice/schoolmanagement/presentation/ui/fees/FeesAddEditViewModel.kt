@@ -1,18 +1,18 @@
 package com.justice.schoolmanagement.presentation.ui.fees
 
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.DocumentSnapshot
-import com.justice.schoolmanagement.presentation.ui.student.StudentsFragment
-import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class FeesAddEditViewModel @ViewModelInject constructor(private val repository: FeesRepository, @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class FeesAddEditViewModel @ViewModelInject constructor(private val repository: FeesRepository) : ViewModel() {
     private val _addEditEvents = Channel<FeesAddEditFragment.Event>()
     val addEditEvents = _addEditEvents.receiveAsFlow()
 
@@ -21,11 +21,16 @@ class FeesAddEditViewModel @ViewModelInject constructor(private val repository: 
     fun setEvent(event: FeesAddEditFragment.Event) {
         viewModelScope.launch {
             when (event) {
+                is FeesAddEditFragment.Event.GetStudent -> {
+                    repository.getStudent(event.studentData.id!!).collect {
+                        _getStudent.send(it)
+                    }
+                }
                 is FeesAddEditFragment.Event.CheckUpdating -> {
-                    checkIfUpdating()
+                    checkIfUpdating(event.studentFees)
                 }
                 is FeesAddEditFragment.Event.FetchFees -> {
-                    startFetchingFees()
+                    startFetchingFees(event.studentFees)
 
                 }
                 is FeesAddEditFragment.Event.AddEditFees -> {
@@ -85,8 +90,8 @@ class FeesAddEditViewModel @ViewModelInject constructor(private val repository: 
 
     private val _addEditFeesStatus = Channel<Resource<StudentFees>>()
     val addEditFeesStatus = _addEditFeesStatus.receiveAsFlow()
-    private suspend fun startFetchingFees() {
-        val feesId = savedStateHandle.get<StudentFees>(STUDENT_FEES_ARGS)!!.id!!
+    private suspend fun startFetchingFees(studentFees: StudentFees) {
+        val feesId = studentFees.id!!
         val studentId = currentStudent.value!!.id!!
         repository.startFetchingFees(studentId, feesId).collect {
             _studentFeesStatus.send(it)
@@ -94,7 +99,10 @@ class FeesAddEditViewModel @ViewModelInject constructor(private val repository: 
     }
 
 
-    val getStudent = repository.getStudent(savedStateHandle.get<StudentData>(StudentsFragment.STUDENT_ARGS)!!.id!!)
+    val _getStudent = Channel<Resource<DocumentSnapshot>>()
+    val getStudent =_getStudent.receiveAsFlow()
+
+
     private val currentStudent = MutableLiveData<DocumentSnapshot>()
     fun setCurrentStudent(snapshot: DocumentSnapshot) {
         currentStudent.value = snapshot
@@ -111,12 +119,12 @@ class FeesAddEditViewModel @ViewModelInject constructor(private val repository: 
         _isUpdatingLiveData.value = isUpdating
     }
 
-    private suspend fun checkIfUpdating() {
-        val fees = savedStateHandle.get<StudentFees>(STUDENT_FEES_ARGS)
+    private suspend fun checkIfUpdating(fees: StudentFees?) {
+
         if (fees == null) {
-            _addEditEvents.send(FeesAddEditFragment.Event.CheckUpdating(false))
+            _addEditEvents.send(FeesAddEditFragment.Event.CheckUpdating(updating = false))
         } else {
-            _addEditEvents.send(FeesAddEditFragment.Event.CheckUpdating(true))
+            _addEditEvents.send(FeesAddEditFragment.Event.CheckUpdating(updating = true))
 
         }
     }

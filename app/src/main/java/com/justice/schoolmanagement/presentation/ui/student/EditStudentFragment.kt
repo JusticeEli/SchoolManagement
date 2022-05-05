@@ -11,7 +11,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.*
 import android.view.WindowManager
 import android.widget.*
 import androidx.fragment.app.Fragment
@@ -31,7 +30,6 @@ import com.theartofdev.edmodo.cropper.CropImageView
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint

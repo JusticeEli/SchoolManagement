@@ -21,10 +21,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.RequestManager
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentChatBinding
 import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
+import com.justice.schoolmanagement.presentation.ui.chat.model.Message
+import com.justice.schoolmanagement.presentation.ui.chat.model.TextMessage
 import com.justice.schoolmanagement.utils.FirebaseUtil
 import com.justice.schoolmanagement.utils.Resource
 import com.theartofdev.edmodo.cropper.CropImage
@@ -57,9 +60,20 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         setUpClickListeners()
         initRecyclerView()
 
+
+
     }
 
     private fun setUpClickListeners() {
+
+        binding.imvSend.setOnClickListener {
+            val messageToSend =
+                TextMessage(binding.editTextMessage.text.toString(), Calendar.getInstance().time,
+                    FirebaseAuth.getInstance().currentUser!!.uid,
+                    viewModel.otherTeacherFlow.value.id!!, viewModel.currentUserFlow.value.fullName)
+            binding.editTextMessage.setText("")
+            viewModel.setEvent(Event.SendMessage(messageToSend))
+        }
         binding.fabSendImage.setOnClickListener {
             choosePhoto()
 
@@ -80,7 +94,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                             showProgress(false)
                             viewModel.setChannelId(it.data!!)
                             viewModel.setEvent(Event.ReceivedChannelID(it.data!!))
-                        }
+                            }
                         Resource.Status.ERROR -> {
                             showProgress(false)
                         }
@@ -145,6 +159,9 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                         Resource.Status.SUCCESS -> {
                             showProgress(false)
                             viewModel.setCurrentUser(it.data!!)
+                            viewModel.setOtherTeacher(navArgs.teacherData)
+                           // viewModel.setEvent(Event.GetOrCreateChatChannel(navArgs.teacherData.id))
+
                         }
                         Resource.Status.ERROR -> {
                             showProgress(false)
@@ -313,6 +330,8 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     sealed class Event {
         data class ReceivedChannelID(val channelId: String) : Event()
         data class UploadMessageImage(val uri: Uri) : Event()
-        data class SendMessage(val imageMessage: ImageMessage) : Event()
+        data class SendMessage(val message: Message) : Event()
+        data class GetOrCreateChatChannel(val otherUserId:String) : Event()
+
     }
 }

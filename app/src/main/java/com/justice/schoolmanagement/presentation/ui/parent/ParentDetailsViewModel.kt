@@ -1,14 +1,11 @@
 package com.justice.schoolmanagement.presentation.ui.parent
 
 import android.util.Log
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.DocumentSnapshot
-import com.justice.schoolmanagement.presentation.ui.parent.ParentsFragment.Companion.PARENT_ARGS
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
@@ -16,7 +13,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class ParentDetailsViewModel @ViewModelInject constructor(private val repository: ParentRepository ,@Assisted private val savedStateHandle:SavedStateHandle) : ViewModel() {
+class ParentDetailsViewModel @ViewModelInject constructor(private val repository: ParentRepository ) : ViewModel() {
 
     private val TAG = "ParentDetailsViewModel"
     private val _parentDetailsEvent = Channel<ParentDetailsFragment.Event>()
@@ -29,15 +26,19 @@ class ParentDetailsViewModel @ViewModelInject constructor(private val repository
     val currentSnapshot get() = _currentSnapshot
     fun setCurrentSnapshot(snapshot: DocumentSnapshot) {
         _currentSnapshot.value = snapshot
+
+
     }
 
-
-    val getParent = repository.getParent(savedStateHandle.get<ParentData>(PARENT_ARGS)?.id!!)
     fun setEvent(event: ParentDetailsFragment.Event) {
         Log.d(TAG, "setEvent: ")
         viewModelScope.launch {
 
             when (event) {
+
+                is ParentDetailsFragment.Event.GetParent -> {
+                   getParent(event.parentData)
+                }
                 is ParentDetailsFragment.Event.ParentDelete -> {
                     _parentDetailsEvent.send(ParentDetailsFragment.Event.ParentDelete(event.parentSnapshot))
                 }
@@ -57,6 +58,16 @@ class ParentDetailsViewModel @ViewModelInject constructor(private val repository
 
         }
 
+
+    }
+
+    val _getParent= Channel<Resource<DocumentSnapshot>>()
+    var getParent = _getParent.receiveAsFlow()
+
+    private suspend fun getParent(parentData: ParentData) {
+        repository.getParent(parentData.id!!).collect {
+            _getParent.send(it)
+        }
 
     }
 

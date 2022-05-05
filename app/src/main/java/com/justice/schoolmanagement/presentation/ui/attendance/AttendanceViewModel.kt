@@ -47,9 +47,11 @@ class AttendanceViewModel @ViewModelInject constructor(private val repository: A
     val fetchAttendanceStatus = _fetchAttendanceStatus.receiveAsFlow()
 
     private suspend fun startFetchingAttendance(choosenDate: String) {
+        Log.d(TAG, "startFetchingAttendance: choosenDate:$choosenDate")
         val cleanedDate=choosenDate.cleanString
         repository.startFetchingAttendance(cleanedDate).collect {
             _fetchAttendanceStatus.send(it)
+
         }
     }
 

@@ -1,27 +1,33 @@
 package com.justice.schoolmanagement.presentation.ui.fees
 
 import android.util.Log
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.DocumentSnapshot
-import com.justice.schoolmanagement.presentation.ui.student.StudentsFragment.Companion.STUDENT_ARGS
-import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-class FeesViewModel @ViewModelInject constructor(private val repository: FeesRepository, @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class FeesViewModel @ViewModelInject constructor(
+    private val repository: FeesRepository
+) : ViewModel() {
 
 
     private val TAG = "FeesViewModel"
+    val _getAllFees = Channel<Resource<List<DocumentSnapshot>>>()
+    val getAllFees = _getAllFees.receiveAsFlow()
+    val _getStudent = Channel<Resource<DocumentSnapshot>>()
+    val getStudent = _getStudent.receiveAsFlow()
 
-    val getAllFees = repository.getAllFees(savedStateHandle.get<StudentData>(STUDENT_ARGS)!!.id!!)
-    val getStudent = repository.getStudent(savedStateHandle.get<StudentData>(STUDENT_ARGS)!!.id!!)
+
+
     private val _currentStudent = MutableLiveData<DocumentSnapshot>()
-    val currentStudent=_currentStudent as LiveData<DocumentSnapshot>
+    val currentStudent = _currentStudent as LiveData<DocumentSnapshot>
     fun setCurrentStudent(snapshot: DocumentSnapshot) {
         _currentStudent.value = snapshot
     }
@@ -31,7 +37,18 @@ class FeesViewModel @ViewModelInject constructor(private val repository: FeesRep
     fun setEvent(event: FeesFragment.Event) {
         viewModelScope.launch {
             when (event) {
-                is FeesFragment.Event.DeleteFees -> {
+                is FeesFragment.Event.GetAllFees -> {
+                    repository.getAllFees(event.studentData.id!!).collect{
+                        _getAllFees.send(it)
+                    }
+                }is FeesFragment.Event.GetStudent -> {
+                repository.getStudent(event.studentData.id!!).collect {
+                    _getStudent.send(it)
+
+                }
+
+
+                }is FeesFragment.Event.DeleteFees -> {
                     _feesEvents.send(FeesFragment.Event.DeleteFees(event.snapshot))
 
                 }
@@ -74,7 +91,7 @@ class FeesViewModel @ViewModelInject constructor(private val repository: FeesRep
         }
 
         val balance = feesToBePaid - feesAlreadyPaid
-    _recalculateBalanceStatus.send(balance.toString())
+        _recalculateBalanceStatus.send(balance.toString())
 
     }
 

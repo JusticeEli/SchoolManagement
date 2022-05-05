@@ -30,6 +30,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions{
+        exclude 'META-INF/rxjava.properties'
+    }
     buildFeatures {
         viewBinding true
     }
@@ -72,7 +75,7 @@ dependencies {
 
 
     //firebase ui
-    def firebase_ui="7.1.1"
+    def firebase_ui = "7.1.1"
     implementation "com.firebaseui:firebase-ui-firestore:$firebase_ui"
     implementation "com.firebaseui:firebase-ui-auth:$firebase_ui"
     implementation "com.firebaseui:firebase-ui-storage:$firebase_ui"
@@ -155,6 +158,12 @@ dependencies {
 
     //load data from firebase synchronously
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.1.1"
+
+    //read text from file
+    // implementation(group = "com.microsoft.azure.cognitiveservices", name = "azure-cognitiveservices-computervision", version = "1.0.6-beta")
+    implementation "com.microsoft.azure.cognitiveservices:azure-cognitiveservices-computervision:1.0.6-beta"
+    //compile 'com.microsoft.projectoxford:vision:1.0.395'
+
 
 }
 kapt {

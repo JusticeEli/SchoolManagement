@@ -5,7 +5,7 @@ import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.chat.model.ChatChannel
 import com.justice.schoolmanagement.presentation.ui.chat.model.FIELD_TIME
-import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
+import com.justice.schoolmanagement.presentation.ui.chat.model.Message
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.utils.Constants
 import com.justice.schoolmanagement.utils.FirebaseUtil
@@ -56,6 +56,7 @@ class ChatRepository {
 
     fun getCurrentUser() = callbackFlow<Resource<TeacherData>> {
         offer(Resource.loading("getting current User"))
+        Log.d(TAG, "getCurrentUser: path:${FirebaseUtil.currentUserDocRef.path}")
         FirebaseUtil.currentUserDocRef.get().addOnSuccessListener {
             if (it.exists()) {
                 val teacher = it.toObject(TeacherData::class.java)!!
@@ -124,7 +125,20 @@ class ChatRepository {
         awaitClose { }
     }
 
-    fun sendMessage(message: ImageMessage, channelId: String) = callbackFlow<Resource<String>> {
+    fun sendMessage(message: Message, channelId: String) = callbackFlow<Resource<String>> {
+        offer(Resource.loading("sending message..."))
+        FirebaseUtil.chatChannelsCollectionRef().document(channelId)
+                .collection(Constants.COLLECTION_MESSAGES)
+                .add(message).addOnSuccessListener {
+                    offer(Resource.success(channelId))
+                }
+                .addOnFailureListener {
+                    offer(Resource.error(it))
+                }
+
+        awaitClose { }
+    }
+    fun sendMessage_2(message: Message, channelId: String) = callbackFlow<Resource<String>> {
         offer(Resource.loading("sending message..."))
         FirebaseUtil.chatChannelsCollectionRef().document(channelId)
                 .collection(Constants.COLLECTION_MESSAGES)

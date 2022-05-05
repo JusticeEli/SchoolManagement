@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.attendance
 
+import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CurrentPosition
 import com.justice.schoolmanagement.utils.FirebaseUtil
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import java.util.*
 
 class AttendanceRepository {
+    private val TAG = "AttendanceRepository"
     suspend fun getCurrentDate(): Date {
         var currentDate: Date? = FirebaseUtil.getCurrentDate2()
         if (FirebaseUtil.getCurrentDate2() == null) {
@@ -39,34 +41,38 @@ class AttendanceRepository {
         awaitClose { }
     }
 
-    fun startFetchingAttendance(choosenDate: String) = callbackFlow<Resource<List<DocumentSnapshot>>> {
-        offer(Resource.loading(""))
-        FirebaseUtil.documentReferenceCurrentLocation().collection(choosenDate).addSnapshotListener { value, error ->
+    fun startFetchingAttendance(choosenDate: String) =
+        callbackFlow<Resource<List<DocumentSnapshot>>> {
+            offer(Resource.loading(""))
+            val coll = FirebaseUtil.documentReferenceCurrentLocation().collection(choosenDate)
+            Log.d(TAG, "startFetchingAttendance: path:${coll.path}")
+            coll.addSnapshotListener { value, error ->
+                if (error != null) {
+                    offer(Resource.error(error))
+                } else if (value!!.isEmpty) {
+                    offer(Resource.empty())
+                } else {
+                    offer(Resource.success(value.documents))
+                }
 
-            if (error != null) {
-                offer(Resource.error(error))
-            } else if (value!!.isEmpty) {
-                offer(Resource.empty())
-            } else {
-                offer(Resource.success(value.documents))
+
             }
 
-
+            awaitClose { }
         }
 
-        awaitClose { }
-    }
+    fun uploadCurrentPosition(currentPosition: CurrentPosition) =
+        callbackFlow<Resource<CurrentPosition>> {
+            offer(Resource.loading(""))
+            FirebaseUtil.documentReferenceCurrentLocation().set(currentPosition)
+                .addOnSuccessListener {
+                    offer(Resource.success(currentPosition))
+                }.addOnFailureListener {
+                offer(Resource.error(it))
+            }
 
-    fun uploadCurrentPosition(currentPosition: CurrentPosition) = callbackFlow<Resource<CurrentPosition>> {
-        offer(Resource.loading(""))
-        FirebaseUtil.documentReferenceCurrentLocation().set(currentPosition).addOnSuccessListener {
-            offer(Resource.success(currentPosition))
-        }.addOnFailureListener {
-            offer(Resource.error(it))
+            awaitClose {
+
+            }
         }
-
-        awaitClose {
-
-        }
-    }
 }

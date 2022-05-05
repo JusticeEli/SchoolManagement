@@ -12,7 +12,6 @@ import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.util.*
 
 class SubjectsViewModel @ViewModelInject constructor(private val repository: SubjectsRepository) : ViewModel() {
 

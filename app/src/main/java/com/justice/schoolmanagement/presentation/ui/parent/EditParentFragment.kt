@@ -12,7 +12,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup.*
+import android.view.ViewGroup.LayoutParams
 import android.view.WindowManager
 import android.widget.*
 import androidx.fragment.app.Fragment
@@ -32,7 +32,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_add_parent.*
 import kotlinx.coroutines.flow.collect
-import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint

@@ -19,6 +19,7 @@ import androidx.navigation.fragment.navArgs
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentFeesAddEditBinding
+import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
@@ -37,11 +38,12 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
         binding = FragmentFeesAddEditBinding.bind(view)
         initProgressBar()
         Log.d(TAG, "onViewCreated: fees:${navArgs.studentFees}")
+        Log.d(TAG, "onViewCreated: student:${navArgs.studentData}")
 
         setOnClickListeners()
-        viewModel.setEvent(Event.CheckUpdating())
-
         subScribeToObservers()
+        viewModel.setEvent(Event.GetStudent(navArgs.studentData))
+
 
     }
 
@@ -63,6 +65,7 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
                 when (it.status) {
                     Resource.Status.SUCCESS -> {
                         viewModel.setCurrentStudent(it.data!!)
+                        viewModel.setEvent(Event.CheckUpdating(studentFees = navArgs.studentFees))
 
                     }
                     Resource.Status.ERROR -> {
@@ -122,7 +125,7 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
         viewModel.setIsUpdating(updating)
 
         if (updating) {
-            viewModel.setEvent(Event.FetchFees)
+            viewModel.setEvent(Event.FetchFees(navArgs.studentFees!!))
         }
     }
 
@@ -216,8 +219,9 @@ class FeesAddEditFragment : Fragment(R.layout.fragment_fees_add_edit) {
     //end progressbar
 
     sealed class Event {
-        data class CheckUpdating(val updating: Boolean = false) : Event()
-        object FetchFees : Event()
+        data class CheckUpdating(val updating: Boolean = false,val studentFees: StudentFees?=null) : Event()
+        data class FetchFees (val studentFees: StudentFees): Event()
+        data class GetStudent (val studentData: StudentData): Event()
         data class AddEditFees(val studentFees: StudentFees) : Event()
 
     }

@@ -1,5 +1,6 @@
 package com.justice.schoolmanagement.presentation.ui.fees
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -11,7 +12,7 @@ import com.justice.schoolmanagement.databinding.ItemFeesBinding
 import java.text.SimpleDateFormat
 
 class FeesAdapter(private val onDelete: (DocumentSnapshot) -> Unit, private val onEdit: (DocumentSnapshot) -> Unit) : ListAdapter<DocumentSnapshot, FeesAdapter.ViewHolder>(DIFF_UTIL) {
-
+    private  val TAG = "FeesAdapter"
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<DocumentSnapshot>() {
             override fun areItemsTheSame(oldItem: DocumentSnapshot, newItem: DocumentSnapshot) = oldItem.id == newItem.id
@@ -28,7 +29,13 @@ class FeesAdapter(private val onDelete: (DocumentSnapshot) -> Unit, private val 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = getItem(position).toObject(StudentFees::class.java)!!
-        holder.binding.dateEdtTxt.setText(SimpleDateFormat.getDateTimeInstance().format(model.date))
+
+        try{
+            holder.binding.dateEdtTxt.setText(SimpleDateFormat.getDateTimeInstance().format(model.date))
+
+        }catch (e:Exception){
+            Log.e(TAG, "onBindViewHolder: date object is null",e )
+        }
         holder.binding.payedEdtTxt.setText(model.payedAmount.toString())
         setOnClickListeners(holder, position)
     }

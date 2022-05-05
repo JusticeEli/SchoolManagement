@@ -8,7 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.DocumentSnapshot
-import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
+import com.justice.schoolmanagement.presentation.ui.chat.model.Message
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TEACHER_DATA_ARGS
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.utils.Resource
@@ -35,25 +35,41 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
         _currentUserFlow.value = teacherData
     }
 
+    private val _otherTeacherFlow = MutableStateFlow(TeacherData())
+    val otherTeacherFlow = _otherTeacherFlow as StateFlow<TeacherData>
+    fun setOtherTeacher(teacherData: TeacherData) {
+        _otherTeacherFlow.value = teacherData
+    }
+
     val getCurrentUser = repository.getCurrentUser()
 
     fun setEvent(event: ChatFragment.Event) {
         viewModelScope.launch {
             when (event) {
+                is ChatFragment.Event.GetOrCreateChatChannel -> {
+                   // getOrCreateChatChannel()
+                }
                 is ChatFragment.Event.ReceivedChannelID -> {
                     channelIdReceived(event.channelId)
                 }
                 is ChatFragment.Event.SendMessage -> {
-                    sentMessage(event.imageMessage)
+                    sentMessage(event.message)
                 }
             }
         }
     }
+
+
+    private val _currentChannelIdFlow = MutableStateFlow("")
+    val currentChannelIdFlow = _currentChannelIdFlow as StateFlow<String>
+
+
     private val _sendMessageStatus = Channel<Resource<String>>()
     val sendMessageStatus = _sendMessageStatus.receiveAsFlow()
 
-    private suspend fun sentMessage(imageMessage: ImageMessage) {
-        repository.sendMessage(imageMessage,channelIdFlow.value)
+    private suspend fun sentMessage(message: Message) {
+        Log.d(TAG, "sentMessage: message:$message")
+        repository.sendMessage(message,channelIdFlow.value)
     }
 
     private val _uploadMessageImageStatus = Channel<Resource<String>>()
@@ -70,8 +86,13 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
     val getChats = _getChats.receiveAsFlow()
     private suspend fun channelIdReceived(channelId: String) {
         repository.getChats(channelId).collect {
+             _getChats.send(it)
             Log.d(TAG, "channelIdReceived: getChats:${it.status.name}")
-            _getChats.send(it)
+
         }
+    }
+
+    fun setOtherUserId(teacherData: TeacherData) {
+        TODO("Not yet implemented")
     }
 }

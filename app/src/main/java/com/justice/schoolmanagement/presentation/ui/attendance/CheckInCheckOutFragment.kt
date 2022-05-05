@@ -27,8 +27,12 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -39,11 +43,16 @@ import com.justice.schoolmanagement.presentation.ui.attendance.model.CurrentPosi
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.utils.Constants
 import com.justice.schoolmanagement.utils.FirebaseUtil
+import com.justice.schoolmanagement.utils.cleanString
+import com.justice.schoolmanagement.utils.formatDate
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_check_in_check_out.*
+import javax.inject.Inject
 
-
-class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), MyLocationListener.LocationListenerCallbacks {
+@AndroidEntryPoint
+class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out),
+    MyLocationListener.LocationListenerCallbacks {
     companion object {
         private const val TAG = "CheckInCheckOutFragment"
     }
@@ -64,7 +73,8 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
     val RC_LOCATION_PERMISSION = 3
 
-    /////////////////location manager//////////////////
+    @Inject
+    lateinit var repository: AttendanceRepository
 
 
     //////////////fuse location client////
@@ -78,7 +88,9 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
     lateinit var adminCurrentPosition: CurrentPosition
     lateinit var currentDateFormated: String
     lateinit var currentTeacherPosition: CurrentPosition
-    private val documentReferenceCurrentLocation = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
+    private val documentReferenceCurrentLocation = FirebaseFirestore.getInstance()
+        .collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE)
+        .document(Constants.DOCUMENT_CURRENT_LOCATION)
     // private val documentReferenceAttendance = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
 
     lateinit var binding: FragmentCheckInCheckOutBinding
@@ -89,7 +101,7 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
         checkIfAdminHasSetCurrentPosition()
         setOnClickListeners()
-
+setUpLocationManager()
 
         // checkInBtnClicked()//dummy
         // startLocationUpdates() //dummy
@@ -113,25 +125,42 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
         locationCallback = MyLocationCallback { location ->
 
-            val locationAdmin = Location(LocationManager.GPS_PROVIDER) // OR NETWORK_PROVIDER based on the requirement
+            val locationAdmin =
+                Location(LocationManager.GPS_PROVIDER) // OR NETWORK_PROVIDER based on the requirement
             locationAdmin.latitude = adminCurrentPosition.latitude
             locationAdmin.longitude = adminCurrentPosition.longitude
 
-            Log.d(TAG, "checkOutBtnClicked: Current postion:  ${location!!.latitude} Long: ${location.longitude} \n Admin Position :" +
-                    " ${locationAdmin!!.latitude} Long: ${locationAdmin.longitude}")
+            Log.d(
+                TAG,
+                "checkOutBtnClicked: Current postion:  ${location!!.latitude} Long: ${location.longitude} \n Admin Position :" +
+                        " ${locationAdmin!!.latitude} Long: ${locationAdmin.longitude}"
+            )
 
             val flag = location.distanceTo(locationAdmin) > adminCurrentPosition.radius
 
             if (false) {
 
-                Log.d(TAG, "checkOutBtnClicked: you are to far Distance is : ${location.distanceTo(locationAdmin)}  metres expected radius is :${adminCurrentPosition.radius} metres")
-                Toasty.error(requireContext(), "Please Move close to the institution Distance is : ${location.distanceTo(locationAdmin)}  metres")
+                Log.d(
+                    TAG,
+                    "checkOutBtnClicked: you are to far Distance is : ${
+                        location.distanceTo(locationAdmin)
+                    }  metres expected radius is :${adminCurrentPosition.radius} metres"
+                )
+                Toasty.error(
+                    requireContext(),
+                    "Please Move close to the institution Distance is : ${
+                        location.distanceTo(locationAdmin)
+                    }  metres"
+                )
                 showProgress(false)
                 stopLocationUpdates()
                 return@MyLocationCallback
             }
 
-            Log.d(TAG, "checkOutBtnClicked: distance is: ${location.distanceTo(locationAdmin)}  metres")
+            Log.d(
+                TAG,
+                "checkOutBtnClicked: distance is: ${location.distanceTo(locationAdmin)}  metres"
+            )
             stopLocationUpdates()
 
 
@@ -139,14 +168,18 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
                 FirebaseUtil.getCurrentDate { date ->
                     val checkOut = mapOf("checkOut" to true, "checkOutTime" to date)
+                    val document = documentReferenceCurrentLocation.collection(currentDateFormated)
+                        .document(FirebaseUtil.getUid())
+                    Log.d(TAG, "checkOutBtnClicked: path:${document.path}")
 
-                    documentReferenceCurrentLocation.collection(currentDateFormated).document(FirebaseUtil.getUid()).set(checkOut, SetOptions.merge()).addOnSuccessListener {
+                    document.set(checkOut, SetOptions.merge())
+                        .addOnSuccessListener {
 
-                        Toasty.success(requireContext(), "Success You have checked out").show()
-                        //  binding.checkOutBtn.isVisible = false
+                            Toasty.success(requireContext(), "Success You have checked out").show()
+                            //  binding.checkOutBtn.isVisible = false
 
-                        showProgress(false)
-                    }
+                            showProgress(false)
+                        }
 
                 }
 
@@ -174,14 +207,23 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) !== PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) !== PackageManager.PERMISSION_GRANTED
+            ) {
 
                 return
             }
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback,
-                Looper.getMainLooper())
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
     }
 
     override fun onPause() {
@@ -206,15 +248,26 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
             Log.d(TAG, "sendLocation:Lat:  ${location!!.latitude} Long: ${location.longitude}")
 
-            val locationAdmin = Location(LocationManager.GPS_PROVIDER) // OR NETWORK_PROVIDER based on the requirement
+            val locationAdmin =
+                Location(LocationManager.GPS_PROVIDER) // OR NETWORK_PROVIDER based on the requirement
             location!!.latitude = adminCurrentPosition.latitude
             location.longitude = adminCurrentPosition.longitude
 
             val flag = location.distanceTo(locationAdmin) > adminCurrentPosition.radius
             if (false) {
                 Log.d(TAG, "sendLocation: change dummy value")
-                Log.d(TAG, "checkInBtnClicked: you are to far Distance is : ${location.distanceTo(locationAdmin)}  metres")
-                Toasty.error(requireContext(), "Please Move close to the institution Distance is : ${location.distanceTo(locationAdmin)}  metres")
+                Log.d(
+                    TAG,
+                    "checkInBtnClicked: you are to far Distance is : ${
+                        location.distanceTo(locationAdmin)
+                    }  metres"
+                )
+                Toasty.error(
+                    requireContext(),
+                    "Please Move close to the institution Distance is : ${
+                        location.distanceTo(locationAdmin)
+                    }  metres"
+                )
 
 
                 showProgress(false)
@@ -222,7 +275,10 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
                 return@MyLocationCallback
             }
 
-            Log.d(TAG, "checkInBtnClicked: distance is: ${location.distanceTo(locationAdmin)}  metres")
+            Log.d(
+                TAG,
+                "checkInBtnClicked: distance is: ${location.distanceTo(locationAdmin)}  metres"
+            )
 
             FirebaseUtil.getCurrentUser { currentUser ->
                 val teacherData = currentUser!!.toObject(TeacherData::class.java)
@@ -230,12 +286,18 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
                 val checkIn = CheckInOut(teacherData!!.photo, teacherData.fullName, true)
 
-                documentReferenceCurrentLocation.collection(currentDateFormated).document(FirebaseUtil.getUid()).set(checkIn).addOnSuccessListener {
+                documentReferenceCurrentLocation.collection(currentDateFormated)
+                    .document(FirebaseUtil.getUid()).set(checkIn).addOnSuccessListener {
 
-                    Toasty.success(requireContext(), "Success You have checked in").show()
-                    binding.checkInBtn.isVisible = false
-                    showProgress(false)
-                }
+                        if (context != null) {
+                            Toasty.success(requireContext(), "Success You have checked in").show()
+
+                        }
+                        binding.checkInBtn.isVisible = false
+                        showProgress(false)
+                    }
+                stopLocationUpdates()
+
 
             }
 
@@ -248,20 +310,36 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
     private fun setUpLocationManager() {
         Log.d(TAG, "setUpLocationManager: ")
-        locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager =
+            requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         seeIfGPSisEnabled()
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             Log.d(TAG, "setUpLocationManager: permissions available requesting location updates")
 
             mLocationListener = MyLocationListener(this, locationManager)
-            locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                    LOCATION_REFRESH_DISTANCE, mLocationListener
+            locationManager!!.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                LOCATION_REFRESH_DISTANCE, mLocationListener
             )
 
         } else {
 
             Log.d(TAG, "setUpLocationManager: requesting permission")
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_PERMISSION)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                LOCATION_PERMISSION
+            )
 
 
         }
@@ -270,10 +348,11 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
 
     private fun buildAlertMessageNoGps() {
         val builder = MaterialAlertDialogBuilder(requireContext())
-        builder.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setMessage("Your GPS seems to be disabled, do you want to enable it?")
-                .setCancelable(false)
-                .setPositiveButton("Yes") { dialog, id -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
-                .setNegativeButton("No") { dialog, id -> dialog.cancel() }
+        builder.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first))
+            .setMessage("Your GPS seems to be disabled, do you want to enable it?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { dialog, id -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+            .setNegativeButton("No") { dialog, id -> dialog.cancel() }
         builder.show()
     }
 
@@ -290,7 +369,8 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
     }
 
     protected fun isOnline(): Boolean {
-        val cm = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val netInfo = cm.activeNetworkInfo
         return if (netInfo != null && netInfo.isConnected) {
             true
@@ -303,26 +383,34 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
     protected fun createNetErrorDialog() {
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first))
-                .setMessage("You need internet connection for this app. Please turn on mobile network or Wi-Fi in Settings.")
-                .setTitle("Unable to connect")
-                .setCancelable(false)
-                .setPositiveButton("Settings"
-                ) { dialog, id ->
-                    val i = Intent(Settings.ACTION_WIRELESS_SETTINGS)
-                    startActivity(i)
-                }
-                .setNegativeButton("Cancel"
-                ) { dialog, id -> findNavController().popBackStack() }
+            .setMessage("You need internet connection for this app. Please turn on mobile network or Wi-Fi in Settings.")
+            .setTitle("Unable to connect")
+            .setCancelable(false)
+            .setPositiveButton(
+                "Settings"
+            ) { dialog, id ->
+                val i = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                startActivity(i)
+            }
+            .setNegativeButton(
+                "Cancel"
+            ) { dialog, id -> findNavController().popBackStack() }
         builder.show()
     }
 
 
     @SuppressLint("MissingPermission")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED && requestCode == LOCATION_PERMISSION) {
-            locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                    LOCATION_REFRESH_DISTANCE, mLocationListener)
+            locationManager!!.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                LOCATION_REFRESH_DISTANCE, mLocationListener
+            )
         }
     }
 
@@ -341,13 +429,20 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
         FirebaseUtil.getAdminCurrentLocation {
             if (it == null) {
                 Log.d(TAG, "checkIfAdminHasSetCurrentPosition: document snapshot is null")
-                Toasty.error(requireContext(), "Error: Admin has not set Current position and radius").show()
+                Toasty.error(
+                    requireContext(),
+                    "Error: Admin has not set Current position and radius"
+                ).show()
 
                 showProgress(false)
             } else {
                 Log.d(TAG, "checkIfAdminHasSetCurrentPosition: current position available")
                 adminCurrentPosition = it.toObject(CurrentPosition::class.java)!!
-                check_if_i_have_already_checked_in()
+
+                viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+                    check_if_i_have_already_checked_in()
+
+                }
 
             }
 
@@ -355,23 +450,28 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
         }
     }
 
-    private fun check_if_i_have_already_checked_in() {
+    private suspend fun check_if_i_have_already_checked_in() {
 
-        FirebaseUtil.getCurrentDateFormatted { date ->
-
+        repository.getCurrentDate().also { it ->
+            val date = it.formatDate.cleanString
             currentDateFormated = date!!
-            documentReferenceCurrentLocation.collection(date).document(FirebaseUtil.getUid()).get().addOnSuccessListener {
+            Log.d(
+                TAG,
+                "check_if_i_have_already_checked_in: currentDateFormated:$currentDateFormated"
+            )
+            documentReferenceCurrentLocation.collection(date).document(FirebaseUtil.getUid()).get()
+                .addOnSuccessListener {
 
-                if (it.exists()) {
-                    userHasAlreadyCheckedIn()
+                    if (it.exists()) {
+                        userHasAlreadyCheckedIn()
 
-                } else {
-                    userNotCheckIn()
+                    } else {
+                        userNotCheckIn()
+
+                    }
+                    showProgress(false)
 
                 }
-                showProgress(false)
-
-            }
 
         }
     }
@@ -403,28 +503,40 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
     ///////////////////////////////////////////////
     fun getLastKnownLocation(onComplete: (Location) -> Unit) {
         Log.d(TAG, "getLastKnownLocation: started getting location")
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
 
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), RC_LOCATION_PERMISSION)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ),
+                RC_LOCATION_PERMISSION
+            )
 
 
             return
         }
 
         fusedLocationClient.lastLocation
-                .addOnSuccessListener { location ->
-                    Log.d(TAG, "getLastKnownLocation: success getting the location")
-                    if (location != null) {
-                        onComplete(location)
-                    } else {
-                        Log.d(TAG, "getLastKnownLocation: location is null")
-                    }
-
+            .addOnSuccessListener { location ->
+                Log.d(TAG, "getLastKnownLocation: success getting the location")
+                if (location != null) {
+                    onComplete(location)
+                } else {
+                    Log.d(TAG, "getLastKnownLocation: location is null")
                 }
 
+            }
+
     }
-
-
 
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -456,8 +568,9 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
         ll.setPadding(llPadding, llPadding, llPadding, llPadding)
         ll.gravity = Gravity.CENTER
         var llParam = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         ll.layoutParams = llParam
 
@@ -466,8 +579,10 @@ class CheckInCheckOutFragment : Fragment(R.layout.fragment_check_in_check_out), 
         progressBar.setPadding(0, 0, llPadding, 0)
         progressBar.layoutParams = llParam
 
-        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         val tvText = TextView(context)
         tvText.text = message

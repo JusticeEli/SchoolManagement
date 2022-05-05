@@ -17,12 +17,13 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentBlogBinding
 import com.justice.schoolmanagement.utils.Resource
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
 const val FIELD_DATE = "date"
-
+@AndroidEntryPoint
 class BlogFragment : Fragment(R.layout.fragment_blog) {
     private lateinit var adapter: BlogAdapter
     lateinit var binding: FragmentBlogBinding

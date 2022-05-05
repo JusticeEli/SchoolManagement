@@ -26,12 +26,13 @@ import com.justice.schoolmanagement.databinding.FragmentFeesBinding
 import com.justice.schoolmanagement.presentation.ui.fees.FeesFragment.Event.EditFees
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentData
 import com.justice.schoolmanagement.utils.Resource
+import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
 
 const val DEFAULT_FEES = 5000
 const val DATE = "date"
-
+@AndroidEntryPoint
 class FeesFragment : Fragment(R.layout.fragment_fees) {
 
     private val TAG = "FeesFragment"
@@ -52,6 +53,7 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentFeesBinding.bind(view)
         initProgressBar()
+
         navController = findNavController()
         Log.d(TAG, "onViewCreated: student:${navArgs.student}")
         setHasOptionsMenu(true)
@@ -60,6 +62,9 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
         setOnClickListeners()
         setSwipeListenerForItems()
         subScribeToObservers()
+
+        viewModel.setEvent(Event.GetAllFees(navArgs.student))
+        viewModel.setEvent(Event.GetStudent(navArgs.student))
     }
 
     private fun subScribeToObservers() {
@@ -73,6 +78,7 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
                     Resource.Status.SUCCESS -> {
                         showProgress(false)
                         adapter.submitList(it.data)
+                        viewModel.setEvent(Event.RecalculateBalance(getFees().toInt(),it.data!!))
                     }
                     Resource.Status.EMPTY -> {
                         showProgress(false)
@@ -147,11 +153,12 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
     }
 
     private fun setBalance(balance: String) {
+        Log.d(TAG, "setBalance: balance:$balance")
         binding.balanceEdtTxt.setText(balance)
     }
 
     private fun goToAddFeesScreen() {
-        findNavController().navigate(R.id.action_feesFragment_to_feesEditFragment)
+        findNavController().navigate(FeesFragmentDirections.actionFeesFragmentToFeesEditFragment(null,navArgs.student))
 
     }
 
@@ -224,7 +231,11 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
     }
 
     private fun getFees(): String {
-        return binding.totalEdtTxt.text.toString()
+        if (binding.totalEdtTxt.text.toString().trim().isEmpty()){
+            return "0"
+        }else{
+            return binding.totalEdtTxt.text.toString().trim()
+        }
 
     }
 
@@ -311,6 +322,8 @@ class FeesFragment : Fragment(R.layout.fragment_fees) {
     //end progressbar
 
     sealed class Event {
+        data class GetAllFees(val studentData: StudentData) : Event()
+        data class GetStudent(val studentData: StudentData) : Event()
         data class SwipedFees(val snapshot: DocumentSnapshot) : Event()
         data class DeleteFees(val snapshot: DocumentSnapshot) : Event()
         data class DeleteFeesConfirmed(val snapshot: DocumentSnapshot) : Event()

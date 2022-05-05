@@ -52,7 +52,7 @@
             android:padding="8dp" />
 
         <ImageView
-            android:id="@+id/imageView_send"
+            android:id="@+id/imvSend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"

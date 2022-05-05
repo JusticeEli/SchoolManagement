@@ -11,7 +11,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemAttendanceBinding
 import com.justice.schoolmanagement.presentation.ui.attendance.model.CheckInOut
-import com.justice.schoolmanagement.utils.formatDate
+import java.text.SimpleDateFormat
+import java.util.*
 
 class AttendanceAdapter(private val requestManager: RequestManager) : ListAdapter<DocumentSnapshot, AttendanceAdapter.ViewHolder>(DIFF_UTIL) {
 
@@ -30,19 +31,23 @@ class AttendanceAdapter(private val requestManager: RequestManager) : ListAdapte
             }
         }
     }
-
+private fun getDateTimeFormated(date:Date):String{
+    val sdf = SimpleDateFormat("dd/MM/yyyy_HH:mm", Locale.getDefault())
+    val currentDateandTime: String = sdf.format(date)
+    return currentDateandTime
+}
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.apply {
             val model = getItem(position).toObject(CheckInOut::class.java)!!
             Log.d(TAG, "onBindViewHolder: model:$model")
             nameTxtView.text = model.fullName
             model.checkInTime?.let {
-                checkInTxtView.text = it.formatDate
+                checkInTxtView.text = getDateTimeFormated(it)
 
             }
             if (model.checkOut) {
                 model.checkOutTime?.let {
-                    checkOutTxtView.text =it.formatDate
+                    checkOutTxtView.text =getDateTimeFormated(it)
 
                 }
             }

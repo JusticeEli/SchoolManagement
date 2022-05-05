@@ -55,6 +55,7 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
         binding = FragmentParentDetailsBinding.bind(view)
         initProgressBar()
         subScribeToObservers()
+        viewModel.setEvent(Event.GetParent(navArgs.parentData))
 
     }
 
@@ -284,6 +285,8 @@ class ParentDetailsFragment : Fragment(R.layout.fragment_parent_details) {
         data class ParentEdit(val parentSnapshot: DocumentSnapshot) : Event()
         data class ParentCall(val number: String) : Event()
         data class ParentEmail(val email: String) : Event()
+        data class GetParent(val parentData: ParentData) : Event()
+
 
     }
 }

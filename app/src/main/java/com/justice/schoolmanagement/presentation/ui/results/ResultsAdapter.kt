@@ -29,8 +29,9 @@ class ResultsAdapter(private val onEditClicked: (DocumentSnapshot) -> Unit) : Li
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = getItem(position).toObject(StudentMarks::class.java)!!
         Log.d(TAG, "onBindViewHolder: model:$model")
+        computeTotalMarks(model)
         holder.binding.apply {
-            positionTxtView.text = "" + model.position
+            positionTxtView.text = "${position+1}"
             nameTxtView.text = "" + model.fullName
             mathTxtView.text = "" + model.math
             scienceTxtView.text = "" + model.science
@@ -56,5 +57,9 @@ class ResultsAdapter(private val onEditClicked: (DocumentSnapshot) -> Unit) : Li
     }
 
     inner class ViewHolder(val binding: ItemResultsBinding) : RecyclerView.ViewHolder(binding.root)
-
+    private fun computeTotalMarks(studentMarks: StudentMarks):Int {
+        studentMarks.totalMarks =
+            studentMarks.math.toIntOrZero() + studentMarks.science.toIntOrZero() + studentMarks.english.toIntOrZero() + studentMarks.kiswahili.toIntOrZero() + studentMarks.sst_cre.toIntOrZero()
+        return studentMarks.totalMarks
+    }
 }

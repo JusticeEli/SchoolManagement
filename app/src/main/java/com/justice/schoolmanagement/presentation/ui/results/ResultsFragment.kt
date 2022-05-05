@@ -49,32 +49,35 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
     private fun subScribeToObservers() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
 
-                viewModel.getAllMarks.collect {
-                    Log.d(TAG, "subScribeToObservers:getAllMarks:${it.status.name} ")
-                    when (it.status) {
-                        Resource.Status.LOADING -> {
-                            showProgress(true)
+            viewModel.getAllMarks.collect {
+                Log.d(TAG, "subScribeToObservers:getAllMarks:${it.status.name} ")
+                when (it.status) {
+                    Resource.Status.LOADING -> {
+                        showProgress(true)
 
-                        }
-                        Resource.Status.SUCCESS -> {
-                            showProgress(false)
-                            Log.d(TAG, "subScribeToObservers: size:${it.data?.size}")
-                            resultsAdapter.submitList(it.data)
+                    }
+                    Resource.Status.SUCCESS -> {
+                        showProgress(false)
+                        Log.d(TAG, "subScribeToObservers: size:${it.data?.size}")
 
-                        }
-                        Resource.Status.EMPTY -> {
-                            showProgress(false)
-                            showToastInfo("Database is Empty")
+                        val data =
+                            it.data?.sortedByDescending { computeTotalMarks(it.toObject(StudentMarks::class.java)!!) }
+                        resultsAdapter.submitList(data)
 
-                        }
-                        Resource.Status.ERROR -> {
-                            showProgress(false)
-                            showToastInfo("Error: ${it.exception?.message}")
+                    }
+                    Resource.Status.EMPTY -> {
+                        showProgress(false)
+                        showToastInfo("Database is Empty")
 
-                        }
+                    }
+                    Resource.Status.ERROR -> {
+                        showProgress(false)
+                        showToastInfo("Error: ${it.exception?.message}")
+
                     }
                 }
             }
+        }
 
 
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
@@ -90,9 +93,19 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
 
     }
 
+    private fun computeTotalMarks(studentMarks: StudentMarks): Int {
+        studentMarks.totalMarks =
+            studentMarks.math.toIntOrZero() + studentMarks.science.toIntOrZero() + studentMarks.english.toIntOrZero() + studentMarks.kiswahili.toIntOrZero() + studentMarks.sst_cre.toIntOrZero()
+        return studentMarks.totalMarks
+    }
+
     private fun goToEditScreen(snapshot: DocumentSnapshot) {
         val studentMarks = snapshot.toObject(StudentMarks::class.java)!!
-        findNavController().navigate(ResultsFragmentDirections.actionResultsFragmentToResultsEditFragment(studentMarks))
+        findNavController().navigate(
+            ResultsFragmentDirections.actionResultsFragmentToResultsEditFragment(
+                studentMarks
+            )
+        )
     }
 
     private fun showToastInfo(message: String) {
@@ -110,8 +123,6 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
     private fun onEditClicked(it: DocumentSnapshot) {
         viewModel.setEvent(Event.EditClicked(it))
     }
-
-
 
 
     /////////////////////PROGRESS_BAR////////////////////////////
@@ -143,8 +154,9 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
         ll.setPadding(llPadding, llPadding, llPadding, llPadding)
         ll.gravity = Gravity.CENTER
         var llParam = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         ll.layoutParams = llParam
 
@@ -153,8 +165,10 @@ class ResultsFragment : Fragment(R.layout.fragment_results) {
         progressBar.setPadding(0, 0, llPadding, 0)
         progressBar.layoutParams = llParam
 
-        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         val tvText = TextView(context)
         tvText.text = message

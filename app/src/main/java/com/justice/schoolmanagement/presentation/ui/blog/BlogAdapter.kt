@@ -1,21 +1,22 @@
 package com.justice.schoolmanagement.presentation.ui.blog
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ItemBlogBinding
 import com.justice.schoolmanagement.presentation.ui.blog.model.Blog
 import com.justice.schoolmanagement.utils.Constants
 import com.justice.schoolmanagement.utils.FirebaseUtil
 import java.text.SimpleDateFormat
-import java.util.*
 
 class BlogAdapter(private val requestManager: RequestManager) : androidx.recyclerview.widget.ListAdapter<DocumentSnapshot, BlogAdapter.ViewHolder>(DIFF_UTIL) {
+    private  val TAG = "BlogAdapter"
 
     companion object {
         val DIFF_UTIL = object : DiffUtil.ItemCallback<DocumentSnapshot>() {
@@ -40,8 +41,8 @@ class BlogAdapter(private val requestManager: RequestManager) : androidx.recycle
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = getItem(position).toObject(Blog::class.java)!!
-
-        FirebaseUtil.collectionReferenceTeachers().document(model.userId).get().addOnSuccessListener { documentSnapshot ->
+        Log.d(TAG, "onBindViewHolder: model:$model")
+        FirebaseUtil.collectionReferenceTeachers().document(model.userId!!).get().addOnSuccessListener { documentSnapshot ->
             requestManager.load(documentSnapshot.getString("photo")).into(holder.binding.userProfileImageView)
             holder.binding.userNameTxtView.text = documentSnapshot.getString("firstName")
         }

@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -25,17 +26,19 @@ import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDialog.OnDateSetListener {
+class AttendanceFragment : Fragment(R.layout.fragment_attendance),
+    DatePickerDialog.OnDateSetListener {
 
     private val TAG = "AttendanceFragment"
 
     lateinit var binding: FragmentAttendanceBinding
 
-    lateinit var adapter: AttendanceAdapter
+    lateinit var attendanceAdapter: AttendanceAdapter
 
     @Inject
     lateinit var requestManager: RequestManager
@@ -46,80 +49,101 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDia
         initProgressBar()
         initRecyclerView()
         setOnClickListeners()
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            subScribeToObservers()
 
-        }
+        subScribeToObservers()
+
+
     }
 
-    private suspend fun subScribeToObservers() {
+    private fun subScribeToObservers() {
 
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            launch {
+                viewModel.getCurrentDate.collect {
+                    Log.d(TAG, "subScribeToObservers: getCurrentDate status:${it.status}")
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
 
-        viewModel.getCurrentDate.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    showProgress(true)
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            updateLabel(it.data!!)
+                            viewModel.setEvent(Event.FetchAttendance(it.data!!))
+                        }
 
+                    }
                 }
-                Resource.Status.SUCCESS -> {
-                    showProgress(false)
-                    viewModel.setEvent(Event.FetchAttendance(it.data!!))
+
+            }
+
+            launch {
+                viewModel.attendanceEvents.collect {
+                    when (it) {
+                        is Event.DateClicked -> {
+                            showDateDialog()
+                        }
+                        is Event.SetLocationClicked -> {
+                            goToSetLocationScreen()
+                        }
+                    }
+                }
+
+            }
+            launch {
+                viewModel.dateChoosenStatus.collect {
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+                            updateLabel(it.data!!)
+                            viewModel.setEvent(Event.FetchAttendance(it.data!!))
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            showToastInfo("Error: ${it.exception?.message}")
+                        }
+                    }
+                }
+
+            }
+
+            launch {
+                viewModel.fetchAttendanceStatus.collect {
+
+                    Log.d(TAG, "subScribeToObservers: fetchAttendanceStatus status:${it.status}")
+
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
+
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
+
+                            attendanceAdapter.submitList(it.data)
+
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            showToastInfo("Error: ${it.exception?.message}")
+
+                        }
+                        Resource.Status.EMPTY -> {
+                            showProgress(false)
+                            showToastInfo("No Records in database!!")
+
+                        }
+                    }
                 }
 
             }
         }
 
-        viewModel.attendanceEvents.collect {
-            when (it) {
-                is Event.DateClicked -> {
-                    showDateDialog()
-                }
-                is Event.SetLocationClicked -> {
-                    goToSetLocationScreen()
-                }
-            }
-        }
 
-        viewModel.dateChoosenStatus.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    showProgress(true)
-
-                }
-                Resource.Status.SUCCESS -> {
-                    showProgress(false)
-                    updateLabel(it.data!!)
-                    viewModel.setEvent(Event.FetchAttendance(it.data!!))
-                }
-                Resource.Status.ERROR -> {
-                    showProgress(false)
-                    showToastInfo("Error: ${it.exception?.message}")
-                }
-            }
-        }
-        viewModel.fetchAttendanceStatus.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    showProgress(true)
-
-                }
-                Resource.Status.SUCCESS -> {
-                    showProgress(false)
-                    adapter.submitList(it.data)
-
-                }
-                Resource.Status.ERROR -> {
-                    showProgress(false)
-                    showToastInfo("Error: ${it.exception?.message}")
-
-                }
-                Resource.Status.EMPTY -> {
-                    showProgress(false)
-                    showToastInfo("No Records in database!!")
-
-                }
-            }
-        }
     }
 
     private fun showToastInfo(message: String) {
@@ -128,8 +152,10 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDia
 
     private fun showDateDialog() {
         val myCalendar = Calendar.getInstance()
-        DatePickerDialog(requireContext(), this, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
-                myCalendar[Calendar.DAY_OF_MONTH]).show()
+        DatePickerDialog(
+            requireContext(), this, myCalendar[Calendar.YEAR], myCalendar[Calendar.MONTH],
+            myCalendar[Calendar.DAY_OF_MONTH]
+        ).show()
 
     }
 
@@ -173,10 +199,10 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDia
     private fun initRecyclerView() {
 
 
-        adapter = AttendanceAdapter(requestManager)
+        attendanceAdapter = AttendanceAdapter(requestManager)
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            adapter = adapter
+            adapter = attendanceAdapter
         }
 
 
@@ -212,8 +238,9 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDia
         ll.setPadding(llPadding, llPadding, llPadding, llPadding)
         ll.gravity = Gravity.CENTER
         var llParam = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         ll.layoutParams = llParam
 
@@ -222,8 +249,10 @@ class AttendanceFragment : Fragment(R.layout.fragment_attendance), DatePickerDia
         progressBar.setPadding(0, 0, llPadding, 0)
         progressBar.layoutParams = llParam
 
-        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         val tvText = TextView(context)
         tvText.text = message

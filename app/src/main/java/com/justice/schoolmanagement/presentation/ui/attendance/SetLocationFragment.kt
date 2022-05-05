@@ -43,9 +43,11 @@ import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocationListener.LocationListenerCallbacks {
+class SetLocationFragment : Fragment(R.layout.fragment_set_location),
+    MyLocationListener.LocationListenerCallbacks {
 
     private val RC_LOCATION_PERMISSION = 3
     private val TAG = "SetLocationFragment"
@@ -72,71 +74,86 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
     ///////////////////////////////////
 
-    private val documentReference = FirebaseFirestore.getInstance().collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE).document(Constants.DOCUMENT_CURRENT_LOCATION)
+    private val documentReference = FirebaseFirestore.getInstance()
+        .collection(Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.COLLECTION_ATTENDANCE)
+        .document(Constants.DOCUMENT_CURRENT_LOCATION)
     private val viewModel: SetLocationViewModel by viewModels()
     lateinit var binding: FragmentSetLocationBinding
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSetLocationBinding.bind(view)
         initProgressBar()
+        subScribeToObservers()
 
         checkIfNetworkConnectionIsPresent()
         setUpLocationManager()
         setOnClickListeners()
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            subScribeToObservers()
 
-        }
+
 
     }
 
-    private suspend fun subScribeToObservers() {
-        viewModel.setLocationEvents.collect {
-            when (it) {
-                is Event.GoToSettingScreen -> {
-                    goToSettingsScreen()
+    private fun subScribeToObservers() {
+
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            launch {
+
+                viewModel.setLocationEvents.collect {
+                    when (it) {
+                        is Event.GoToSettingScreen -> {
+                            goToSettingsScreen()
+                        }
+                        is Event.StartLocationUpdates -> {
+                            startLocationUpdates(it.radius)
+                        }
+                        is Event.StopLocationUpdates -> {
+                            stopLocationUpdates()
+                        }
+                    }
                 }
-                is Event.StartLocationUpdates -> {
-                    startLocationUpdates(it.radius)
-                }
-                is Event.StopLocationUpdates -> {
-                    stopLocationUpdates()
+
+            }
+
+
+            launch {
+                viewModel.setRadiusStatus.collect {
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+
+                        }
+                        Resource.Status.SUCCESS -> {
+
+                        }
+                        Resource.Status.ERROR -> {
+                            showToastInfo("Error:${it.exception?.message}")
+
+                        }
+                    }
                 }
             }
-        }
+            launch {
+                viewModel.uploadCurrentPositionStatus.collect {
+                    when (it.status) {
+                        Resource.Status.LOADING -> {
+                            showProgress(true)
 
-        viewModel.setRadiusStatus.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
+                        }
+                        Resource.Status.SUCCESS -> {
+                            showProgress(false)
 
-                }
-                Resource.Status.SUCCESS -> {
+                        }
+                        Resource.Status.ERROR -> {
+                            showProgress(false)
+                            showToastInfo("Error:${it.exception?.message}")
 
-                }
-                Resource.Status.ERROR -> {
-                    showToastInfo("Error:${it.exception?.message}")
-
-                }
-            }
-        }
-
-        viewModel.uploadCurrentPositionStatus.collect {
-            when (it.status) {
-                Resource.Status.LOADING -> {
-                    showProgress(true)
-
-                }
-                Resource.Status.SUCCESS -> {
-                    showProgress(false)
-
-                }
-                Resource.Status.ERROR -> {
-                    showProgress(false)
-                    showToastInfo("Error:${it.exception?.message}")
-
+                        }
+                    }
                 }
             }
+
         }
+
+
     }
 
     private fun showToastInfo(message: String) {
@@ -151,20 +168,32 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
     private fun setUpLocationManager() {
         Log.d(TAG, "setUpLocationManager: ")
-        locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager =
+            requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
         seeIfGPSisEnabled()
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
             Log.d(TAG, "setUpLocationManager: permissions available requesting location updates")
 
-            /*    mLocationListener = MyLocationListener(this, locationManager)
-                locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                        LOCATION_REFRESH_DISTANCE, mLocationListener
-                )*/
+
 
         } else {
 
             Log.d(TAG, "setUpLocationManager: requesting permission")
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_PERMISSION)
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                LOCATION_PERMISSION
+            )
 
 
         }
@@ -173,10 +202,11 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
     private fun buildAlertMessageNoGps() {
         val builder = MaterialAlertDialogBuilder(requireContext())
-        builder.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first)).setMessage("Your GPS seems to be disabled, do you want to enable it?")
-                .setCancelable(false)
-                .setPositiveButton("Yes") { dialog, id -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
-                .setNegativeButton("No") { dialog, id -> dialog.cancel() }
+        builder.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first))
+            .setMessage("Your GPS seems to be disabled, do you want to enable it?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { dialog, id -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) }
+            .setNegativeButton("No") { dialog, id -> dialog.cancel() }
         builder.show()
     }
 
@@ -187,40 +217,52 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
     }
 
     private fun checkIfNetworkConnectionIsPresent() {
+        Log.d(TAG, "checkIfNetworkConnectionIsPresent: ")
         if (!isOnline()) {
             createNetErrorDialog()
         }
     }
 
     protected fun isOnline(): Boolean {
-        val cm = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val netInfo = cm.activeNetworkInfo
-        return netInfo != null && netInfo.isConnected
+        val online=netInfo != null && netInfo.isConnected
+        Log.d(TAG, "isOnline: online:$online")
+        return online
     }
 
     ////////dialog shows when internet connection is not available
     protected fun createNetErrorDialog() {
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.button_first))
-                .setMessage("You need internet connection for this app. Please turn on mobile network or Wi-Fi in Settings.")
-                .setTitle("Unable to connect")
-                .setCancelable(false)
-                .setPositiveButton("Settings"
-                ) { dialog, id ->
-                    viewModel.setEvent(Event.GoToSettingScreen)
-                }
-                .setNegativeButton("Cancel"
-                ) { dialog, id -> findNavController().popBackStack() }
+            .setMessage("You need internet connection for this app. Please turn on mobile network or Wi-Fi in Settings.")
+            .setTitle("Unable to connect")
+            .setCancelable(false)
+            .setPositiveButton(
+                "Settings"
+            ) { dialog, id ->
+                viewModel.setEvent(Event.GoToSettingScreen)
+            }
+            .setNegativeButton(
+                "Cancel"
+            ) { dialog, id -> findNavController().popBackStack() }
         builder.show()
     }
 
 
     @SuppressLint("MissingPermission")
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String?>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[0] == PackageManager.PERMISSION_GRANTED && requestCode == LOCATION_PERMISSION) {
-            locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                    LOCATION_REFRESH_DISTANCE, mLocationListener)
+            locationManager!!.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                LOCATION_REFRESH_DISTANCE, mLocationListener
+            )
         }
     }
 
@@ -241,7 +283,7 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
     override fun onStop() {
         super.onStop()
-        if (locationManager != null) {
+        if (locationManager != null&&mLocationListener != null) {
             locationManager!!.removeUpdates(mLocationListener)
         }
     }
@@ -283,14 +325,23 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) !== PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) !== PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) !== PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) !== PackageManager.PERMISSION_GRANTED
+            ) {
 
                 return
             }
         }
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback,
-                Looper.getMainLooper())
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
     }
 
     override fun onPause() {
@@ -300,7 +351,9 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
 
     private fun stopLocationUpdates() {
         Log.d(TAG, "stopLocationUpdates: ")
-        fusedLocationClient.removeLocationUpdates(locationCallback)
+        if (::fusedLocationClient.isInitialized){
+            fusedLocationClient.removeLocationUpdates(locationCallback)
+        }
     }
 
     private fun uploadCurrentPosition(location: Location) {
@@ -349,8 +402,9 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
         ll.setPadding(llPadding, llPadding, llPadding, llPadding)
         ll.gravity = Gravity.CENTER
         var llParam = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         ll.layoutParams = llParam
 
@@ -359,8 +413,10 @@ class SetLocationFragment : Fragment(R.layout.fragment_set_location), MyLocation
         progressBar.setPadding(0, 0, llPadding, 0)
         progressBar.layoutParams = llParam
 
-        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         val tvText = TextView(context)
         tvText.text = message

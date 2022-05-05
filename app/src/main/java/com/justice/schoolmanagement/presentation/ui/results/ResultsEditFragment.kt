@@ -14,18 +14,17 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentResultsEditBinding
 import com.justice.schoolmanagement.presentation.ui.student.models.StudentMarks
-import com.justice.schoolmanagement.utils.FirebaseUtil
 import com.justice.schoolmanagement.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -51,7 +50,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
         setOnClickListeners()
 
         subscribeToObservers()
-
+viewModel.setEvent(Event.GetStudentMarks(navArgs.studentMarks))
 
     }
 
@@ -61,7 +60,7 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     private fun subscribeToObservers() {
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+       CoroutineScope(Dispatchers.Main).launch{
 
             launch {
                 viewModel.getStudentMarks.collect {
@@ -115,19 +114,9 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
         binding.submitBtn.setOnClickListener {
             Log.d(TAG, "setOnClickListeners: ")
             val studentMarks = getStudentMarksObject()
+            viewModel.setEvent(Event.SubmitClicked(studentMarks))
 
-            val snapshot = viewModel.currentStudentMarks.value!!
-          /*  snapshot.reference.get().addOnSuccessListener {
-                val marks = it.toObject(StudentMarks::class.java)!!
-                Log.d(TAG, "setOnClickListeners: marks:$marks")
-            }*/
 
-            FirebaseUtil.collectionReferenceStudentsMarks().document(studentMarks.id!!)
-             .set(studentMarks).addOnSuccessListener {
-                  Log.d(TAG, "setOnClickListeners: success")
-              }
-
-            //viewModel.setEvent(Event.SubmitClicked(studentMarks))
 
 
         }
@@ -236,5 +225,6 @@ class ResultsEditFragment : Fragment(R.layout.fragment_results_edit) {
 
     sealed class Event {
         data class SubmitClicked(val studentMarks: StudentMarks) : Event()
+        data class GetStudentMarks(val studentMarks: StudentMarks) : Event()
     }
 }

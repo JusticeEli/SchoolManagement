@@ -32,7 +32,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.fragment_add_parent.*
 import kotlinx.coroutines.flow.collect
-import java.util.*
 
 @AndroidEntryPoint
 class AddParentFragment : Fragment(R.layout.fragment_add_parent) {

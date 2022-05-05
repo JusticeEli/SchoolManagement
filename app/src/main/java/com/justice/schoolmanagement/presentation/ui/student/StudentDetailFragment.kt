@@ -108,7 +108,8 @@ class StudentDetailsFragment : Fragment(R.layout.fragment_student_details) {
 
     private fun goToFeesScreen(snapshot: DocumentSnapshot) {
         val student = snapshot.toObject(StudentData::class.java)!!
-        findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToFeesFragment(student))
+        Log.d(TAG, "goToFeesScreen: student:$student")
+        findNavController().navigate(StudentDetailsFragmentDirections.actionStudentDetailsFragmentToFeesFragment(student,student.fullName))
 
     }
 

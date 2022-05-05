@@ -4,7 +4,6 @@ import android.app.Application
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import dagger.hilt.android.HiltAndroidApp
-import java.util.*
 
 @HiltAndroidApp
 class SchoolApplication : Application() {

@@ -10,16 +10,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.*
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI.navigateUp
+import androidx.navigation.ui.onNavDestinationSelected
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
 import com.firebase.ui.auth.AuthUI
+import com.justice.schoolmanagement.NavGraphDirections
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.ActivityMainBinding
 import com.justice.schoolmanagement.presentation.ui.splash.SplashScreenActivity.Companion.SHARED_PREF
 import com.justice.schoolmanagement.presentation.ui.splash.adminData
+import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.presentation.ui.video_chat.VideoChatViewActivity
 import com.justice.schoolmanagement.utils.FirebaseUtil
 import dagger.hilt.android.AndroidEntryPoint
+import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.main.activity_main.*
 
 @AndroidEntryPoint
@@ -31,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate: ")
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
@@ -67,13 +74,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        //menuInflater.inflate(R.menu.menu_blog, menu)
+        menuInflater.inflate(R.menu.menu_main, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-
+        Log.d(TAG, "onOptionsItemSelected: ")
         return when (item.itemId) {
             R.id.blogsMenu -> {
 
@@ -88,6 +95,23 @@ class MainActivity : AppCompatActivity() {
                 showMyAccountDetails()
                 return true
             }
+            R.id.checkInCheckOutFragment -> {
+                navController.navigate(R.id.checkInCheckOutFragment)
+                return true
+            }
+            R.id.attendanceFragment -> {
+                navController.navigate(R.id.attendanceFragment)
+                return true
+            }
+            R.id.setLocationFragment -> {
+                navController.navigate(R.id.setLocationFragment)
+                return true
+            }
+            R.id.markExamFragment -> {
+               Toasty.info(this,"Not Yet implememented")
+                return true
+            }
+
             R.id.videoChatMenu->{
                 startActivity(Intent(this,VideoChatViewActivity::class.java))
                 return true
@@ -105,8 +129,8 @@ class MainActivity : AppCompatActivity() {
 
 
         FirebaseUtil.getCurrentUser {
-            SchoolApplication.documentSnapshot=it
-            navController.navigate(R.id.action_global_teacherDetailsFragment)
+
+            navController.navigate(NavGraphDirections.actionGlobalTeacherDetailsFragment(it!!.toObject(TeacherData::class.java)!!))
 
         }
     }

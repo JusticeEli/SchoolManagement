@@ -94,7 +94,7 @@ class TeacherDetailsFragment : Fragment(R.layout.fragment_teacher_details) {
                     is Event.TeacherChat -> {
                         Log.d(TAG, "subScribeToObservers: teacherchat")
                         val teacher = it.snapshot.toObject(TeacherData::class.java)!!
-                        findNavController().navigate(TeacherDetailsFragmentDirections.actionTeacherDetailsFragmentToChatFragment(teacher))
+                        findNavController().navigate(TeacherDetailsFragmentDirections.actionTeacherDetailsFragmentToChatFragment(teacher,teacher.fullName))
                     }
                     is Event.TeacherCall -> {
                         startCall(it.number)
