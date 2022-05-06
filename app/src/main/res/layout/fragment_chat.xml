@@ -27,7 +27,7 @@
         app:layout_constraintVertical_bias="1.0">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_send_image"
+            android:id="@+id/fabSendImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
@@ -45,14 +45,14 @@
             android:textColor="@android:color/black"
             tools:text="hey"
             android:layout_marginBottom="8dp"
-            android:layout_toEndOf="@id/fab_send_image"
+            android:layout_toEndOf="@id/fabSendImage"
             android:background="@drawable/rect_oval_white"
             android:elevation="2dp"
             android:hint="Fire your message"
             android:padding="8dp" />
 
         <ImageView
-            android:id="@+id/imvSend"
+            android:id="@+id/imvSendText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"

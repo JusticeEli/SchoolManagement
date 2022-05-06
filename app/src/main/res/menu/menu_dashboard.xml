@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+      <item
+        android:id="@+id/blogsMenu"
+        android:title="Blogs"
+        app:showAsAction="never" />
+      <item android:id="@+id/logoutMenu"
+          android:title="logout"
+          app:showAsAction="never"/>
+      <item android:id="@+id/myAccountMenu"
+          android:title="My Account"
+          app:showAsAction="never"/>
+      <item
+          android:id="@+id/setLocationFragment"
+          android:title="Set Location"
+          app:showAsAction="never" />
+      <item
+          android:id="@+id/checkInCheckOutFragment"
+          android:title="Check In Check Out"
+          app:showAsAction="never" />
+      <item
+          android:id="@+id/attendanceFragment"
+          android:title="Attendance"
+          app:showAsAction="never" />
+
+      <item
+          android:id="@+id/markExamFragment"
+          android:title="Mark Exam"
+          app:showAsAction="never" />
+
+      <item
+          android:id="@+id/videoChatMenu"
+          android:title="Video Chat"
+          app:showAsAction="never" />
+
+
+
+
+</menu>

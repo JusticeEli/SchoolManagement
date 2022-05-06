@@ -40,7 +40,8 @@
             android:name=".presentation.MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/NoActionBar"
-            android:windowSoftInputMode="adjustPan">
+            android:windowSoftInputMode="adjustResize"
+            >
 
         </activity>
         <activity

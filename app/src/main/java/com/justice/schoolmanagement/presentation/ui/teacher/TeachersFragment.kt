@@ -23,6 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentTeachersBinding
+import com.justice.schoolmanagement.presentation.MainActivity
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.utils.Constants
 import com.justice.schoolmanagement.utils.Resource
@@ -80,7 +81,8 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
                         viewModel.setCurrentTeacherListLiveData(it.data!!.documents)
                         adapter.submitList(it.data?.documents)
                         Log.d(TAG, "subscribeToObservers: size:${it.data.size()}")
-                        val path = Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS
+                        val path =
+                            Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS
                         Log.d(TAG, "subscribeToObservers: path:$path")
                     }
                     Resource.Status.ERROR -> {
@@ -125,11 +127,19 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
                     }
                     is Event.TeacherClicked -> {
                         val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
-                        navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToTeacherDetailsFragment(teacherData))
+                        navController.navigate(
+                            TeachersFragmentDirections.actionTeachersFragmentToTeacherDetailsFragment(
+                                teacherData
+                            )
+                        )
                     }
                     is Event.TeacherEdit -> {
                         val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
-                        navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToEditTeacherFragment(teacherData))
+                        navController.navigate(
+                            TeachersFragmentDirections.actionTeachersFragmentToEditTeacherFragment(
+                                teacherData
+                            )
+                        )
                     }
                     is Event.TeacherSwiped -> {
                         deleteFromDatabase(it.snapshot)
@@ -174,7 +184,8 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
                             viewModel.setCurrentTeacherListLiveData(it.data!!.documents)
                             adapter.submitList(it.data?.documents)
                             Log.d(TAG, "subscribeToObservers: size:${it.data.size()}")
-                            val path = Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS
+                            val path =
+                                Constants.COLLECTION_ROOT + Constants.DOCUMENT_CODE + Constants.TEACHERS
                             Log.d(TAG, "subscribeToObservers: path:$path")
                         }
                         Resource.Status.ERROR -> {
@@ -223,11 +234,19 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
                         }
                         is Event.TeacherClicked -> {
                             val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
-                            navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToTeacherDetailsFragment(teacherData))
+                            navController.navigate(
+                                TeachersFragmentDirections.actionTeachersFragmentToTeacherDetailsFragment(
+                                    teacherData
+                                )
+                            )
                         }
                         is Event.TeacherEdit -> {
                             val teacherData = it.snapshot.toObject(TeacherData::class.java)!!
-                            navController.navigate(TeachersFragmentDirections.actionTeachersFragmentToEditTeacherFragment(teacherData))
+                            navController.navigate(
+                                TeachersFragmentDirections.actionTeachersFragmentToEditTeacherFragment(
+                                    teacherData
+                                )
+                            )
                         }
                         is Event.TeacherSwiped -> {
                             deleteFromDatabase(it.snapshot)
@@ -266,10 +285,13 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
     }
 
     fun deleteFromDatabase(snapshot: DocumentSnapshot) {
-        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first)).setIcon(R.drawable.ic_delete).setTitle("delete").setMessage("Are you sure you want to delete ").setNegativeButton("no") { dialog, which ->
-            val position = adapter.currentList.indexOf(snapshot)
-            adapter.notifyItemChanged(position)
-        }.setPositiveButton("yes") { dialog, which ->
+        MaterialAlertDialogBuilder(requireContext()).setBackground(requireActivity().getDrawable(R.drawable.button_first))
+            .setIcon(R.drawable.ic_delete).setTitle("delete")
+            .setMessage("Are you sure you want to delete ")
+            .setNegativeButton("no") { dialog, which ->
+                val position = adapter.currentList.indexOf(snapshot)
+                adapter.notifyItemChanged(position)
+            }.setPositiveButton("yes") { dialog, which ->
             viewModel.setEvent(Event.TeacherConfirmDelete(snapshot))
         }.show()
     }
@@ -287,9 +309,17 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return (requireActivity() as MainActivity).onOptionsItemSelected(item)
+    }
+
 
     private fun setUpRecyclerViewAdapter() {
-        adapter = TeacherAdapter(requestManager, onEditClicked = { onEditClicked(it) }, onTeacherClicked = { onTeacherClicked(it) }, onTeacherDelete = { onTeacherDelete(it) })
+        adapter = TeacherAdapter(
+            requestManager,
+            onEditClicked = { onEditClicked(it) },
+            onTeacherClicked = { onTeacherClicked(it) },
+            onTeacherDelete = { onTeacherDelete(it) })
         binding.recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
         binding.recyclerView.adapter = adapter
     }
@@ -308,8 +338,13 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
     }
 
     private fun setSwipeListenerForItems() {
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+        ItemTouchHelper(object :
+            ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
                 return false
             }
 
@@ -350,8 +385,9 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
         ll.setPadding(llPadding, llPadding, llPadding, llPadding)
         ll.gravity = Gravity.CENTER
         var llParam = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         ll.layoutParams = llParam
 
@@ -360,8 +396,10 @@ class TeachersFragment : Fragment(R.layout.fragment_teachers) {
         progressBar.setPadding(0, 0, llPadding, 0)
         progressBar.layoutParams = llParam
 
-        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         val tvText = TextView(context)
         tvText.text = message

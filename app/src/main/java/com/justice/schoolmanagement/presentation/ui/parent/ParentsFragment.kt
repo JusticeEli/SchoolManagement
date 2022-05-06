@@ -23,6 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentParentsBinding
+import com.justice.schoolmanagement.presentation.MainActivity
 import com.justice.schoolmanagement.presentation.ui.parent.model.ParentData
 import com.justice.schoolmanagement.utils.Resource
 import com.justice.schoolmanagement.utils.onQueryTextChanged
@@ -177,7 +178,9 @@ class ParentsFragment : Fragment(R.layout.fragment_parents) {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return (requireActivity() as MainActivity).onOptionsItemSelected(item)
+    }
     private fun initRecyclerViewAdapter() {
 
         adapter = ParentsAdapter(requestManager, onEditClicked = { onEditClicked(it) }, onParentClicked = { onParentClicked(it) }, onParentDelete = { onParentDelete(it) })

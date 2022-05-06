@@ -2,14 +2,12 @@ package com.justice.schoolmanagement.presentation.ui.chat
 
 import android.net.Uri
 import android.util.Log
-import androidx.hilt.Assisted
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.firestore.DocumentSnapshot
+import com.justice.schoolmanagement.presentation.ui.chat.model.ImageMessage
 import com.justice.schoolmanagement.presentation.ui.chat.model.Message
-import com.justice.schoolmanagement.presentation.ui.teacher.model.TEACHER_DATA_ARGS
 import com.justice.schoolmanagement.presentation.ui.teacher.model.TeacherData
 import com.justice.schoolmanagement.utils.Resource
 import kotlinx.coroutines.channels.Channel
@@ -18,16 +16,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.*
 
-class ChatViewModel @ViewModelInject constructor(private val repository: ChatRepository, @Assisted private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class ChatViewModel @ViewModelInject constructor(private val repository: ChatRepository) :
+    ViewModel() {
 
     private val TAG = "ChatViewModel"
-    private val _channelIdFlow = MutableStateFlow("")
-    val channelIdFlow = _channelIdFlow as StateFlow<String>
-    fun setChannelId(channelId: String) {
-        _channelIdFlow.value = channelId
-    }
-    val getChannelId = repository.getChannelId(savedStateHandle.get<TeacherData>(TEACHER_DATA_ARGS)!!.id!!)
+
+    val _getChannelId = Channel<Resource<String>>()
+    val getChannelId = _getChannelId.receiveAsFlow()
+
 
     private val _currentUserFlow = MutableStateFlow(TeacherData())
     val currentUserFlow = _currentUserFlow as StateFlow<TeacherData>
@@ -47,7 +45,9 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
         viewModelScope.launch {
             when (event) {
                 is ChatFragment.Event.GetOrCreateChatChannel -> {
-                   // getOrCreateChatChannel()
+                    repository.getChannelId(event.otherUserId).collect {
+                        _getChannelId.send(it)
+                    }
                 }
                 is ChatFragment.Event.ReceivedChannelID -> {
                     channelIdReceived(event.channelId)
@@ -55,6 +55,10 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
                 is ChatFragment.Event.SendMessage -> {
                     sentMessage(event.message)
                 }
+                is ChatFragment.Event.UploadMessageImage -> {
+                    sentImageMessage(event.uri)
+                }
+
             }
         }
     }
@@ -69,7 +73,10 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
 
     private suspend fun sentMessage(message: Message) {
         Log.d(TAG, "sentMessage: message:$message")
-        repository.sendMessage(message,channelIdFlow.value)
+        repository.sendMessage(message, currentChannelIdFlow.value).collect {
+            _sendMessageStatus.send(it)
+            Log.d(TAG, "sentMessage: status:${it.status.name}")
+        }
     }
 
     private val _uploadMessageImageStatus = Channel<Resource<String>>()
@@ -77,7 +84,26 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
 
     private suspend fun sentImageMessage(uri: Uri) {
         repository.uploadMessageImage(uri).collect {
+            _uploadMessageImageStatus.send(it)
             Log.d(TAG, "sentImageMessage: updloadMessageImage:${it.status.name}")
+
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+
+                    val messageToSend =
+                        ImageMessage(
+                            imagePath = it.data!!,
+                            Calendar.getInstance().time,
+                            currentUserFlow.value.id!!,
+                            otherTeacherFlow.value.id!!,
+                            currentUserFlow.value.fullName
+                        )
+                    Log.d(TAG, "sentImageMessage: messageToSend:$messageToSend")
+                    sentMessage(messageToSend)
+
+
+                }
+            }
 
         }
     }
@@ -85,8 +111,11 @@ class ChatViewModel @ViewModelInject constructor(private val repository: ChatRep
     private val _getChats = Channel<Resource<List<DocumentSnapshot>>>()
     val getChats = _getChats.receiveAsFlow()
     private suspend fun channelIdReceived(channelId: String) {
+        Log.d(TAG, "channelIdReceived: channelId:$channelId")
+
+        _currentChannelIdFlow.value = channelId
         repository.getChats(channelId).collect {
-             _getChats.send(it)
+            _getChats.send(it)
             Log.d(TAG, "channelIdReceived: getChats:${it.status.name}")
 
         }

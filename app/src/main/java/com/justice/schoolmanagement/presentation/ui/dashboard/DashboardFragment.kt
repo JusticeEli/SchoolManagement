@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentDashboardBinding
+import com.justice.schoolmanagement.presentation.MainActivity
 import com.justice.schoolmanagement.utils.exhaustive
 import dagger.hilt.android.AndroidEntryPoint
 import es.dmoral.toasty.Toasty
@@ -26,7 +27,7 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickLis
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentDashboardBinding.bind(view)
         setOnClickListeners()
-       // setHasOptionsMenu(true)
+        setHasOptionsMenu(true)
         subScribeToObservers()
     }
 
@@ -79,18 +80,11 @@ class DashboardFragment : Fragment(R.layout.fragment_dashboard), View.OnClickLis
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu_blog, menu)
+        inflater.inflate(R.menu.menu_dashboard, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        when (item.itemId) {
-            android.R.id.home -> findNavController().popBackStack()
-            R.id.blogsMenu -> findNavController().navigate(R.id.action_dashboardFragment_to_blogFragment)
-            else -> {
-            }
-        }
-        return super.onOptionsItemSelected(item)
+        return (requireActivity() as MainActivity).onOptionsItemSelected(item)
     }
 
 

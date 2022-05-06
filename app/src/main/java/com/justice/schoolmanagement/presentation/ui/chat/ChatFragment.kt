@@ -21,7 +21,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.RequestManager
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.justice.schoolmanagement.R
 import com.justice.schoolmanagement.databinding.FragmentChatBinding
@@ -48,7 +47,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     lateinit var requestManager: RequestManager
     private val viewModel: ChatViewModel by viewModels()
 
-     private lateinit var binding: FragmentChatBinding
+    private lateinit var binding: FragmentChatBinding
     private lateinit var chatAdapter: ChatAdapter
     private val navArgs: ChatFragmentArgs by navArgs()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -57,28 +56,11 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         Log.d(TAG, "onViewCreated:teacherData:${navArgs.teacherData} ")
         initProgressBar()
         subScribeToObservers()
-        setUpClickListeners()
         initRecyclerView()
 
 
-
     }
 
-    private fun setUpClickListeners() {
-
-        binding.imvSend.setOnClickListener {
-            val messageToSend =
-                TextMessage(binding.editTextMessage.text.toString(), Calendar.getInstance().time,
-                    FirebaseAuth.getInstance().currentUser!!.uid,
-                    viewModel.otherTeacherFlow.value.id!!, viewModel.currentUserFlow.value.fullName)
-            binding.editTextMessage.setText("")
-            viewModel.setEvent(Event.SendMessage(messageToSend))
-        }
-        binding.fabSendImage.setOnClickListener {
-            choosePhoto()
-
-        }
-    }
 
     private fun subScribeToObservers() {
 
@@ -92,9 +74,9 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                         }
                         Resource.Status.SUCCESS -> {
                             showProgress(false)
-                            viewModel.setChannelId(it.data!!)
                             viewModel.setEvent(Event.ReceivedChannelID(it.data!!))
-                            }
+                            setOnClickListeners()
+                        }
                         Resource.Status.ERROR -> {
                             showProgress(false)
                         }
@@ -160,7 +142,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                             showProgress(false)
                             viewModel.setCurrentUser(it.data!!)
                             viewModel.setOtherTeacher(navArgs.teacherData)
-                           // viewModel.setEvent(Event.GetOrCreateChatChannel(navArgs.teacherData.id))
+                             viewModel.setEvent(Event.GetOrCreateChatChannel(navArgs.teacherData.id!!))
 
                         }
                         Resource.Status.ERROR -> {
@@ -196,17 +178,42 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
 
     }
 
+    private fun setOnClickListeners() {
+
+        binding.imvSendText.setOnClickListener {
+            val messageToSend =
+                TextMessage(
+                    text = binding.editTextMessage.text.toString(),
+                    Calendar.getInstance().time,
+                    viewModel.currentUserFlow.value.id!!,
+                    viewModel.otherTeacherFlow.value.id!!,
+                    viewModel.currentUserFlow.value.fullName
+                )
+            Log.d(TAG, "setOnClickListeners: messageToSend:$messageToSend")
+            binding.editTextMessage.setText("")
+            viewModel.setEvent(Event.SendMessage(messageToSend))
+        }
+        binding.fabSendImage.setOnClickListener {
+            choosePhoto()
+
+        }
+
+    }
+
     private fun sendMessage(imagePath: String) {
         val messageToSend =
-                ImageMessage(imagePath, Calendar.getInstance().time,
-                        FirebaseUtil.getUid(),
-                        navArgs.teacherData.id!!, viewModel.currentUserFlow.value.fullName)
+            ImageMessage(
+                imagePath, Calendar.getInstance().time,
+                FirebaseUtil.getUid(),
+                navArgs.teacherData.id!!, viewModel.currentUserFlow.value.fullName
+            )
         viewModel.setEvent(Event.SendMessage(messageToSend))
     }
 
     private fun updateMessages(data: List<DocumentSnapshot>) {
         Log.d(TAG, "updateMessages: ")
         chatAdapter.submitList(data)
+        binding.recyclerView.smoothScrollToPosition(chatAdapter.itemCount);
 
 
     }
@@ -214,9 +221,9 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     private fun choosePhoto() {
         // start picker to get image for cropping and then use the image in cropping activity
         CropImage.activity()
-                .setGuidelines(CropImageView.Guidelines.ON)
-                .setAspectRatio(1, 1)
-                .start(requireContext(), this);
+            .setGuidelines(CropImageView.Guidelines.ON)
+            .setAspectRatio(1, 1)
+            .start(requireContext(), this);
     }
 
     private fun initRecyclerView() {
@@ -244,12 +251,14 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
             val result = CropImage.getActivityResult(data)
             if (resultCode == Activity.RESULT_OK) {
                 uri = result.uri
+                viewModel.setEvent(Event.UploadMessageImage(uri!!))
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 val error = result.error
+                Log.e(TAG, "onActivityResult: ",error)
             }
         }
 
-        viewModel.setEvent(Event.UploadMessageImage(uri!!))
     }
 
 
@@ -286,8 +295,9 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         ll.setPadding(llPadding, llPadding, llPadding, llPadding)
         ll.gravity = Gravity.CENTER
         var llParam = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT)
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         ll.layoutParams = llParam
 
@@ -296,8 +306,10 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         progressBar.setPadding(0, 0, llPadding, 0)
         progressBar.layoutParams = llParam
 
-        llParam = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
+        llParam = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         llParam.gravity = Gravity.CENTER
         val tvText = TextView(context)
         tvText.text = message
@@ -331,7 +343,7 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         data class ReceivedChannelID(val channelId: String) : Event()
         data class UploadMessageImage(val uri: Uri) : Event()
         data class SendMessage(val message: Message) : Event()
-        data class GetOrCreateChatChannel(val otherUserId:String) : Event()
+        data class GetOrCreateChatChannel(val otherUserId: String) : Event()
 
     }
 }

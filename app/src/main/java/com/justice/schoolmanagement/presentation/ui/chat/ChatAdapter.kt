@@ -34,9 +34,8 @@ class ChatAdapter(private val requestManager: RequestManager) : ListAdapter<Docu
             }
 
             override fun areContentsTheSame(oldItem: DocumentSnapshot, newItem: DocumentSnapshot): Boolean {
-                val old = oldItem.toObject(Message::class.java)
-                val new = newItem.toObject(Message::class.java)
-                return old!!.equals(new)
+                return oldItem.id == newItem.id
+
             }
 
         }
@@ -61,8 +60,8 @@ class ChatAdapter(private val requestManager: RequestManager) : ListAdapter<Docu
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
-        val originalMessage = currentList[position].toObject(Message::class.java)!!
         if (getItemViewType(position) == TEXT_TYPE) {
+            val originalMessage = currentList[position].toObject(TextMessage::class.java)!!
 
             val message = originalMessage as TextMessage
             (holder as ViewHolderText).binding.textViewMessageText.text = message.text
@@ -70,7 +69,9 @@ class ChatAdapter(private val requestManager: RequestManager) : ListAdapter<Docu
             setMessageRootGravityText(holder, originalMessage)
         } else {
             val viewHolder = (holder as ViewHolderImage)
-            val message = currentList[position] as ImageMessage
+            val originalMessage = currentList[position].toObject(ImageMessage::class.java)!!
+
+            val message = originalMessage
             requestManager.load(message.imagePath).into(viewHolder.binding.imageViewMessageImage)
             setTimeTextForImageMessage(viewHolder, message)
             setMessageRootGravityImage(viewHolder, originalMessage)
@@ -139,10 +140,20 @@ class ChatAdapter(private val requestManager: RequestManager) : ListAdapter<Docu
         }
     }
 
-    override fun getItemViewType(position: Int): Int {
+/*    override fun getItemViewType(position: Int): Int {
         val message = currentList[position].toObject(Message::class.java)!!
 
         if (message.type == MessageType.TEXT) {
+            return TEXT_TYPE
+
+        } else {
+            return IMAGE_TYPE
+        }
+    }*/
+    override fun getItemViewType(position: Int): Int {
+        val type = currentList[position].get("type")!! as String
+
+        if (type == MessageType.TEXT) {
             return TEXT_TYPE
 
         } else {

@@ -21,33 +21,39 @@ class ChatRepository {
 
     fun getChannelId(otherUserId: String) = callbackFlow<Resource<String>> {
         offer(Resource.loading("getting channel id..."))
-        FirebaseUtil.currentUserDocRef.collection(Constants.COLLECTION_ENGAGED_CHAT_CHANNELS).document(otherUserId)
-                .get().addOnSuccessListener {
-                    if (it.exists()) {
-                        val channelId = it[Constants.CHANNEL_ID] as String
-                        offer(Resource.success(channelId))
+        FirebaseUtil.currentUserDocRef.collection(Constants.COLLECTION_ENGAGED_CHAT_CHANNELS)
+            .document(otherUserId)
+            .get().addOnSuccessListener {
+                if (it.exists()) {
+                    val channelId = it[Constants.CHANNEL_ID] as String
+                    offer(Resource.success(channelId))
+                    Log.d(TAG, "getChannelId: channelId:$channelId")
+                } else {
+                    val currentUserId = FirebaseUtil.getUid()
 
-                    } else {
-                        val currentUserId = FirebaseUtil.getUid()
+                    val newChannel = FirebaseUtil.chatChannelsCollectionRef().document()
+                    newChannel.set(ChatChannel(mutableListOf(currentUserId, otherUserId)))
+                    Log.d(TAG, "getChannelId: channel:path:${newChannel.path}")
+                    val currentUserDocRef = FirebaseUtil.currentUserDocRef
+                        .collection(Constants.COLLECTION_ENGAGED_CHAT_CHANNELS)
+                        .document(otherUserId)
+                    Log.d(TAG, "getChannelId: currentUserDocRef:Path:${currentUserDocRef.path}")
+                    currentUserDocRef.set(mapOf(Constants.CHANNEL_ID to newChannel.id))
 
-                        val newChannel = FirebaseUtil.chatChannelsCollectionRef().document()
-                        newChannel.set(ChatChannel(mutableListOf(currentUserId, otherUserId)))
-
-                        FirebaseUtil.currentUserDocRef
-                                .collection(Constants.COLLECTION_ENGAGED_CHAT_CHANNELS)
-                                .document(otherUserId)
-                                .set(mapOf(Constants.CHANNEL_ID to newChannel.id))
-
+                    val otherUserDocRef =
                         FirebaseUtil.collectionReferenceTeachers().document(otherUserId)
-                                .collection(Constants.COLLECTION_ENGAGED_CHAT_CHANNELS)
-                                .document(currentUserId)
-                                .set(mapOf(Constants.CHANNEL_ID to newChannel.id))
+                            .collection(Constants.COLLECTION_ENGAGED_CHAT_CHANNELS)
+                            .document(currentUserId)
 
-                        offer(Resource.success(newChannel.id))
-                    }
+                    Log.d(TAG, "getChannelId: otherUserDocRef:Path:${otherUserDocRef.path}")
 
+                    otherUserDocRef.set(mapOf(Constants.CHANNEL_ID to newChannel.id))
 
+                    offer(Resource.success(newChannel.id))
                 }
+
+
+            }
 
 
 
@@ -76,20 +82,21 @@ class ChatRepository {
 
     fun getChats(channelId: String) = callbackFlow<Resource<List<DocumentSnapshot>>> {
         offer(Resource.loading("loading chats"))
-        FirebaseUtil.chatChannelsCollectionRef().document(channelId).collection(Constants.COLLECTION_MESSAGES)
-                .orderBy(FIELD_TIME)
-                .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
-                    if (firebaseFirestoreException != null) {
-                        Log.e("FIRESTORE", "ChatMessagesListener error.", firebaseFirestoreException)
-                        offer(Resource.error(firebaseFirestoreException))
+        FirebaseUtil.chatChannelsCollectionRef().document(channelId)
+            .collection(Constants.COLLECTION_MESSAGES)
+            .orderBy(FIELD_TIME)
+            .addSnapshotListener { querySnapshot, firebaseFirestoreException ->
+                if (firebaseFirestoreException != null) {
+                    Log.e("FIRESTORE", "ChatMessagesListener error.", firebaseFirestoreException)
+                    offer(Resource.error(firebaseFirestoreException))
+                } else {
+                    if (querySnapshot!!.isEmpty) {
+                        offer(Resource.empty())
                     } else {
-                        if (querySnapshot!!.isEmpty) {
-                            offer(Resource.empty())
-                        } else {
-                            offer(Resource.success(querySnapshot!!.documents))
-                        }
+                        offer(Resource.success(querySnapshot!!.documents))
                     }
                 }
+            }
 
 
         awaitClose {
@@ -126,28 +133,30 @@ class ChatRepository {
     }
 
     fun sendMessage(message: Message, channelId: String) = callbackFlow<Resource<String>> {
+        Log.d(TAG, "sendMessage: message:$message::channelId:$channelId")
         offer(Resource.loading("sending message..."))
         FirebaseUtil.chatChannelsCollectionRef().document(channelId)
-                .collection(Constants.COLLECTION_MESSAGES)
-                .add(message).addOnSuccessListener {
-                    offer(Resource.success(channelId))
-                }
-                .addOnFailureListener {
-                    offer(Resource.error(it))
-                }
+            .collection(Constants.COLLECTION_MESSAGES)
+            .add(message).addOnSuccessListener {
+                offer(Resource.success(channelId))
+            }
+            .addOnFailureListener {
+                offer(Resource.error(it))
+            }
 
         awaitClose { }
     }
+
     fun sendMessage_2(message: Message, channelId: String) = callbackFlow<Resource<String>> {
         offer(Resource.loading("sending message..."))
         FirebaseUtil.chatChannelsCollectionRef().document(channelId)
-                .collection(Constants.COLLECTION_MESSAGES)
-                .add(message).addOnSuccessListener {
-                    offer(Resource.success(channelId))
-                }
-                .addOnFailureListener {
-                    offer(Resource.error(it))
-                }
+            .collection(Constants.COLLECTION_MESSAGES)
+            .add(message).addOnSuccessListener {
+                offer(Resource.success(channelId))
+            }
+            .addOnFailureListener {
+                offer(Resource.error(it))
+            }
 
         awaitClose { }
     }
