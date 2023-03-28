@@ -11,8 +11,8 @@ Mobile app that makes it easier to maintain records of a school, has a section f
 
 
 Teachers can 
-- easily update marks of students remotely 
-- contact their respective parents
+- Easily update marks of students remotely 
+- Contact their respective parents
 - Schedule Real-Time video calls and chats .
 
 ## Tech Stack
@@ -23,7 +23,7 @@ Teachers can
 - Firebase ML
 - Glide
 - Dagger Hilt
-- Material Designs
+- Material Design
 - Jetpack Components
 - Coroutines
 
