@@ -12,8 +12,8 @@ Mobile app that makes it easier to maintain records of a school, has a section f
 
 Teachers can 
 - easily update marks of students remotely 
--  contact their respective parents
--  Schedule Real-Time video calls and chats .
+- contact their respective parents
+- Schedule Real-Time video calls and chats .
 
 ## Tech Stack
 - Kotlin
